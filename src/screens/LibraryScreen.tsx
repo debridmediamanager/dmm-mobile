@@ -17,7 +17,6 @@ import {
 	View,
 } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
-import * as SecureStore from 'expo-secure-store';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useApp } from '../AppContext';
 import {
@@ -39,6 +38,7 @@ import {
 import type { LibraryItem, MediaType, ProviderId, SortMode } from '../model';
 import { PROVIDERS, PROVIDER_META } from '../model';
 import type { BulkResult } from '../session';
+import { loadSettings, saveSetting } from '../settings';
 import { backupJson, hashlistUrl, parseAddInput, parseBackup, shareableItems } from '../share';
 import { magnetForHash } from '../validation';
 import type { RootStackParamList } from '../navigation';
@@ -66,7 +66,6 @@ const medias: Array<{ value: MediaType | 'all'; label: string }> = [
 	{ value: 'other', label: 'Other' },
 ];
 const sortModes: SortMode[] = ['newest', 'oldest', 'title', 'size', 'progress'];
-const ADD_PROVIDER_KEY = 'dmm.library.addProvider';
 
 const summarize = (verb: string, result: BulkResult): string =>
 	`${verb} ${result.done}.${result.failed.length ? ` ${result.failed.length} failed:\n${result.failed.slice(0, 5).map((entry) => `${entry.label}: ${entry.message}`).join('\n')}` : ''}`;
@@ -352,19 +351,18 @@ export function LibraryScreen({ navigation }: { navigation: Navigation }) {
 	);
 }
 
-/** The provider the last add went to, as DMM web keeps `settings:addMagnetProvider`. */
+/** The provider the last add went to, DMM web's `settings:addMagnetProvider`. */
 function useAddProvider(connectedProviders: ProviderId[]): [ProviderId | null, (provider: ProviderId) => void] {
 	const [provider, setProvider] = useState<ProviderId | null>(connectedProviders[0] ?? null);
 	useEffect(() => {
-		if (Platform.OS === 'web') return;
-		void SecureStore.getItemAsync(ADD_PROVIDER_KEY).then((saved) => {
-			if (saved && connectedProviders.includes(saved as ProviderId)) setProvider(saved as ProviderId);
-		}).catch(() => undefined);
+		void loadSettings().then(({ addProvider }) => {
+			if (addProvider && connectedProviders.includes(addProvider as ProviderId)) setProvider(addProvider as ProviderId);
+		});
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 	const choose = (next: ProviderId) => {
 		setProvider(next);
-		if (Platform.OS !== 'web') void SecureStore.setItemAsync(ADD_PROVIDER_KEY, next).catch(() => undefined);
+		void saveSetting('addProvider', next).catch(() => undefined);
 	};
 	return [provider, choose];
 }

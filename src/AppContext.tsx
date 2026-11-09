@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { StoredCredential } from './auth';
 import type { LibraryFile, LibraryItem, ProviderId } from './model';
+import { onSettingsChange } from './settings';
 import { LibrarySession, type BulkResult, type SessionSnapshot } from './session';
 import type { AddOptions, PickedFile } from './providerApi';
 import type { AddEntry } from './share';
@@ -52,8 +53,13 @@ export function AppProvider({ children, session: injectedSession }: { children: 
 
 	useEffect(() => {
 		const unsubscribe = session.subscribe(sync);
+		// A changed setting is saved across devices along with the logins.
+		const unsubscribeSettings = onSettingsChange(() => session.schedulePush());
 		void bootstrap();
-		return unsubscribe;
+		return () => {
+			unsubscribe();
+			unsubscribeSettings();
+		};
 	}, [bootstrap, session, sync]);
 
 	const run = useCallback(

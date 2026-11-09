@@ -1,7 +1,7 @@
 import { Linking, Platform } from 'react-native';
 import * as IntentLauncher from 'expo-intent-launcher';
-import * as SecureStore from 'expo-secure-store';
 import { isVideoName } from './core';
+import { loadSettings, saveSetting } from './settings';
 
 /**
  * The players DMM web offers in Settings (src/components/SettingsSection.tsx), with the
@@ -49,21 +49,12 @@ export function iosPlayerUrl(playerId: string, url: string): string {
 	return url;
 }
 
-const KEY = 'dmm.library.player';
-
 export async function loadPlayer(): Promise<string> {
-	if (Platform.OS === 'web') return 'browser';
-	try {
-		const saved = await SecureStore.getItemAsync(KEY);
-		return saved && playersForPlatform().some((player) => player.id === saved) ? saved : 'browser';
-	} catch {
-		return 'browser';
-	}
+	const saved = (await loadSettings()).player;
+	return saved && playersForPlatform().some((player) => player.id === saved) ? saved : 'browser';
 }
 
-export async function savePlayer(id: string): Promise<void> {
-	if (Platform.OS !== 'web') await SecureStore.setItemAsync(KEY, id);
-}
+export const savePlayer = (id: string): Promise<void> => saveSetting('player', id);
 
 /**
  * Opens a resolved file link: videos go to the chosen player, anything else (subtitles,

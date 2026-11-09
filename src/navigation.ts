@@ -7,4 +7,5 @@ export type RootStackParamList = {
 export type MainTabParamList = {
 	Library: undefined;
 	Accounts: undefined;
+	Settings: undefined;
 };

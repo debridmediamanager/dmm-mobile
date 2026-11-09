@@ -92,10 +92,21 @@ about 6 s, smooth scrolling, search under a second per keystroke).
   Real-Debrid files, including on a finished torrent.
 
 Download links are resolved only after a user taps a file. Videos open in the
-player chosen under Accounts (VLC, MX Player, Just Player or Android's app
+player chosen in Settings (VLC, MX Player, Just Player or Android's app
 picker; Infuse, VLC, VidHub, Outplayer, SenPlayer or Aether on iOS), the same
 list DMM web offers; other files go to the operating system. Hash lists open on DMM web's `/hashlist` page, carried
 in the link itself.
+
+## Remembered across devices
+
+Always on. The app keeps your logins and settings in DMM's "remember my logins
+and settings across devices" store, behind each provider login, in DMM web's own
+format. Sign in to one provider (in the app or on DMM web with that option
+ticked) and the other logins and settings come back; keys DMM web keeps that the
+app does not use are saved back untouched. Anyone who can sign in to one of
+those accounts gets all of them, so keep shared debrid accounts out of the app.
+Settings (video player, the provider adds start on) use DMM web's
+`settings:player` and `settings:addMagnetProvider`.
 
 Not in the app, because they need DMM's servers: casting to Stremio, sending
 to Real-Debrid through DMM's uploader, title identification and the media

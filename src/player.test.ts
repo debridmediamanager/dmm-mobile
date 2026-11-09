@@ -8,12 +8,14 @@ vi.mock('expo-intent-launcher', () => ({ startActivityAsync: vi.fn(async () => (
 import { Linking } from 'react-native';
 import * as IntentLauncher from 'expo-intent-launcher';
 import { iosPlayerUrl, openFileLink } from './player';
+import { _resetSettingsCache } from './settings';
 
 const TB = 'https://store-024.weur.tb-cdn.st/zip/1?token=abc&x=1';
 
 beforeEach(() => {
 	native.os = 'android';
 	native.saved = null;
+	_resetSettingsCache();
 	vi.mocked(Linking.openURL).mockClear();
 	vi.mocked(IntentLauncher.startActivityAsync).mockReset().mockResolvedValue({} as never);
 });
@@ -39,6 +41,7 @@ describe('external players', () => {
 		await openFileLink(TB, 'a.mp4');
 		expect(IntentLauncher.startActivityAsync).toHaveBeenCalledWith('android.intent.action.VIEW', { data: TB, type: 'video/*' });
 		native.saved = null;
+		_resetSettingsCache();
 		await openFileLink(TB, 'a.mp4');
 		expect(Linking.openURL).toHaveBeenCalledWith(TB);
 	});

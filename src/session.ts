@@ -23,6 +23,8 @@ import {
 import { needsRenewal, parseCredential, renewCredential, serializeCredential, type StoredCredential } from './auth';
 import type { CredentialStorage } from './storage';
 import type { AddEntry } from './share';
+import { browserStateApi, credentialsFromState, identitiesFor, mergeState, settingsFromState, stateFromApp, type BrowserState, type BrowserStateApi } from './sync';
+import { loadSettings, saveSetting, type SettingName } from './settings';
 import { runBulk, type BulkResult } from './core';
 
 export type { BulkResult };
@@ -116,9 +118,17 @@ export class LibrarySession {
 	};
 	private readonly storageTails: Partial<Record<ProviderId, Promise<void>>> = {};
 
-	constructor(storage: CredentialStorage = secureCredentialStorage, api: SessionApi = defaultApi) {
+	private readonly sync: BrowserStateApi | null;
+	/** Providers removed in the app since it started: their logins leave the saved state. */
+	private readonly removedLogins = new Set<ProviderId>();
+	private remoteState: BrowserState | null = null;
+	private pushTimer: ReturnType<typeof setTimeout> | null = null;
+
+	// Only the real providers sync with DMM unless a test or the QA build passes its own.
+	constructor(storage: CredentialStorage = secureCredentialStorage, api: SessionApi = defaultApi, sync: BrowserStateApi | null = api === defaultApi ? browserStateApi : null) {
 		this.storage = storage;
 		this.api = api;
+		this.sync = sync;
 	}
 
 	subscribe(listener: () => void): () => void {
@@ -209,7 +219,13 @@ export class LibrarySession {
 	}
 
 	/** Takes a pasted key or a credential from a device sign-in. */
+	/** A sign-in: also brings back the logins and settings saved behind it (DMM's remember across devices). */
 	async connect(provider: ProviderId, input: string | StoredCredential): Promise<void> {
+		await this.saveLogin(provider, input);
+		void this.restoreAfterLogin(provider);
+	}
+
+	private async saveLogin(provider: ProviderId, input: string | StoredCredential): Promise<void> {
 		const credential = typeof input === 'string' ? { token: input.trim() } : { ...input, token: input.token.trim() };
 		const generation = this.generations[provider];
 		const operation = ++this.connectionOperations[provider];
@@ -222,10 +238,13 @@ export class LibrarySession {
 		this.tokens[provider] = credential.token;
 		if (account.label) this.labels[provider] = account.label;
 		this.failures.delete(provider);
+		this.removedLogins.delete(provider);
 		this.notify();
 	}
 
 	async disconnect(provider: ProviderId): Promise<void> {
+		this.removedLogins.add(provider);
+		this.schedulePush();
 		this.connectionOperations[provider] += 1;
 		this.generations[provider] += 1;
 		this.controllers.get(provider)?.abort();
@@ -246,6 +265,66 @@ export class LibrarySession {
 			this.notify();
 			throw error;
 		}
+	}
+
+	/**
+	 * After a sign-in, asks DMM for the state saved behind that login, connects the other
+	 * providers it holds and adopts the settings this device has not set, then saves the
+	 * merged state back. Failures stay quiet: the sign-in itself already worked.
+	 */
+	private async restoreAfterLogin(provider: ProviderId): Promise<void> {
+		if (!this.sync) return;
+		const credential = this.credentials[provider];
+		const [identity] = credential ? identitiesFor({ [provider]: credential }) : [];
+		if (!identity) return;
+		try {
+			const state = await this.sync.restore(identity);
+			if (state) {
+				this.remoteState = state;
+				const restored = credentialsFromState(state);
+				await Promise.all(
+					(Object.keys(restored) as ProviderId[])
+						.filter((other) => !this.tokens[other] && !this.removedLogins.has(other))
+						.map(async (other) => {
+							try {
+								let login = restored[other]!;
+								if (needsRenewal(login) || !login.token) login = await this.api.renewCredential(other, login);
+								await this.saveLogin(other, login);
+								await this.refreshProvider(other);
+							} catch {
+								// A saved login that no longer works is left for the user to sign in again.
+							}
+						})
+				);
+				const local = await loadSettings();
+				const remote = settingsFromState(state);
+				for (const name of Object.keys(remote) as SettingName[]) {
+					if (!local[name]) await saveSetting(name, remote[name]!);
+				}
+			}
+		} catch {
+			// DMM unreachable or the login refused there: nothing to bring back this time.
+		}
+		this.schedulePush();
+	}
+
+	/** Saves this device's logins and settings behind every login it holds, a moment after the last change. */
+	schedulePush(delayMs = 2000): void {
+		if (!this.sync) return;
+		if (this.pushTimer) clearTimeout(this.pushTimer);
+		this.pushTimer = setTimeout(() => {
+			this.pushTimer = null;
+			void this.push().catch(() => undefined);
+		}, delayMs);
+	}
+
+	private async push(): Promise<void> {
+		const identities = identitiesFor(this.credentials);
+		if (!this.sync || identities.length === 0) return;
+		const remote = this.remoteState ?? (await this.sync.restore(identities[0])) ?? {};
+		const state = mergeState(remote, stateFromApp(this.credentials, await loadSettings()), this.removedLogins);
+		await this.sync.save(identities, state);
+		this.remoteState = state;
 	}
 
 	async refreshProvider(provider: ProviderId): Promise<void> {
