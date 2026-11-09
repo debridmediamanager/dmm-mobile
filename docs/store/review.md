@@ -1,0 +1,99 @@
+# App review: sign-in, notes and test steps
+
+Reviewers sign in with the **demo key `dmmdemo`**, typed as the API key of any provider.
+It opens a sample library of Blender Foundation open movies (Creative Commons
+Attribution 3.0) whose files really play, streamed from the Internet Archive. No
+debrid account is involved, it works from any network, and nothing a reviewer does
+reaches a real account: adds and deletes change only the demo library on that
+device, until the app is closed. The demo key never reaches DMM's sync or the
+browser handoff (`src/demo.ts`, tested in `src/demo.test.ts`).
+
+| Demo item | State | What it shows |
+|---|---|---|
+| Tears of Steel (2012) 1080p | Ready | A video and three subtitle files (en, de, es) |
+| Sintel (2010) 2K | Ready | One video |
+| Big Buck Bunny (2008) 720p | Ready | One video |
+| Cosmos Laundromat (2015) | Downloading, 62 % | Progress, speed and seeders; its file does not open yet |
+
+## App Store Connect: App Review Information
+
+- **Sign-in required:** Yes
+- **User name:** `demo`
+- **Password:** `dmmdemo`
+- **Notes** (paste as is; under 4,000 characters):
+
+```text
+DMM Mobile manages the user's own cloud storage at a "debrid" service (Real-Debrid,
+AllDebrid, TorBox, Premiumize, Offcloud or Debrid-Link): paid cloud download
+services the user already subscribes to. The app lists the files in that account,
+plays them in the user's chosen player app, adds new downloads to the account and
+deletes old ones. It hosts no content and does not download anything over
+BitTorrent or any peer-to-peer network itself; links the user adds are handed to
+their own service, which stores the result in their account. Nothing is sold in
+the app.
+
+DEMO SIGN-IN (no debrid account needed)
+There is no user name. Use "dmmdemo" as the API key of any provider; it opens a
+sample library of Blender Foundation open movies (CC BY 3.0) streamed from the
+Internet Archive. Changes to it last until the app is closed.
+
+iPhone and iPad
+1. Open the app. On "Sign in", find TorBox and type dmmdemo in its API key field,
+   then tap Connect.
+2. The Library lists four open movies. Tap "Tears of Steel" to see its files.
+3. Tap the video file to play it; tap a subtitle file to open it in the browser.
+4. Back in the Library, tap the menu (three dots) on a row for its actions, or
+   long-press rows to select several.
+5. Tap + to add a magnet link, for example:
+   magnet:?xt=urn:btih:dd8255ecdc7ca55fb0bbf81323d87062db1f6d1c&dn=Big+Buck+Bunny
+   It appears as "queued (demo)".
+6. Search tab: type a title. Tapping a result opens that title's page on
+   debridmediamanager.com in Safari.
+7. Settings: choose the video player; links to the privacy policy and support.
+
+Apple TV
+1. Open the app. On "Sign in", choose "Enter an API key instead".
+2. Under TorBox, select the API key field, type dmmdemo, then Connect.
+3. Browse the Library with the remote; Select opens an item, and its video plays
+   in the player chosen in Settings.
+The QR code on that screen signs a TV in from a phone that is signed in to
+debridmediamanager.com; it needs a real debrid account, so please use the key.
+
+Contact: support@debridmediamanager.com
+```
+
+## Google Play Console: App access
+
+- **All or some functionality is restricted:** Yes
+- **Instruction name:** Demo library
+- **User name:** `demo`
+- **Password:** `dmmdemo`
+- **Any other information** (under 500 characters):
+
+```text
+No account needed: on Sign in, type dmmdemo as the TorBox API key and tap Connect.
+It opens a sample library of open movies (CC BY) that really play. On Android TV,
+choose "Enter an API key instead" first. The app manages the user's own debrid
+cloud storage; it hosts no content and downloads nothing over peer-to-peer itself.
+```
+
+## Test steps per platform
+
+Run these on the release build before each submission, signed in with `dmmdemo`
+only (never a real account on a store build under test).
+
+| # | Step | Expected | iPhone | iPad | Apple TV | Android phone | Android tablet | Android TV |
+|---|---|---|---|---|---|---|---|---|
+| 1 | Fresh install, open | Sign-in screen (TV: QR code and "Enter an API key instead") | | | | | | |
+| 2 | TorBox key `dmmdemo`, Connect | Library with 4 items, Cosmos Laundromat at 62 % | | | | | | |
+| 3 | Open Tears of Steel | Detail with 1 video and 3 subtitle files | | | | | | |
+| 4 | Open the video | Plays in the chosen player | | | | | | |
+| 5 | Open Cosmos Laundromat's file | "This demo file is still downloading." | | | | | | |
+| 6 | Row menu, Delete Sintel | Sintel gone until the app is closed | | | | | | |
+| 7 | Add the magnet from the notes | "Big Buck Bunny" row, queued (demo) | | | | | | |
+| 8 | Search "sintel", tap a result | DMM page opens in the browser, signed out | | | n/a | | | n/a |
+| 9 | Settings, Privacy policy | debridmediamanager.com/privacy opens (TV: address shown) | | | | | | |
+| 10 | Accounts, Disconnect TorBox | Back to sign-in, library empty | | | | | | |
+| 11 | Close and reopen after step 2 | Still signed in, demo library reset to 4 items | | | | | | |
+
+Step 8 opens signed out on purpose: the demo key is not handed to the browser.

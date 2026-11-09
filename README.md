@@ -52,6 +52,14 @@ Installed builds take JavaScript fixes over the air from our own update server,
 signed with our own key; native changes ship as store releases. Both are in
 [docs/releasing.md](docs/releasing.md).
 
+## Store releases
+
+App Store and Google Play releases follow [docs/store/release.md](docs/store/release.md);
+the listing copy and form answers are in [listing.md](docs/store/listing.md), and the
+reviewer sign-in and test checklist in [review.md](docs/store/review.md). Reviewers
+sign in with the demo key `dmmdemo`, which works as any provider's API key and opens a
+sample library of open movies without a debrid account.
+
 ## Signing in
 
 The app opens on a sign-in screen until at least one provider is connected.
