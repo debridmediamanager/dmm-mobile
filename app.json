@@ -2,7 +2,7 @@
   "expo": {
     "name": "DMM Mobile",
     "slug": "dmm-library",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "orientation": "default",
     "userInterfaceStyle": "automatic",
     "scheme": [
@@ -42,6 +42,10 @@
           }
         ],
         "LSSupportsOpeningDocumentsInPlace": false
+      },
+      "buildNumber": "1",
+      "config": {
+        "usesNonExemptEncryption": false
       }
     },
     "android": {
@@ -68,6 +72,13 @@
             }
           ]
         }
+      ],
+      "versionCode": 1,
+      "blockedPermissions": [
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.USE_BIOMETRIC",
+        "android.permission.USE_FINGERPRINT"
       ]
     },
     "plugins": [
@@ -104,7 +115,8 @@
             "topShelfWide2x": "./assets/tv/top-shelf-wide@2x.png"
           }
         }
-      ]
+      ],
+      "./plugins/withReleaseSigning"
     ],
     "updates": {
       "url": "https://dmm-mobile-ota.bensarmiento.workers.dev/manifest",
