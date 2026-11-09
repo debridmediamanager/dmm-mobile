@@ -94,7 +94,7 @@ The library shows Blender open movies (CC BY) on a test account.
 | Debrid-Link | Device sign-in approved (the delete scope is listed), library |
 | AllDebrid | Pasted key and library; the PIN is created and shown on AllDebrid's page, approval not completed in this test |
 | TorBox | Pasted key and library; a free-plan key is refused |
-| Offcloud | Not tested on the device; unit tests only |
+| Offcloud | Pasted key, library, provider filter, open a file (sizes show as unknown: Offcloud's history and file list carry none) |
 
 This project is distributed under AGPL-3.0-only. See `LICENSE` and `NOTICE.md`.
 
