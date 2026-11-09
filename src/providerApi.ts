@@ -696,10 +696,11 @@ async function listRealDebrid(token: string, signal?: AbortSignal): Promise<Libr
 			{ headers: authHeaders(token) },
 			signal
 		);
-		if (!Array.isArray(result.body)) {
+		// A page past the end (the library shrank while paging) is a 204 with no body.
+		const rows = result.response.status === 204 ? [] : result.body;
+		if (!Array.isArray(rows)) {
 			throw new ProviderApiError('rd', 'Real-Debrid returned an invalid library list.', 'invalid_response');
 		}
-		const rows = result.body;
 		items.push(...rows.map((row) => normalizeRd(assertObject(row, 'rd'), [], false)));
 		const header = result.response.headers.get('x-total-count');
 		const total = header ? Number(header) : NaN;
@@ -721,8 +722,9 @@ export async function findRealDebridUncached(token: string, onProgress?: (done: 
 				await new Promise((resolve) => setTimeout(resolve, RD_RETRY_MS));
 			}
 		}
-		if (!Array.isArray(result.body)) throw new ProviderApiError('rd', 'Real-Debrid returned an invalid library list.', 'invalid_response');
-		return { rows: result.body.map((row) => assertObject(row, 'rd')), total: Number(result.response.headers.get('x-total-count')) };
+		const rows = result.response.status === 204 ? [] : result.body;
+		if (!Array.isArray(rows)) throw new ProviderApiError('rd', 'Real-Debrid returned an invalid library list.', 'invalid_response');
+		return { rows: rows.map((row) => assertObject(row, 'rd')), total: Number(result.response.headers.get('x-total-count')) };
 	};
 	const uncached = new Set<string>();
 	const collect = (rows: Record<string, unknown>[]) => rows.forEach((row) => normalizeRd(row).uncached && uncached.add(`rd:${String(row.id)}`));

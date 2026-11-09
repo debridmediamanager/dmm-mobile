@@ -498,3 +498,17 @@ describe('Real-Debrid files outside the selection', () => {
 		await expect(resolveFile('rd', 'token', item, subtitle!.id)).rejects.toMatchObject({ code: 'not_selected' });
 	});
 });
+
+describe('Real-Debrid past the last page', () => {
+	it('reads an empty 204 page as the end, as RD answers when the library shrank while paging', async () => {
+		// 2026-11-09, ymsita: page 66 of 6,439 rows at limit 100 answered 204 with an empty body.
+		vi.stubGlobal('fetch', vi.fn((url: string) => {
+			const page = Number(new URL(url).searchParams.get('page'));
+			return Promise.resolve(page === 1
+				? jsonResponse(rdLinksByLimit.limit100.slice(0, 2), 200, { 'x-total-count': '200' })
+				: new Response(null, { status: 204 }));
+		}));
+		await expect(findRealDebridUncached('token')).resolves.toEqual(new Set());
+		await expect(listLibrary('rd', 'token')).resolves.toHaveLength(2);
+	});
+});
