@@ -7,7 +7,7 @@ ships phones, tablets and Android TV from one app bundle.
 
 | Field | Value |
 |---|---|
-| Name | DMM Mobile |
+| Name | App Store: Debrid Media Manager ("DMM Mobile" was taken). Google Play: DMM Mobile. On the device: DMM Mobile |
 | Developer / seller | Ben Adrian Sarmiento |
 | Privacy policy | https://debridmediamanager.com/privacy |
 | Support | https://debridmediamanager.com/support |

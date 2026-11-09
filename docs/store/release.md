@@ -130,9 +130,23 @@ xcodebuild -workspace ios/DMMMobile.xcworkspace -scheme DMMMobile -configuration
   DEVELOPMENT_TEAM=7RX5G7H8DW CODE_SIGN_STYLE=Automatic -allowProvisioningUpdates archive
 ```
 
-Upload each archive with Xcode's Organizer (Distribute App → App Store Connect →
-Upload), or export with `docs/store/ExportOptions.plist` and upload the `.ipa`
-with the Transporter app. Both platforms appear under the same app; attach the
+Export each archive with `docs/store/ExportOptions.plist` and upload the `.ipa`
+with `altool`, using the app-specific password in Bitwarden ("Apple notarytool
+app-specific password", Apple ID benadriansarmiento@icloud.com, which owns the team):
+
+```sh
+xcodebuild -exportArchive -archivePath build/DMMMobile-ios.xcarchive -exportPath build/ios \
+  -exportOptionsPlist docs/store/ExportOptions.plist -allowProvisioningUpdates
+ASC_PW=$(rbw get 'Apple notarytool app-specific password' benadriansarmiento@icloud.com) \
+  xcrun altool --upload-app --type ios --file build/ios/DMMMobile.ipa \
+  --username benadriansarmiento@icloud.com --password @env:ASC_PW   # --type appletvos for the TV build
+```
+
+The App Store record is "Debrid Media Manager" (Apple ID 6832736483): "DMM Mobile"
+was taken on the App Store, and the name under the icon stays DMM Mobile. The
+App Store Connect API key in Bitwarden ("App Store Connect API key (dmm-mobile
+release)", role App Manager) does everything after the upload without a browser
+or a two-factor code: store text, screenshots, attaching builds, submitting. Both platforms appear under the same app; attach the
 iOS build to the iOS version and the tvOS build to the Apple TV version, then
 submit both for review. TestFlight first is cheap: the same builds, testers by
 email, review of the first build only.
