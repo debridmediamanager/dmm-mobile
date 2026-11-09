@@ -11,16 +11,20 @@ import { isVideoName } from './core';
 export interface PlayerOption {
 	id: string;
 	label: string;
+	/** Android: the activity that takes a video link. expo-intent-launcher ignores a package without one. */
+	activity?: string;
 }
 
 export const PLAYERS: Record<'android' | 'ios', PlayerOption[]> = {
 	android: [
 		{ id: 'browser', label: 'Browser or default app' },
 		{ id: 'android/chooser', label: 'Ask which video app' },
-		{ id: 'android/org.videolan.vlc', label: 'VLC' },
-		{ id: 'android/com.mxtech.videoplayer.ad', label: 'MX Player' },
-		{ id: 'android/com.mxtech.videoplayer.pro', label: 'MX Player Pro' },
-		{ id: 'android/com.brouken.player', label: 'Just Player' },
+		// Read from each app on 2026-11-09: VLC from the Pixel 6 (`cmd package resolve-activity`), Just Player
+		// from its F-Droid manifest; MX Player's two from its published intent API.
+		{ id: 'android/org.videolan.vlc', label: 'VLC', activity: 'org.videolan.vlc.StartActivity' },
+		{ id: 'android/com.mxtech.videoplayer.ad', label: 'MX Player', activity: 'com.mxtech.videoplayer.ad.ActivityScreen' },
+		{ id: 'android/com.mxtech.videoplayer.pro', label: 'MX Player Pro', activity: 'com.mxtech.videoplayer.ActivityScreen' },
+		{ id: 'android/com.brouken.player', label: 'Just Player', activity: 'com.brouken.player.PlayerActivity' },
 	],
 	ios: [
 		{ id: 'browser', label: 'Safari or default app' },
@@ -72,11 +76,12 @@ export async function openFileLink(url: string, fileName: string): Promise<void>
 		await Linking.openURL(url);
 		return;
 	}
-	const label = playersForPlatform().find((option) => option.id === player)?.label ?? player;
+	const option = playersForPlatform().find((entry) => entry.id === player);
+	const label = option?.label ?? player;
 	if (Platform.OS === 'android') {
 		const pkg = player.split('/')[1];
 		try {
-			await IntentLauncher.startActivityAsync('android.intent.action.VIEW', { data: url, type: 'video/*', ...(pkg === 'chooser' ? {} : { packageName: pkg }) });
+			await IntentLauncher.startActivityAsync('android.intent.action.VIEW', { data: url, type: 'video/*', ...(option?.activity ? { packageName: pkg, className: option.activity } : {}) });
 		} catch {
 			throw new Error(`${label} is not installed, or would not open this file. Choose another player in Accounts.`);
 		}

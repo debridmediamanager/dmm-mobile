@@ -28,7 +28,8 @@ describe('external players', () => {
 	it('sends videos to the chosen Android app and everything else to the system', async () => {
 		native.saved = 'android/org.videolan.vlc';
 		await openFileLink(TB, 'Sintel.mkv');
-		expect(IntentLauncher.startActivityAsync).toHaveBeenCalledWith('android.intent.action.VIEW', { data: TB, type: 'video/*', packageName: 'org.videolan.vlc' });
+		// A package alone is ignored by expo-intent-launcher: on the Pixel 6 it showed Android's picker (Photos, VLC).
+		expect(IntentLauncher.startActivityAsync).toHaveBeenCalledWith('android.intent.action.VIEW', { data: TB, type: 'video/*', packageName: 'org.videolan.vlc', className: 'org.videolan.vlc.StartActivity' });
 		await openFileLink(TB, 'Sintel.en.srt');
 		expect(Linking.openURL).toHaveBeenCalledWith(TB);
 	});
