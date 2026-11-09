@@ -38,8 +38,8 @@ sample library of Blender Foundation open movies (CC BY 3.0) streamed from the
 Internet Archive. Changes to it last until the app is closed.
 
 iPhone and iPad
-1. Open the app. On "Sign in", find TorBox and type dmmdemo in its API key field,
-   then tap Connect.
+1. Open the app. On "Sign in", scroll to TorBox, type dmmdemo in its API token
+   field, then tap "Save key".
 2. The Library lists four open movies. Tap "Tears of Steel" to see its files.
 3. Tap the video file to play it; tap a subtitle file to open it in the browser.
 4. Back in the Library, tap the menu (three dots) on a row for its actions, or
@@ -53,7 +53,7 @@ iPhone and iPad
 
 Apple TV
 1. Open the app. On "Sign in", choose "Enter an API key instead".
-2. Under TorBox, select the API key field, type dmmdemo, then Connect.
+2. Under TorBox, select the API token field, type dmmdemo, then "Save key".
 3. Browse the Library with the remote; Select opens an item, and its video plays
    in the player chosen in Settings.
 The QR code on that screen signs a TV in from a phone that is signed in to
@@ -71,7 +71,7 @@ Contact: support@debridmediamanager.com
 - **Any other information** (under 500 characters):
 
 ```text
-No account needed: on Sign in, type dmmdemo as the TorBox API key and tap Connect.
+No account needed: on Sign in, type dmmdemo as the TorBox API token and tap Save key.
 It opens a sample library of open movies (CC BY) that really play. On Android TV,
 choose "Enter an API key instead" first. The app manages the user's own debrid
 cloud storage; it hosts no content and downloads nothing over peer-to-peer itself.
@@ -85,7 +85,7 @@ only (never a real account on a store build under test).
 | # | Step | Expected | iPhone | iPad | Apple TV | Android phone | Android tablet | Android TV |
 |---|---|---|---|---|---|---|---|---|
 | 1 | Fresh install, open | Sign-in screen (TV: QR code and "Enter an API key instead") | | | | | | |
-| 2 | TorBox key `dmmdemo`, Connect | Library with 4 items, Cosmos Laundromat at 62 % | | | | | | |
+| 2 | TorBox API token `dmmdemo`, Save key | Library with 4 items, Cosmos Laundromat at 62 % | | | | | | |
 | 3 | Open Tears of Steel | Detail with 1 video and 3 subtitle files | | | | | | |
 | 4 | Open the video | Plays in the chosen player | | | | | | |
 | 5 | Open Cosmos Laundromat's file | "This demo file is still downloading." | | | | | | |
