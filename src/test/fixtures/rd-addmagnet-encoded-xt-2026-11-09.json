@@ -1,0 +1,9 @@
+{
+ "request": "magnet:?xt=urn%3Abtih%3Add8255ecdc7ca55fb0bbf81323d87062db1f6d1c&dn=Big.Buck.Bunny",
+ "status": 404,
+ "body": {
+  "error": "wrong_parameter",
+  "error_details": "{magnet} is invalid",
+  "error_code": 2
+ }
+}

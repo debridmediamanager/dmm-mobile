@@ -33,17 +33,20 @@ export function parseBtihMagnet(input: string): ParsedMagnet {
 	// Rebuild the query so malformed fragments cannot be sent to a provider,
 	// while preserving a display name and tracker parameters the user supplied.
 	params.delete('xt');
-	const canonical = new URLSearchParams();
-	canonical.append('xt', `urn:btih:${hash.toLowerCase()}`);
-	for (const [key, entry] of params) canonical.append(key, entry);
-	return { hash: hash.toLowerCase(), magnet: `magnet:?${canonical.toString()}` };
+	return { hash: hash.toLowerCase(), magnet: btihMagnet(hash, params) };
 }
+
+/** `xt` stays literal: Real-Debrid refuses `urn%3Abtih%3A` with `wrong_parameter`. */
+const btihMagnet = (hash: string, rest: URLSearchParams): string => {
+	const tail = rest.toString();
+	return `magnet:?xt=urn:btih:${hash.toLowerCase()}${tail ? `&${tail}` : ''}`;
+};
 
 export const magnetForHash = (hash: string, name?: string): string => {
 	if (!isBtih(hash)) throw new Error('No valid BTIH is available for this item.');
-	const params = new URLSearchParams({ xt: `urn:btih:${hash.toLowerCase()}` });
+	const params = new URLSearchParams();
 	if (name?.trim()) params.set('dn', name.trim());
-	return `magnet:?${params.toString()}`;
+	return btihMagnet(hash, params);
 };
 
 export const normalizePercent = (value: unknown): number => {

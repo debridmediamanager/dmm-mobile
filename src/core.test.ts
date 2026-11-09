@@ -25,8 +25,7 @@ describe('magnet and library boundaries', () => {
 	it('accepts a v1 BTIH, preserves useful magnet parameters, and normalizes hash case', () => {
 		const parsed = parseBtihMagnet(`magnet:?dn=Movie&xt=urn:btih:${HASH.toUpperCase()}`);
 		expect(parsed.hash).toBe(HASH);
-		expect(parsed.magnet).toContain('xt=urn%3Abtih%3A' + HASH);
-		expect(parsed.magnet).toContain('dn=Movie');
+		expect(parsed.magnet).toBe(`magnet:?xt=urn:btih:${HASH}&dn=Movie`);
 	});
 
 	it('rejects v2-only, malformed, and non-magnet sources', () => {
@@ -36,7 +35,7 @@ describe('magnet and library boundaries', () => {
 	});
 
 	it('builds a shareable magnet without exposing a provider URL', () => {
-		expect(magnetForHash(HASH, 'A Movie')).toContain('urn%3Abtih%3A' + HASH);
+		expect(magnetForHash(HASH, 'A Movie')).toBe(`magnet:?xt=urn:btih:${HASH}&dn=A+Movie`);
 	});
 
 	it('searches title and filename, filters provider/status, and sorts requested fields', () => {

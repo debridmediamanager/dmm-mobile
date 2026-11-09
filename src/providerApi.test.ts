@@ -12,6 +12,8 @@ import type { LibraryItem } from './model';
 import rdFixture from './test/fixtures/rd-bdmv-single-selection-2026-10-12.json';
 import adFilesFixture from './test/fixtures/adfiles.json';
 import adStatusFixture from './test/fixtures/adstatus.json';
+import rdEncodedXt from './test/fixtures/rd-addmagnet-encoded-xt-2026-11-09.json';
+import { parseBtihMagnet } from './validation';
 
 const jsonResponse = (body: unknown, status = 200, headers: Record<string, string> = {}) =>
 	new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json', ...headers } });
@@ -253,5 +255,19 @@ describe('provider request envelopes', () => {
 			const rows = await listLibrary(provider, 'secret-token');
 			expect(rows.length, provider).toBeGreaterThan(0);
 		}
+	});
+});
+
+describe('adding a magnet', () => {
+	it('sends Real-Debrid an xt it accepts; it refuses the percent-encoded form', async () => {
+		// Real-Debrid answered the encoded xt with this 404 on 2026-11-09 and took the literal one.
+		const fetchMock = vi.fn(async (_url: string, init?: RequestInit) => {
+			const magnet = new URLSearchParams(String(init?.body)).get('magnet') ?? '';
+			return magnet.includes('urn%3Abtih%3A') ? jsonResponse(rdEncodedXt.body, rdEncodedXt.status) : jsonResponse({ id: 'NEWID' }, 201);
+		});
+		vi.stubGlobal('fetch', fetchMock);
+		const typed = 'magnet:?xt=urn:btih:dd8255ecdc7ca55fb0bbf81323d87062db1f6d1c&dn=Big.Buck.Bunny';
+		await expect(addMagnet('rd', 'token', parseBtihMagnet(typed).magnet)).resolves.toBeUndefined();
+		expect(new URLSearchParams(String(fetchMock.mock.calls[0][1]?.body)).get('magnet')).toBe(typed);
 	});
 });
