@@ -58,15 +58,19 @@ sample library of open movies.
 
 ## Screenshots
 
+The App Store sets are marketing slides: a headline over the real screens in device
+frames, rebuilt with `python3 docs/store/marketing/render.py` (HTML rendered by
+headless Chrome at Apple's exact sizes). Edit the copy there and rerun.
+
 `docs/store/screenshots/`: the app's real screens with a sample library of Blender open
 movies (the README's screenshot fixture), status bars at 9:41. No Search screens, which
 would show commercial posters.
 
 | Store slot | Size | Files |
 |---|---|---|
-| App Store iPhone 6.9" | 1320 × 2868 | `ios-iphone-*.png` |
-| App Store iPad 13" | 2064 × 2752 | `ios-ipad-*.png` |
-| App Store Apple TV | 3840 × 2160 | `../screenshots/appletv-*.png` |
+| App Store iPhone 6.9" | 1320 × 2868 | `appstore-iphone-*.png` (5) |
+| App Store iPad 13" | 2064 × 2752 | `appstore-ipad-*.png` (2) |
+| App Store Apple TV | 3840 × 2160 | `appstore-appletv-*.png` (3) |
 | Play phone | 1080 × 2160 | `play-phone-*.png` |
 | Play 10" tablet | 2560 × 1600 | `play-tablet-*.png` |
 | Play Android TV | 1920 × 1080 | `../screenshots/firetv-*.png` |
