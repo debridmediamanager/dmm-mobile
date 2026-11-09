@@ -1,4 +1,4 @@
-# DMM Library for iOS and Android
+# DMM Mobile for iOS and Android
 
 This standalone Expo app manages a user's existing DMM library directly from
 native iOS and Android screens. It talks to each provider from the device; the

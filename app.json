@@ -1,26 +1,37 @@
 {
   "expo": {
-    "name": "DMM Library",
+    "name": "DMM Mobile",
     "slug": "dmm-library",
     "version": "0.1.0",
     "orientation": "portrait",
-		"userInterfaceStyle": "automatic",
-		"scheme": ["dmm-library", "magnet"],
-		"icon": "./assets/icon.png",
-		"ios": {
+    "userInterfaceStyle": "automatic",
+    "scheme": [
+      "dmm-library",
+      "magnet"
+    ],
+    "icon": "./assets/icon.png",
+    "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.debridmediamanager.library"
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#111827",
-        "foregroundImage": "./assets/icon.png"
+        "backgroundColor": "#00A0B0",
+        "foregroundImage": "./assets/adaptive-icon.png"
       },
       "package": "com.debridmediamanager.library"
     },
     "plugins": [
       "expo-secure-store",
-      "expo-status-bar"
+      "expo-status-bar",
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/MaterialCommunityIcons.ttf"
+          ]
+        }
+      ]
     ]
   }
 }

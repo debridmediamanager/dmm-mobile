@@ -19,7 +19,7 @@ const DL_CLIENT_ID = '_guYLz4mr-vjcxSTfZri4w';
 const DL_SCOPES = 'get.account get.post.delete.seedbox get.files get.post.stream';
 /** Real-Debrid and Debrid-Link name the device grant this way, not with the RFC 8628 URN. */
 const DEVICE_GRANT = 'http://oauth.net/grant_type/device/1.0';
-const AD_AGENT = 'DMM Library';
+const AD_AGENT = 'DMM Mobile';
 const AD_POLL_SECONDS = 5;
 const RENEW_MARGIN_MS = 5 * 60_000;
 const REQUEST_TIMEOUT_MS = 20_000;
