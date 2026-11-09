@@ -83,8 +83,8 @@ about 6 s, smooth scrolling, search under a second per keystroke).
   share a hash list, back up, delete duplicates (keep the bigger, smaller,
   newer or older) and merge copies of one hash.
 - **Add** magnets, info hashes (Debrid-Link only when cached), `.torrent` files
-  and, on TorBox, web links. `magnet:` links from other apps open here, with the
-  provider used last.
+  and, on TorBox, web links. `magnet:` links and `.torrent` files opened from
+  other apps (Open with, a browser download) land in Add, on the provider used last.
 - **Backup and restore** use DMM web's `.dmm.json`, so either side restores the
   other's; TorBox and AllDebrid can restore only what is cached.
 - **Item detail**: files, open a file in another app, share its links, reinsert
