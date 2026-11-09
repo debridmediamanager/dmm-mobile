@@ -37,7 +37,9 @@ export const PLAYERS: Record<'android' | 'ios', PlayerOption[]> = {
 	],
 };
 
-export const playersForPlatform = (): PlayerOption[] => (Platform.OS === 'ios' ? PLAYERS.ios : PLAYERS.android);
+// Apple TV has no browser, so a video goes to a player app there.
+export const playersForPlatform = (): PlayerOption[] =>
+	Platform.OS === 'ios' ? (Platform.isTV ? PLAYERS.ios.filter((player) => player.id !== 'browser') : PLAYERS.ios) : PLAYERS.android;
 
 /** The iOS link a player answers, as DMM web's buildPlayerIntent builds it. */
 export function iosPlayerUrl(playerId: string, url: string): string {
@@ -51,7 +53,7 @@ export function iosPlayerUrl(playerId: string, url: string): string {
 
 export async function loadPlayer(): Promise<string> {
 	const saved = (await loadSettings()).player;
-	return saved && playersForPlatform().some((player) => player.id === saved) ? saved : 'browser';
+	return saved && playersForPlatform().some((player) => player.id === saved) ? saved : playersForPlatform()[0].id;
 }
 
 export const savePlayer = (id: string): Promise<void> => saveSetting('player', id);

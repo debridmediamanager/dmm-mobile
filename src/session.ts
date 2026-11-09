@@ -23,7 +23,7 @@ import {
 import { needsRenewal, parseCredential, renewCredential, serializeCredential, type StoredCredential } from './auth';
 import type { CredentialStorage } from './storage';
 import type { AddEntry } from './share';
-import { browserStateApi, credentialsFromState, identitiesFor, mergeState, settingsFromState, stateFromApp, type BrowserStateApi } from './sync';
+import { browserStateApi, credentialsFromState, identitiesFor, mergeState, settingsFromState, stateFromApp, type BrowserState, type BrowserStateApi } from './sync';
 import { loadSettings, saveSetting, type SettingName } from './settings';
 import { runBulk, type BulkResult } from './core';
 
@@ -278,34 +278,41 @@ export class LibrarySession {
 		if (!identity) return;
 		try {
 			const state = await this.sync.restore(identity);
-			if (state) {
-				const restored = credentialsFromState(state);
-				for (const other of Object.keys(restored) as ProviderId[]) this.removedLogins.delete(other);
-				await Promise.all(
-					(Object.keys(restored) as ProviderId[])
-						// What DMM holds now wins over a removal made here earlier: another device saved it again.
-						.filter((other) => !this.tokens[other])
-						.map(async (other) => {
-							try {
-								let login = restored[other]!;
-								if (needsRenewal(login) || !login.token) login = await this.api.renewCredential(other, login);
-								await this.saveLogin(other, login);
-								await this.refreshProvider(other);
-							} catch {
-								// A saved login that no longer works is left for the user to sign in again.
-							}
-						})
-				);
-				const local = await loadSettings();
-				const remote = settingsFromState(state);
-				for (const name of Object.keys(remote) as SettingName[]) {
-					if (!local[name]) await saveSetting(name, remote[name]!);
-				}
-			}
+			if (state) await this.adoptState(state);
 		} catch {
 			// DMM unreachable or the login refused there: nothing to bring back this time.
 		}
 		this.schedulePush();
+	}
+
+	/**
+	 * Connects the logins a DMM web state holds that this device lacks and adopts the settings it has not set:
+	 * a restore after a sign-in, or a TV linked from a phone (DMM's /tv pairing). Failing logins are skipped.
+	 */
+	async adoptState(state: BrowserState): Promise<ProviderId[]> {
+		const restored = credentialsFromState(state);
+		for (const other of Object.keys(restored) as ProviderId[]) this.removedLogins.delete(other);
+		await Promise.all(
+			(Object.keys(restored) as ProviderId[])
+				// What DMM holds now wins over a removal made here earlier: another device saved it again.
+				.filter((other) => !this.tokens[other])
+				.map(async (other) => {
+					try {
+						let login = restored[other]!;
+						if (needsRenewal(login) || !login.token) login = await this.api.renewCredential(other, login);
+						await this.saveLogin(other, login);
+						await this.refreshProvider(other);
+					} catch {
+						// A saved login that no longer works is left for the user to sign in again.
+					}
+				})
+		);
+		const local = await loadSettings();
+		const remote = settingsFromState(state);
+		for (const name of Object.keys(remote) as SettingName[]) {
+			if (!local[name]) await saveSetting(name, remote[name]!);
+		}
+		return (Object.keys(restored) as ProviderId[]).filter((provider) => Boolean(this.tokens[provider]));
 	}
 
 	/** Saves this device's logins and settings behind every login it holds, a moment after the last change. */

@@ -5,11 +5,12 @@ import { PROVIDERS, PROVIDER_META, type ProviderId } from '../model';
 import { playersForPlatform } from '../player';
 import { loadSettings, onSettingsChange, saveSetting, type AppSettings, type SettingName } from '../settings';
 import { useAppTheme } from '../theme';
-import { ActionSheet, DropdownChip, Screen, styles, type SheetAction } from '../ui';
+import { ActionSheet, DropdownChip, Screen, styles, type SheetAction, useLayout } from '../ui';
 
 /** The DMM web Settings that apply to the app, under the same keys so they follow you across devices. */
 export function SettingsScreen() {
 	const theme = useAppTheme();
+	const { wide } = useLayout();
 	const { snapshot } = useApp();
 	const [settings, setSettings] = useState<AppSettings>({});
 	const [picking, setPicking] = useState<SettingName | null>(null);
@@ -43,7 +44,7 @@ export function SettingsScreen() {
 
 	return (
 		<Screen>
-			<ScrollView contentContainerStyle={styles.content}>
+			<ScrollView contentContainerStyle={[styles.content, wide && styles.contentWide]}>
 				<Text style={[styles.heading, { color: theme.text }]}>Settings</Text>
 				{row('Open videos with', 'Used when you open a video file. Subtitles and other files open in the browser. The same list as DMM web.', <DropdownChip label={player.label} active={player.id !== 'browser'} onPress={() => setPicking('player')} />)}
 				{row('Add to', 'The provider the Add screen and magnet links from other apps start on.', <DropdownChip label={addProvider ? PROVIDER_META[addProvider].label : 'First connected'} active={Boolean(addProvider)} onPress={() => setPicking('addProvider')} />)}

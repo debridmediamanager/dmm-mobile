@@ -1,7 +1,8 @@
-# DMM Mobile for iOS and Android
+# DMM Mobile for phones, tablets and TVs
 
 This standalone Expo app manages a user's existing DMM library directly from
-native iOS and Android screens. It talks to each provider from the device; the
+native screens on iPhone, iPad, Apple TV, Android phones and tablets, and
+Android TV / Fire TV. It talks to each provider from the device; the
 DMM web app and its server-side session are not required.
 
 ## Local development
@@ -27,12 +28,20 @@ npm run ios
 npm run android
 ```
 
-A release APK that runs without Metro (Java 17 and the Android SDK required):
+The app is built on `react-native-tvos`, React Native's TV fork, which also
+builds phones. One Android APK serves phones, tablets and TVs; prebuild it with
+`EXPO_TV=1` so the manifest gets the TV launcher entry and banner (Java 17 and
+the Android SDK required). Fire TV is 32-bit, hence `armeabi-v7a`:
 
 ```sh
-npx expo prebuild -p android
-cd android && ./gradlew :app:assembleRelease -PreactNativeArchitectures=arm64-v8a
+EXPO_TV=1 npx expo prebuild -p android
+cd android && ./gradlew :app:assembleRelease -PreactNativeArchitectures=arm64-v8a,armeabi-v7a
 ```
+
+Apple builds one project per platform: `npx expo prebuild -p ios` for iPhone
+and iPad, `EXPO_TV=1 npx expo prebuild -p ios` for Apple TV. `package.json`
+overrides `react-native` for every package: the fork's own list component asks
+for stock React Native, and two copies in one bundle leave the app unable to start.
 
 `npm run export:web` is a browser preview of the same screens. It is useful for
 layout checks, but it does not prove native device behavior; browser previews do
@@ -42,6 +51,11 @@ does not use a WebView, paid EAS builds, signing, or store publication.
 ## Signing in
 
 The app opens on a sign-in screen until at least one provider is connected.
+
+On a TV the sign-in is a QR code, as for DMM's Kodi addon: scan it with a
+phone signed in to DMM (or open debridmediamanager.com/tv and type the code),
+approve, and that browser's debrid logins and settings come to the TV. Phones
+and tablets sign in per provider:
 
 | Provider | Sign-in | Paste a key |
 |---|---|---|
@@ -111,6 +125,17 @@ Settings (video player, the provider adds start on) use DMM web's
 Not in the app, because they need DMM's servers: casting to Stremio, sending
 to Real-Debrid through DMM's uploader, title identification and the media
 info panel.
+
+## Tablets and TVs
+
+On a tablet or TV the tabs become a rail on the left and sheets float in the
+middle. On a TV everything is reached with the remote: the focused control is
+outlined, Select opens a text field's keyboard (Android TV otherwise keeps the
+remote inside a focused field), and the dark theme is always on. Apple TV draws
+the Android TV layout at twice the size, so both look the same. What a TV has
+no way to do is left out: sharing, file pickers and opening links in a browser.
+On Apple TV videos go to a player app chosen in Settings (Infuse, VLC and the
+rest of DMM web's list).
 
 ## Screenshots
 

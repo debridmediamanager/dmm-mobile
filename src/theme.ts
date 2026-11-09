@@ -1,4 +1,4 @@
-import { useColorScheme } from 'react-native';
+import { Platform, useColorScheme } from 'react-native';
 
 export interface AppTheme {
 	dark: boolean;
@@ -11,10 +11,14 @@ export interface AppTheme {
 	onAccent: string;
 	danger: string;
 	input: string;
+	/** The outline a TV remote's focus draws around a control. */
+	focus: string;
 }
 
 export const useAppTheme = (): AppTheme => {
-	const dark = useColorScheme() === 'dark';
+	const scheme = useColorScheme();
+	// TVs get the dark theme: a bright page lights up a dark room, and TV home screens are dark.
+	const dark = Platform.isTV || scheme === 'dark';
 	return dark
 		? {
 				dark: true,
@@ -27,6 +31,7 @@ export const useAppTheme = (): AppTheme => {
 				onAccent: '#0b1020',
 				danger: '#ff8a8a',
 				input: '#10182a',
+				focus: '#ffffff',
 			}
 		: {
 				dark: false,
@@ -39,5 +44,6 @@ export const useAppTheme = (): AppTheme => {
 				onAccent: '#ffffff',
 				danger: '#b42318',
 				input: '#f8fafc',
+				focus: '#111827',
 			};
 };

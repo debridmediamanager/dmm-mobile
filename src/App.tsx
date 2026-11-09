@@ -10,7 +10,8 @@ import { DetailScreen } from './screens/DetailScreen';
 import { LibraryScreen } from './screens/LibraryScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { useAppTheme } from './theme';
-import { Icon, type IconName } from './ui';
+import { Platform } from 'react-native';
+import { Icon, Pressable, TvScale, useLayout, type IconName } from './ui';
 import type { LibrarySession } from './session';
 import { PROVIDERS } from './model';
 
@@ -24,14 +25,21 @@ const TAB_ICONS: Record<keyof MainTabParamList, [IconName, IconName]> = {
 
 function MainTabs() {
 	const theme = useAppTheme();
+	const { wide } = useLayout();
 	return (
 		<Tabs.Navigator
 			screenOptions={({ route }) => ({
 				headerShown: false,
+				// Tablets and TVs get a rail on the left: a remote reaches it with one press left from anywhere, not past the whole list.
+				tabBarPosition: wide ? 'left' : 'bottom',
+				tabBarVariant: wide ? 'material' : 'uikit',
+				tabBarLabelPosition: wide ? 'below-icon' : undefined,
+				// The app's button: an inset focus outline for remotes instead of Android's full-rail ripple.
+				tabBarButton: ({ href: _href, android_ripple: _ripple, hoverEffect: _hover, pressOpacity: _opacity, ref: _ref, ...props }) => <Pressable {...(props as React.ComponentProps<typeof Pressable>)} />,
 				tabBarIcon: ({ focused, color, size }) => <Icon name={TAB_ICONS[route.name][focused ? 0 : 1]} size={size} color={color} />,
 				tabBarActiveTintColor: theme.accent,
 				tabBarInactiveTintColor: theme.muted,
-				tabBarStyle: { backgroundColor: theme.surface, borderTopColor: theme.border },
+				tabBarStyle: { backgroundColor: theme.surface, borderTopColor: theme.border, borderRightColor: theme.border },
 				freezeOnBlur: true,
 			})}
 		>
@@ -49,6 +57,7 @@ export function AppNavigation() {
 	const needsSignIn = ready && !startupError && !PROVIDERS.some((provider) => snapshot.connected[provider]);
 	const navigationTheme = theme.dark ? NavigationDarkTheme : NavigationDefaultTheme;
 	return (
+		<TvScale>
 		<NavigationContainer
 			theme={{
 				...navigationTheme,
@@ -61,12 +70,14 @@ export function AppNavigation() {
 				) : (
 					<>
 						<Stack.Screen name="Main" component={MainTabs} options={{ headerShown: false }} />
-						<Stack.Screen name="Detail" component={DetailScreen} options={{ title: 'Library item' }} />
+						{/* TVs go back with the remote; the native header would also be drawn twice its size by the Apple TV scale. */}
+						<Stack.Screen name="Detail" component={DetailScreen} options={{ title: 'Library item', headerShown: !Platform.isTV }} />
 					</>
 				)}
 			</Stack.Navigator>
 			<StatusBar style={theme.dark ? 'light' : 'dark'} />
 		</NavigationContainer>
+		</TvScale>
 	);
 }
 

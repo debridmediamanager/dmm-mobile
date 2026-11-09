@@ -8,16 +8,13 @@ import {
 	Linking,
 	Modal,
 	Platform,
-	Pressable,
 	RefreshControl,
 	ScrollView,
 	Share,
 	Switch,
 	Text,
-	TextInput,
 	View,
 } from 'react-native';
-import * as DocumentPicker from 'expo-document-picker';
 import { File, Paths } from 'expo-file-system';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
@@ -49,7 +46,7 @@ import { magnetForHash } from '../validation';
 import type { RootStackParamList } from '../navigation';
 import { useAppTheme } from '../theme';
 import { confirmNativeAction } from '../confirmAction';
-import { ActionSheet, DropdownChip, EmptyState, ErrorBanner, FilterButton, Icon, IconButton, LibraryRow, ROW_HEIGHT, Screen, SearchField, styles, type SheetAction } from '../ui';
+import { ActionSheet, DropdownChip, EmptyState, ErrorBanner, FilterButton, Icon, IconButton, LibraryRow, Pressable, ROW_HEIGHT, Screen, SearchField, styles, TextField, TvScale, useSheetStyles, type SheetAction } from '../ui';
 
 type Navigation = NativeStackNavigationProp<RootStackParamList, 'Main'>;
 
@@ -245,9 +242,12 @@ export function LibraryScreen({ navigation }: { navigation: Navigation }) {
 		{ label: `Select shown (${items.length})`, onPress: () => setSelected(new Set([...selected, ...items.map((item) => item.id)])) },
 		...(selected.size > 0 ? [{ label: 'Unselect all', onPress: () => setSelected(new Set()) }] : []),
 		{ label: `Reinsert ${targetLabel}`, onPress: () => confirmBulk('reinsert', targets) },
-		{ label: `Share hash list of ${targetLabel}`, onPress: () => shareHashlist(targets) },
-		{ label: `Back up ${targetLabel}`, onPress: () => backup(targets) },
-		{ label: 'Restore a backup', onPress: () => setRestoring(true) },
+		// A TV has no share sheet or file picker.
+		...(Platform.isTV ? [] : [
+			{ label: `Share hash list of ${targetLabel}`, onPress: () => shareHashlist(targets) },
+			{ label: `Back up ${targetLabel}`, onPress: () => backup(targets) },
+			{ label: 'Restore a backup', onPress: () => setRestoring(true) },
+		]),
 		...(query.view === 'sametitle' || query.titleKey
 			? (['smaller', 'bigger', 'older', 'newer'] as DuplicateRule[]).map((rule) => ({ label: `Delete ${rule} duplicates`, onPress: () => deleteDuplicates(rule), destructive: true }))
 			: []),
@@ -269,8 +269,10 @@ export function LibraryScreen({ navigation }: { navigation: Navigation }) {
 		{ label: selected.has(item.id) ? 'Unselect' : 'Select', onPress: () => toggle(item) },
 		...(item.hash && (grouping.hashCounts.get(hashKeyOf(item)) ?? 0) > 1 ? [{ label: `Show the ${grouping.hashCounts.get(hashKeyOf(item))} with this hash`, onPress: () => groupRow(item, 'hash') }] : []),
 		...((grouping.titleCounts.get(titleKeyOf(item)) ?? 0) > 1 ? [{ label: `Show the ${grouping.titleCounts.get(titleKeyOf(item))} with this title`, onPress: () => groupRow(item, 'title') }] : []),
-		{ label: 'Share magnet', onPress: () => shareMagnet(item) },
-		{ label: 'Share hash list link', onPress: () => shareHashlist([item]) },
+		...(Platform.isTV ? [] : [
+			{ label: 'Share magnet', onPress: () => shareMagnet(item) },
+			{ label: 'Share hash list link', onPress: () => shareHashlist([item]) },
+		]),
 		...(item.reinsertable ? [{ label: 'Reinsert', onPress: () => confirmNativeAction('Reinsert?', item.title, () => void reinsert(item).catch((error) => Alert.alert('Reinsert failed', error instanceof Error ? error.message : String(error))), 'Reinsert') }] : []),
 		{ label: 'Delete', destructive: true, onPress: () => confirmNativeAction('Delete?', `Remove “${item.title}” from ${PROVIDER_META[item.provider].label}?`, () => void remove(item.provider, item.id).catch((error) => Alert.alert('Delete failed', error instanceof Error ? error.message : String(error))), 'Delete') },
 	];
@@ -352,6 +354,9 @@ export function LibraryScreen({ navigation }: { navigation: Navigation }) {
 	);
 }
 
+/** Loaded on use: Apple TV has no document picker, and the module throws when imported there. */
+const pickerModule = () => import('expo-document-picker');
+
 /**
  * Another app's content:// file (Android "Open with"), copied into the cache: the upload reads it
  * with expo/fetch, which takes file:// only. Picker and iOS Inbox files are file:// already.
@@ -380,6 +385,7 @@ function useAddProvider(connectedProviders: ProviderId[]): [ProviderId | null, (
 
 function AddModal({ initialText, initialFile, connectedProviders, onClose }: { initialText: string; initialFile?: PickedFile; connectedProviders: ProviderId[]; onClose: () => void }) {
 	const theme = useAppTheme();
+	const sheetStyles = useSheetStyles();
 	const { addMany, addFile } = useApp();
 	const [provider, setProvider] = useAddProvider(connectedProviders);
 	const [text, setText] = useState(initialText);
@@ -414,7 +420,7 @@ function AddModal({ initialText, initialFile, connectedProviders, onClose }: { i
 	const pickTorrent = async () => {
 		setError('');
 		if (!provider) return;
-		const picked = await DocumentPicker.getDocumentAsync({ type: ['application/x-bittorrent', 'application/octet-stream', '*/*'], multiple: true, copyToCacheDirectory: true });
+		const picked = await (await pickerModule()).getDocumentAsync({ type: ['application/x-bittorrent', 'application/octet-stream', '*/*'], multiple: true, copyToCacheDirectory: true });
 		if (!picked.canceled) await upload(picked.assets);
 	};
 
@@ -440,8 +446,9 @@ function AddModal({ initialText, initialFile, connectedProviders, onClose }: { i
 
 	return (
 		<Modal visible animationType="slide" transparent onRequestClose={onClose}>
-			<KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.modalBackdrop}>
-				<ScrollView keyboardShouldPersistTaps="handled" style={[styles.modalSheet, { backgroundColor: theme.surface, maxHeight: '90%', width: '100%' }]} contentContainerStyle={{ gap: 12 }}>
+			<TvScale>
+			<KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={sheetStyles.backdrop}>
+				<ScrollView keyboardShouldPersistTaps="handled" style={[sheetStyles.sheet, { backgroundColor: theme.surface, maxHeight: '90%', width: '100%' }]} contentContainerStyle={{ gap: 12 }}>
 					<View style={styles.rowBetween}><Text style={[styles.modalTitle, { color: theme.text }]}>Add to library</Text><Pressable accessibilityRole="button" accessibilityLabel="Close add" onPress={onClose} hitSlop={10}><Icon name="close" size={24} color={theme.muted} /></Pressable></View>
 					<View style={styles.modalButtonRow}>{connectedProviders.map((id) => <FilterButton key={id} label={PROVIDER_META[id].label} active={provider === id} onPress={() => setProvider(id)} />)}</View>
 					{initialFile ? (
@@ -450,22 +457,24 @@ function AddModal({ initialText, initialFile, connectedProviders, onClose }: { i
 							<Text numberOfLines={2} style={{ flex: 1, color: theme.text, fontSize: 15 }}>{initialFile.name}</Text>
 						</View>
 					) : <>
-					<TextInput accessibilityLabel="Magnets, hashes or links" value={text} onChangeText={setText} placeholder={'Magnets or info hashes, one per line\n(TorBox also takes web links)'} placeholderTextColor={theme.muted} autoCapitalize="none" autoCorrect={false} multiline style={[styles.input, { backgroundColor: theme.input, borderColor: theme.border, color: theme.text, minHeight: 110, textAlignVertical: 'top' }]} />
+					<TextField accessibilityLabel="Magnets, hashes or links" value={text} onChangeText={setText} placeholder={'Magnets or info hashes, one per line\n(TorBox also takes web links)'} placeholderTextColor={theme.muted} autoCapitalize="none" autoCorrect={false} multiline style={[styles.input, { backgroundColor: theme.input, borderColor: theme.border, color: theme.text, minHeight: 110, textAlignVertical: 'top' }]} />
 					{provider === 'dl' ? <Text style={[styles.subheading, { color: theme.muted }]}>Debrid-Link adds a bare hash only when it is cached; paste a magnet to download it.</Text> : null}
 					</>}
 					{error ? <Text style={[styles.inlineError, { color: theme.danger }]}>{error}</Text> : null}
 					{initialFile ? <Pressable accessibilityRole="button" accessibilityLabel="Add torrent file" onPress={() => void upload([initialFile])} disabled={Boolean(busy) || !provider} style={[styles.primaryButton, { backgroundColor: theme.accent, opacity: busy || !provider ? 0.55 : 1 }]}><Text style={[styles.primaryButtonText, { color: theme.onAccent }]}>{busy || 'Add torrent file'}</Text></Pressable> : (
 					<Pressable accessibilityRole="button" accessibilityLabel="Submit magnets" onPress={() => void submit()} disabled={Boolean(busy) || !text.trim()} style={[styles.primaryButton, { backgroundColor: theme.accent, opacity: busy || !text.trim() ? 0.55 : 1 }]}>{busy ? <Text style={[styles.primaryButtonText, { color: theme.onAccent }]}>{busy}</Text> : <Text style={[styles.primaryButtonText, { color: theme.onAccent }]}>Add</Text>}</Pressable>
 					)}
-					<Pressable accessibilityRole="button" accessibilityLabel="Upload torrent files" onPress={() => void pickTorrent()} disabled={Boolean(busy) || !provider} style={[styles.outlineButton, { borderColor: theme.accent, alignItems: 'center', minHeight: 44, opacity: busy ? 0.55 : 1 }]}><Text style={[styles.outlineButtonText, { color: theme.accent }]}>Upload .torrent files</Text></Pressable>
+					{Platform.isTV ? null : <Pressable accessibilityRole="button" accessibilityLabel="Upload torrent files" onPress={() => void pickTorrent()} disabled={Boolean(busy) || !provider} style={[styles.outlineButton, { borderColor: theme.accent, alignItems: 'center', minHeight: 44, opacity: busy ? 0.55 : 1 }]}><Text style={[styles.outlineButtonText, { color: theme.accent }]}>Upload .torrent files</Text></Pressable>}
 				</ScrollView>
 			</KeyboardAvoidingView>
+			</TvScale>
 		</Modal>
 	);
 }
 
 function RestoreModal({ connectedProviders, onClose }: { connectedProviders: ProviderId[]; onClose: () => void }) {
 	const theme = useAppTheme();
+	const sheetStyles = useSheetStyles();
 	const { snapshot, addMany } = useApp();
 	const [provider, setProvider] = useState<ProviderId | null>(connectedProviders[0] ?? null);
 	const [hashes, setHashes] = useState<string[] | null>(null);
@@ -477,7 +486,7 @@ function RestoreModal({ connectedProviders, onClose }: { connectedProviders: Pro
 
 	const pick = async () => {
 		setError('');
-		const picked = await DocumentPicker.getDocumentAsync({ type: ['application/json', '*/*'], copyToCacheDirectory: true });
+		const picked = await (await pickerModule()).getDocumentAsync({ type: ['application/json', '*/*'], copyToCacheDirectory: true });
 		if (picked.canceled) return;
 		try {
 			setHashes(parseBackup(await (await fetch(picked.assets[0].uri)).text()));
@@ -500,8 +509,9 @@ function RestoreModal({ connectedProviders, onClose }: { connectedProviders: Pro
 
 	return (
 		<Modal visible animationType="slide" transparent onRequestClose={onClose}>
-			<View style={styles.modalBackdrop}>
-				<ScrollView style={[styles.modalSheet, { backgroundColor: theme.surface, maxHeight: '90%' }]} contentContainerStyle={{ gap: 12 }}>
+			<TvScale>
+			<View style={sheetStyles.backdrop}>
+				<ScrollView style={[sheetStyles.sheet, { backgroundColor: theme.surface, maxHeight: '90%' }]} contentContainerStyle={{ gap: 12 }}>
 					<View style={styles.rowBetween}><Text style={[styles.modalTitle, { color: theme.text }]}>Restore a backup</Text><Pressable accessibilityRole="button" accessibilityLabel="Close restore" onPress={onClose} hitSlop={10}><Icon name="close" size={24} color={theme.muted} /></Pressable></View>
 					<Text style={[styles.subheading, { color: theme.muted }]}>A .dmm.json from DMM web or this app. Hashes already on the provider are skipped.</Text>
 					<View style={styles.modalButtonRow}>{connectedProviders.map((id) => <FilterButton key={id} label={PROVIDER_META[id].label} active={provider === id} onPress={() => setProvider(id)} />)}</View>
@@ -514,6 +524,7 @@ function RestoreModal({ connectedProviders, onClose }: { connectedProviders: Pro
 					<Pressable accessibilityRole="button" accessibilityLabel="Restore" onPress={() => void restore()} disabled={Boolean(busy) || fresh.length === 0} style={[styles.primaryButton, { backgroundColor: theme.accent, opacity: busy || fresh.length === 0 ? 0.55 : 1 }]}><Text style={[styles.primaryButtonText, { color: theme.onAccent }]}>{busy || `Restore ${fresh.length}`}</Text></Pressable>
 				</ScrollView>
 			</View>
+			</TvScale>
 		</Modal>
 	);
 }

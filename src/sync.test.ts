@@ -146,6 +146,21 @@ describe('remember across devices in the session', () => {
 		}
 	});
 
+	it('connects a TV from the state a phone hands it through DMM /tv, with no login on the TV first', async () => {
+		vi.useFakeTimers();
+		try {
+			const sync: BrowserStateApi = { restore: vi.fn(async () => null), save: vi.fn(async () => undefined) };
+			const session = new LibrarySession(storage(), api(), sync);
+			const linked = await session.adoptState({ ...WEB_STATE });
+			expect(linked.sort()).toEqual(['ad', 'dl', 'rd']);
+			const connected = session.snapshot().connected;
+			expect([connected.rd, connected.ad, connected.dl, connected.tb]).toEqual([true, true, true, false]);
+			expect(await loadSettings()).toEqual({ player: 'android/org.videolan.vlc', addProvider: 'ad' });
+		} finally {
+			vi.useRealTimers();
+		}
+	});
+
 	it('brings back a provider removed earlier on this phone once another device saved it again', async () => {
 		// 2026-11-09 on the Pixel 6: AllDebrid removed in the app, saved again by DMM web, then a fresh
 		// Real-Debrid sign-in restored nothing and the next save deleted AllDebrid from DMM.

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import {
 	ActivityIndicator,
 	Alert,
-	Pressable,
+	Platform,
 	ScrollView,
 	Share,
 	Text,
@@ -18,13 +18,16 @@ import { PROVIDER_META, statusLabel } from '../model';
 import { isSafeExternalUrl, magnetForHash } from '../validation';
 import type { RootStackParamList } from '../navigation';
 import { useAppTheme } from '../theme';
-import { EmptyState, ErrorBanner, FilterButton, Icon, ProviderBadge, Screen, styles, type IconName } from '../ui';
+import { EmptyState, ErrorBanner, FilterButton, Icon, Pressable, ProviderBadge, Screen, styles, useLayout, type IconName } from '../ui';
 import { confirmNativeAction } from '../confirmAction';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Detail'>;
 
 export function DetailScreen({ route, navigation }: Props) {
 	const theme = useAppTheme();
+	const { wide } = useLayout();
+	// TVs hide the header (the remote goes back), so the screen keeps the top safe area itself.
+	const edges: Array<'top' | 'bottom'> = Platform.isTV ? ['top', 'bottom'] : ['bottom'];
 	const { snapshot, detail, openFile, remove, selectFiles, reinsert } = useApp();
 	const original = snapshot.items.find((entry) => entry.id === route.params.itemId);
 	const connectionKey = original ? `${original.provider}:${original.id}` : '';
@@ -96,7 +99,8 @@ export function DetailScreen({ route, navigation }: Props) {
 			if (!isSafeExternalUrl(url)) throw new Error('The provider returned an unsafe file URL.');
 			await openFileLink(url, file.name);
 		} catch (caught) {
-			if (mountedRef.current) setError(caught instanceof Error ? caught.message : 'Could not open this file.');
+			// An alert, not the banner: the banner sits above the file list, off screen once it is scrolled (always, on a TV).
+			if (mountedRef.current) Alert.alert('Could not open the file', caught instanceof Error ? caught.message : 'Could not open this file.');
 		} finally {
 			if (mountedRef.current) setAction('');
 		}
@@ -191,20 +195,21 @@ export function DetailScreen({ route, navigation }: Props) {
 	const canSelect = item?.provider === 'rd';
 	const selectionChanged = item ? [...selectedIds].sort().join(',') !== item.files.filter((file) => file.selected).map((file) => file.id).sort().join(',') : false;
 
-	if (!item) return <Screen edges={['bottom']}><EmptyState title="Item removed" detail="Return to the library to see the latest provider state." /></Screen>;
-	if (loading && !item.filesLoaded) return <Screen edges={['bottom']}><View style={styles.empty}><ActivityIndicator color={theme.accent} /><Text style={[styles.emptyDetail, { color: theme.muted }]}>Loading provider details…</Text></View></Screen>;
+	if (!item) return <Screen edges={edges}><EmptyState title="Item removed" detail="Return to the library to see the latest provider state." /></Screen>;
+	if (loading && !item.filesLoaded) return <Screen edges={edges}><View style={styles.empty}><ActivityIndicator color={theme.accent} /><Text style={[styles.emptyDetail, { color: theme.muted }]}>Loading provider details…</Text></View></Screen>;
 
 	return (
-		<Screen edges={['bottom']}>
-			<ScrollView contentContainerStyle={styles.content}>
+		<Screen edges={edges}>
+			<ScrollView contentContainerStyle={[styles.content, wide && styles.contentWide]}>
 				<ProviderBadge provider={item.provider} />
 				<Text style={[styles.detailTitle, { color: theme.text }]}>{item.title}</Text>
 				<Text style={[styles.detailMeta, { color: theme.muted }]}>{statusLabel(item.status)} · {Math.round(item.progress)}% · {formatBytes(item.size)}</Text>
 				<Text style={[styles.detailMeta, { color: theme.muted }]}>{item.serviceStatus}</Text>
 				<View style={[styles.row, { marginTop: 16, flexWrap: 'wrap' }]}>
-					{actionButton('share-variant', 'Magnet', 'Share item magnet', shareMagnet)}
-					{actionButton('format-list-bulleted', 'Hash list', 'Share hash list link', shareHashlist)}
-					{item.files.length > 0 ? actionButton('link-variant', action.startsWith('links:') ? `Links ${action.slice(6)}…` : 'Links', 'Share all file links', () => void shareAllLinks(), Boolean(action)) : null}
+					{/* A TV has no share sheet. */}
+					{Platform.isTV ? null : actionButton('share-variant', 'Magnet', 'Share item magnet', shareMagnet)}
+					{Platform.isTV ? null : actionButton('format-list-bulleted', 'Hash list', 'Share hash list link', shareHashlist)}
+					{item.files.length > 0 && !Platform.isTV ? actionButton('link-variant', action.startsWith('links:') ? `Links ${action.slice(6)}…` : 'Links', 'Share all file links', () => void shareAllLinks(), Boolean(action)) : null}
 					{item.reinsertable ? actionButton('restore', action === 'reinsert' ? 'Reinserting…' : 'Reinsert', 'Reinsert item', confirmReinsert, Boolean(action)) : null}
 					{actionButton('delete-outline', action === 'delete' ? 'Deleting…' : 'Delete', 'Delete item', confirmDelete, action === 'delete', theme.danger)}
 				</View>

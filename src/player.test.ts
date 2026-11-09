@@ -1,19 +1,20 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const native = vi.hoisted(() => ({ os: 'android', saved: null as string | null }));
-vi.mock('react-native', () => ({ Platform: { get OS() { return native.os; } }, Linking: { openURL: vi.fn(async () => undefined) } }));
+const native = vi.hoisted(() => ({ os: 'android', tv: false, saved: null as string | null }));
+vi.mock('react-native', () => ({ Platform: { get OS() { return native.os; }, get isTV() { return native.tv; } }, Linking: { openURL: vi.fn(async () => undefined) } }));
 vi.mock('expo-secure-store', () => ({ getItemAsync: vi.fn(async () => native.saved), setItemAsync: vi.fn(async () => undefined) }));
 vi.mock('expo-intent-launcher', () => ({ startActivityAsync: vi.fn(async () => ({})) }));
 
 import { Linking } from 'react-native';
 import * as IntentLauncher from 'expo-intent-launcher';
-import { iosPlayerUrl, openFileLink } from './player';
+import { iosPlayerUrl, loadPlayer, openFileLink, playersForPlatform } from './player';
 import { _resetSettingsCache } from './settings';
 
 const TB = 'https://store-024.weur.tb-cdn.st/zip/1?token=abc&x=1';
 
 beforeEach(() => {
 	native.os = 'android';
+	native.tv = false;
 	native.saved = null;
 	_resetSettingsCache();
 	vi.mocked(Linking.openURL).mockClear();
@@ -57,5 +58,18 @@ describe('external players', () => {
 		await openFileLink(TB, 'a.mkv');
 		expect(Linking.openURL).toHaveBeenCalledWith(TB);
 		expect(IntentLauncher.startActivityAsync).not.toHaveBeenCalled();
+	});
+});
+
+describe('players on Apple TV', () => {
+	it('offers no browser, which tvOS lacks, and starts on a player app', async () => {
+		native.os = 'ios';
+		native.tv = true;
+		expect(playersForPlatform().map((player) => player.id)).not.toContain('browser');
+		expect(await loadPlayer()).toBe('ios2/open-vidhub');
+		native.saved = 'browser';
+		_resetSettingsCache();
+		// A browser choice synced from an iPhone falls back to a player here.
+		expect(await loadPlayer()).toBe('ios2/open-vidhub');
 	});
 });
