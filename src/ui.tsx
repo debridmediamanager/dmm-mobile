@@ -142,7 +142,7 @@ export function SearchField({ value, onChangeText, placeholder, accessibilityLab
 		<View style={[styles.searchBox, { backgroundColor: theme.input, borderColor: focused ? theme.focus : theme.border }, focused && { borderWidth: 2 }]}>
 			<Icon name="magnify" size={20} color={theme.muted} />
 			{tv.button ? (
-				<Pressable accessibilityRole="button" accessibilityLabel={accessibilityLabel} {...tv.button} style={{ flex: 1, alignSelf: 'stretch', justifyContent: 'center', borderRadius: 6 }}>
+				<Pressable accessibilityRole="button" accessibilityLabel={accessibilityLabel} {...tv.button} style={{ flex: 1, borderRadius: 6 }}>
 				<TextInput
 					accessibilityLabel={accessibilityLabel}
 					value={value}
@@ -156,7 +156,8 @@ export function SearchField({ value, onChangeText, placeholder, accessibilityLab
 					{...tv.input}
 					onFocus={() => setFocused(true)}
 					onBlur={() => { setFocused(false); tv.ended(); }}
-					style={{ flex: 1, paddingVertical: 8, fontSize: 15, color: theme.text }}
+					// Android TV's button wrapper left the text sized by padding alone and clipped its top: a fixed line box.
+				style={[{ flex: 1, paddingVertical: 8, fontSize: 15, color: theme.text }, ANDROID_TV && { height: 40, paddingVertical: 0, textAlignVertical: 'center' }]}
 				/>
 				</Pressable>
 			) : (
@@ -173,7 +174,8 @@ export function SearchField({ value, onChangeText, placeholder, accessibilityLab
 					{...tv.input}
 					onFocus={() => setFocused(true)}
 					onBlur={() => { setFocused(false); tv.ended(); }}
-					style={{ flex: 1, paddingVertical: 8, fontSize: 15, color: theme.text }}
+					// Android TV's button wrapper left the text sized by padding alone and clipped its top: a fixed line box.
+				style={[{ flex: 1, paddingVertical: 8, fontSize: 15, color: theme.text }, ANDROID_TV && { height: 40, paddingVertical: 0, textAlignVertical: 'center' }]}
 				/>
 			)}
 			{value ? (
@@ -423,7 +425,7 @@ export function TvLinkPanel({ onLinked, signedIn }: { onLinked: (state: BrowserS
 	const page = pairing ? pairing.verifyUrl.replace(/^https?:\/\//, '').replace(/\?.*$/, '') : 'debridmediamanager.com/tv';
 	return (
 		<View style={[styles.accountCard, { backgroundColor: theme.surface, borderColor: theme.border, flexDirection: 'row', alignItems: 'center', gap: 24 }]}>
-			{pairing ? <QrCode value={pairing.verifyUrl} size={180} /> : <View style={{ width: 180, height: 180, alignItems: 'center', justifyContent: 'center' }}><ActivityIndicator color={theme.accent} /></View>}
+			{pairing ? <QrCode value={pairing.verifyUrl} size={180} /> : <View style={{ width: 180, height: 180, alignItems: 'center', justifyContent: 'center' }}>{error ? <Icon name="qrcode-remove" size={64} color={theme.muted} /> : <ActivityIndicator color={theme.accent} />}</View>}
 			<View style={{ flex: 1, gap: 8 }}>
 				<Text style={[styles.accountTitle, { color: theme.text }]}>{signedIn ? 'Add logins from your phone' : 'Sign in with your phone'}</Text>
 				<Text style={[styles.subheading, { color: theme.muted, marginTop: 0 }]}>Scan the code with a phone signed in to DMM, or open {page} on any device and enter:</Text>
