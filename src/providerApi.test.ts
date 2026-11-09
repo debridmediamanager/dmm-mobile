@@ -479,6 +479,9 @@ describe('torrent file uploads', () => {
 			const part = (bodies.at(-1) as FormData).get(field);
 			expect(part, provider).toBeInstanceOf(Blob);
 			expect(new Uint8Array(await (part as Blob).arrayBuffer())).toEqual(bytes);
+			// TorBox answers a part without a Content-Type with 400 BOZO_TORRENT "Torrent file is not
+			// valid" (measured 2026-11-09), and a Blob read from a file:// URI has no type.
+			expect((part as Blob).type, provider).toBe('application/x-bittorrent');
 		}
 	});
 });

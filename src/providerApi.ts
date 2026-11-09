@@ -1307,7 +1307,8 @@ export interface PickedFile {
 /** Uploads a .torrent file as each provider's own endpoint takes it. */
 export async function addTorrentFile(provider: ProviderId, token: string, file: PickedFile, signal?: AbortSignal): Promise<void> {
 	// expo/fetch takes Blob parts only; a React Native {uri} part fails before any request is sent.
-	const bytes = await (await fetch(file.uri)).blob();
+	// A Blob read from file:// has no type, and TorBox refuses a part without one (BOZO_TORRENT).
+	const bytes = new Blob([await (await fetch(file.uri)).blob()], { type: 'application/x-bittorrent' });
 	const multipart = async <T,>(url: string, field: string): Promise<T> => {
 		const form = new FormData();
 		(form.append as (name: string, value: Blob, filename: string) => void)(field, bytes, file.name);
