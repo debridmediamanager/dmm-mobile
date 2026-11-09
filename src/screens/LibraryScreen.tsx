@@ -310,7 +310,7 @@ function LibraryListScreen({ navigation, transfersOnly }: { navigation: Navigati
 				{filtersActive ? <FilterButton label={`${query.titleKey ? 'One title' : 'One hash'} ✕`} active onPress={() => set({ titleKey: undefined, hashKey: undefined })} /> : null}
 				{JSON.stringify({ ...query, search: '' }) !== JSON.stringify({ ...EMPTY_QUERY, search: '' }) ? <FilterButton label="Reset" active={false} onPress={() => setQuery({ ...EMPTY_QUERY, search: query.search })} /> : null}
 				</ScrollView>
-				<Pressable accessibilityRole="button" accessibilityLabel="Library actions" disabled={Boolean(progress)} onPress={() => setSheet(true)} style={[styles.outlineButton, { minHeight: 32, borderColor: theme.accent, opacity: progress ? 0.55 : 1 }]}>
+				<Pressable accessibilityRole="button" accessibilityLabel="Library actions" disabled={Boolean(progress)} onPress={() => setSheet(true)} style={[styles.outlineButton, { minHeight: 32, marginLeft: 6, borderColor: theme.accent, opacity: progress ? 0.55 : 1 }]}>
 					{progress ? <ActivityIndicator color={theme.accent} /> : <Text style={[styles.outlineButtonText, { color: theme.accent }]}>{selected.size ? `Actions (${selected.size})` : 'Actions'}</Text>}
 				</Pressable>
 			</View>
