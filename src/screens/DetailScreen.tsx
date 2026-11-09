@@ -137,8 +137,10 @@ export function DetailScreen({ route, navigation }: Props) {
 		setError('');
 		const links: string[] = [];
 		const failures: string[] = [];
-		for (const [index, file] of item.files.entries()) {
-			setAction(`links:${index + 1}/${item.files.length}`);
+		// Only selected Real-Debrid files have links; the others would each report an error.
+		const files = item.provider === 'rd' ? item.files.filter((file) => file.selected) : item.files;
+		for (const [index, file] of files.entries()) {
+			setAction(`links:${index + 1}/${files.length}`);
 			try {
 				const url = await openFile(item.provider, item, file.id);
 				if (isSafeExternalUrl(url)) links.push(url);
