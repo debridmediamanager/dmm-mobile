@@ -23,7 +23,7 @@ import {
 import { needsRenewal, parseCredential, renewCredential, serializeCredential, type StoredCredential } from './auth';
 import type { CredentialStorage } from './storage';
 import type { AddEntry } from './share';
-import { browserStateApi, credentialsFromState, identitiesFor, mergeState, settingsFromState, stateFromApp, type BrowserState, type BrowserStateApi } from './sync';
+import { browserStateApi, credentialsFromState, identitiesFor, mergeState, settingsFromState, stateFromApp, type BrowserStateApi } from './sync';
 import { loadSettings, saveSetting, type SettingName } from './settings';
 import { runBulk, type BulkResult } from './core';
 
@@ -121,7 +121,6 @@ export class LibrarySession {
 	private readonly sync: BrowserStateApi | null;
 	/** Providers removed in the app since it started: their logins leave the saved state. */
 	private readonly removedLogins = new Set<ProviderId>();
-	private remoteState: BrowserState | null = null;
 	private pushTimer: ReturnType<typeof setTimeout> | null = null;
 
 	// Only the real providers sync with DMM unless a test or the QA build passes its own.
@@ -280,11 +279,12 @@ export class LibrarySession {
 		try {
 			const state = await this.sync.restore(identity);
 			if (state) {
-				this.remoteState = state;
 				const restored = credentialsFromState(state);
+				for (const other of Object.keys(restored) as ProviderId[]) this.removedLogins.delete(other);
 				await Promise.all(
 					(Object.keys(restored) as ProviderId[])
-						.filter((other) => !this.tokens[other] && !this.removedLogins.has(other))
+						// What DMM holds now wins over a removal made here earlier: another device saved it again.
+						.filter((other) => !this.tokens[other])
 						.map(async (other) => {
 							try {
 								let login = restored[other]!;
@@ -321,10 +321,12 @@ export class LibrarySession {
 	private async push(): Promise<void> {
 		const identities = identitiesFor(this.credentials);
 		if (!this.sync || identities.length === 0) return;
-		const remote = this.remoteState ?? (await this.sync.restore(identities[0])) ?? {};
+		// Read fresh each time: another device may have saved since, and a cached copy would erase its changes.
+		const remote = (await this.sync.restore(identities[0])) ?? {};
 		const state = mergeState(remote, stateFromApp(this.credentials, await loadSettings()), this.removedLogins);
 		await this.sync.save(identities, state);
-		this.remoteState = state;
+		// Those logins are gone from DMM now; a later save must not erase them if another device adds them back.
+		this.removedLogins.clear();
 	}
 
 	async refreshProvider(provider: ProviderId): Promise<void> {

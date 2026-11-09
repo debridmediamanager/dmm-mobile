@@ -146,7 +146,57 @@ describe('remember across devices in the session', () => {
 		}
 	});
 
-	it('keeps a setting this device already chose over the saved one', async () => {
+	it('brings back a provider removed earlier on this phone once another device saved it again', async () => {
+		// 2026-11-09 on the Pixel 6: AllDebrid removed in the app, saved again by DMM web, then a fresh
+		// Real-Debrid sign-in restored nothing and the next save deleted AllDebrid from DMM.
+		vi.useFakeTimers();
+		try {
+			let remote: Record<string, string> = {};
+			const sync: BrowserStateApi = {
+				restore: vi.fn(async () => ({ ...remote })),
+				save: vi.fn(async (_identities, state) => void (remote = { ...state })),
+			};
+			const session = new LibrarySession(storage(), api(), sync);
+			await session.connect('rd', 'RDKEY');
+			await session.connect('ad', 'ADKEY');
+			await vi.advanceTimersByTimeAsync(3000);
+			await session.disconnect('ad');
+			await session.disconnect('rd');
+			await vi.advanceTimersByTimeAsync(3000);
+			remote = { 'rd:accessToken': '"RDKEY"', 'ad:apiKey': '"ADKEY"', 'trakt:userSlug': '"web"' };
+
+			await session.connect('rd', 'RDKEY');
+			await vi.advanceTimersByTimeAsync(3000);
+
+			expect(session.snapshot().connected.ad).toBe(true);
+			expect(remote['ad:apiKey']).toBe('"ADKEY"');
+			expect(remote['trakt:userSlug']).toBe('"web"');
+		} finally {
+			vi.useRealTimers();
+		}
+	});
+
+	it('reads DMM fresh before each save, so a login another device added in between survives', async () => {
+		vi.useFakeTimers();
+		try {
+			let remote: Record<string, string> = {};
+			const sync: BrowserStateApi = {
+				restore: vi.fn(async () => ({ ...remote })),
+				save: vi.fn(async (_identities, state) => void (remote = { ...state })),
+			};
+			const session = new LibrarySession(storage(), api(), sync);
+			await session.connect('rd', 'RDKEY');
+			await vi.advanceTimersByTimeAsync(3000);
+			remote = { ...remote, 'oc:apiKey': '"FROM-WEB"' };
+			session.schedulePush(0);
+			await vi.advanceTimersByTimeAsync(10);
+			expect(remote['oc:apiKey']).toBe('"FROM-WEB"');
+		} finally {
+			vi.useRealTimers();
+		}
+	});
+
+		it('keeps a setting this device already chose over the saved one', async () => {
 		store.set('dmm.library.player', 'android/com.brouken.player');
 		const sync: BrowserStateApi = { restore: vi.fn(async () => ({ ...WEB_STATE })), save: vi.fn(async () => undefined) };
 		const session = new LibrarySession(storage(), api(), sync);
