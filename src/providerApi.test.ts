@@ -11,6 +11,7 @@ import {
 } from './providerApi';
 import rdMovie from './test/fixtures/rdinfo_movie.json';
 import rdTv from './test/fixtures/rdinfo_tv.json';
+import rdLinksByLimit from './test/fixtures/rd-torrents-links-by-limit-2026-11-09.json';
 import type { LibraryItem } from './model';
 import rdFixture from './test/fixtures/rd-bdmv-single-selection-2026-10-12.json';
 import adFilesFixture from './test/fixtures/adfiles.json';
@@ -406,5 +407,17 @@ describe('adds, reinserts and the cached-only paths', () => {
 		expect(_testing.normalizeAd({ ...adStatusFixture, statusCode: 11 })).toMatchObject({ reinsertable: true, uncached: true });
 		expect(_testing.normalizeTorBox({ id: 1, active: false, download_finished: true, download_present: true }, 'torrent').reinsertable).toBe(false);
 		expect(_testing.normalizeTorBox({ id: 1, active: true }, 'web').reinsertable).toBe(false);
+	});
+});
+
+describe('Real-Debrid list page size', () => {
+	it('pages at 100, the largest limit at which RD still returns every link, so cached rows are not called uncached', async () => {
+		vi.stubGlobal('fetch', vi.fn((url: string) => {
+			const limit = Number(new URL(url).searchParams.get('limit'));
+			return Promise.resolve(jsonResponse(limit <= 100 ? rdLinksByLimit.limit100 : rdLinksByLimit.limit1000, 200, { 'x-total-count': '5' }));
+		}));
+		const rows = await listLibrary('rd', 'token');
+		expect(rows).toHaveLength(5);
+		expect(rows.filter((row) => row.uncached).map((row) => row.title)).toEqual([]);
 	});
 });

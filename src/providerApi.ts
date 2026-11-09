@@ -14,6 +14,10 @@ const OC_BASE = 'https://offcloud.com/api';
 const DL_BASE = 'https://debrid-link.fr/api/v2';
 
 const PAGE_SIZE = 1000;
+/** Above 100, RD returns `links: []` for rows that were cached when added (measured 2026-11-09). */
+const RD_PAGE_SIZE = 100;
+/** 100,000 rows; RD allows 250 requests a minute. */
+const RD_MAX_PAGES = 1000;
 const MAX_PAGES = 100;
 const REQUEST_TIMEOUT_MS = 30_000;
 const DL_FLOOD_LOCKOUT_MS = 60 * 60 * 1000;
@@ -677,10 +681,10 @@ const normalizeDebridLink = (row: DebridLinkTorrent): LibraryItem => {
 
 async function listRealDebrid(token: string, signal?: AbortSignal): Promise<LibraryItem[]> {
 	const items: LibraryItem[] = [];
-	for (let page = 1; page <= MAX_PAGES; page++) {
+	for (let page = 1; page <= RD_MAX_PAGES; page++) {
 		const result = await request<unknown>(
 			'rd',
-			`${RD_BASE}/torrents?page=${page}&limit=${PAGE_SIZE}&_fresh=${Date.now()}`,
+			`${RD_BASE}/torrents?page=${page}&limit=${RD_PAGE_SIZE}&_fresh=${Date.now()}`,
 			{ headers: authHeaders(token) },
 			signal
 		);
@@ -691,7 +695,7 @@ async function listRealDebrid(token: string, signal?: AbortSignal): Promise<Libr
 		items.push(...rows.map((row) => normalizeRd(assertObject(row, 'rd'))));
 		const header = result.response.headers.get('x-total-count');
 		const total = header ? Number(header) : NaN;
-		if (rows.length === 0 || (Number.isFinite(total) && items.length >= total) || (!Number.isFinite(total) && rows.length < PAGE_SIZE)) return items;
+		if (rows.length === 0 || (Number.isFinite(total) && items.length >= total) || (!Number.isFinite(total) && rows.length < RD_PAGE_SIZE)) return items;
 	}
 	throw new PaginationLimitError('rd');
 }

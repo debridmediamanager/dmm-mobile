@@ -1,0 +1,151 @@
+{
+	"_note": "Recorded 2026-11-09 from RD test account rd6893c80a7036, GET /torrents?page=1&limit=N. Above limit=100 RD returns links: [] for rows that were cached when added (ended before added); limit=100 returns every link. Download ids redacted.",
+	"limit100": [
+		{
+			"id": "MO5IQRBYQNWZM",
+			"filename": "Cosmos Laundromat.mp4",
+			"hash": "c9e15763f722f23e98a29decdfae341b98d53056",
+			"bytes": 220864086,
+			"host": "real-debrid.com",
+			"split": 2000,
+			"progress": 100,
+			"status": "downloaded",
+			"added": "2026-11-09T01:30:14.000Z",
+			"links": [
+				"https://real-debrid.com/d/REDACTED0"
+			],
+			"ended": "2026-05-18T18:17:26.000Z"
+		},
+		{
+			"id": "7F6DLKFIILMPK",
+			"filename": "Tears of Steel.webm",
+			"hash": "209c8226b299b308beaf2b9cd3fb49212dbd13ec",
+			"bytes": 571426507,
+			"host": "real-debrid.com",
+			"split": 2000,
+			"progress": 100,
+			"status": "downloaded",
+			"added": "2026-11-09T01:29:54.000Z",
+			"links": [
+				"https://real-debrid.com/d/REDACTED0"
+			],
+			"ended": "2025-09-23T03:45:48.000Z"
+		},
+		{
+			"id": "JK353UDHO5EOM",
+			"filename": "Sintel",
+			"hash": "08ada5a7a6183aae1e09d831df6748d566095a10",
+			"bytes": 129254260,
+			"host": "real-debrid.com",
+			"split": 2000,
+			"progress": 100,
+			"status": "downloaded",
+			"added": "2026-11-09T01:29:34.000Z",
+			"links": [
+				"https://real-debrid.com/d/REDACTED0"
+			],
+			"ended": "2026-11-09T01:38:36.000Z"
+		},
+		{
+			"id": "ULPSNXYXKB3HW",
+			"filename": "Big Buck Bunny",
+			"hash": "dd8255ecdc7ca55fb0bbf81323d87062db1f6d1c",
+			"bytes": 276445467,
+			"host": "real-debrid.com",
+			"split": 2000,
+			"progress": 100,
+			"status": "downloaded",
+			"added": "2026-11-09T01:03:15.000Z",
+			"links": [
+				"https://real-debrid.com/d/REDACTED0"
+			],
+			"ended": "2023-09-15T11:20:05.000Z"
+		},
+		{
+			"id": "O6G4YJXRUSSZ4",
+			"filename": "Mr..Vampire.Saga.1988.1080p.BluRay.x264.AAC-[YTS.MX].mp4",
+			"hash": "0017e97db918c645a10c57bbd0a6059149793ad2",
+			"bytes": 1681220890,
+			"host": "real-debrid.com",
+			"split": 2000,
+			"progress": 100,
+			"status": "downloaded",
+			"added": "2026-10-29T21:24:00.000Z",
+			"links": [
+				"https://real-debrid.com/d/REDACTED0"
+			],
+			"ended": "2026-10-29T21:37:43.000Z"
+		}
+	],
+	"limit1000": [
+		{
+			"id": "MO5IQRBYQNWZM",
+			"filename": "Cosmos Laundromat.mp4",
+			"hash": "c9e15763f722f23e98a29decdfae341b98d53056",
+			"bytes": 220864086,
+			"host": "real-debrid.com",
+			"split": 2000,
+			"progress": 100,
+			"status": "downloaded",
+			"added": "2026-11-09T01:30:14.000Z",
+			"links": [],
+			"ended": "2026-05-18T18:17:26.000Z"
+		},
+		{
+			"id": "7F6DLKFIILMPK",
+			"filename": "Tears of Steel.webm",
+			"hash": "209c8226b299b308beaf2b9cd3fb49212dbd13ec",
+			"bytes": 571426507,
+			"host": "real-debrid.com",
+			"split": 2000,
+			"progress": 100,
+			"status": "downloaded",
+			"added": "2026-11-09T01:29:54.000Z",
+			"links": [],
+			"ended": "2025-09-23T03:45:48.000Z"
+		},
+		{
+			"id": "JK353UDHO5EOM",
+			"filename": "Sintel",
+			"hash": "08ada5a7a6183aae1e09d831df6748d566095a10",
+			"bytes": 129254260,
+			"host": "real-debrid.com",
+			"split": 2000,
+			"progress": 100,
+			"status": "downloaded",
+			"added": "2026-11-09T01:29:34.000Z",
+			"links": [
+				"https://real-debrid.com/d/REDACTED0"
+			],
+			"ended": "2026-11-09T01:38:36.000Z"
+		},
+		{
+			"id": "ULPSNXYXKB3HW",
+			"filename": "Big Buck Bunny",
+			"hash": "dd8255ecdc7ca55fb0bbf81323d87062db1f6d1c",
+			"bytes": 276445467,
+			"host": "real-debrid.com",
+			"split": 2000,
+			"progress": 100,
+			"status": "downloaded",
+			"added": "2026-11-09T01:03:15.000Z",
+			"links": [],
+			"ended": "2023-09-15T11:20:05.000Z"
+		},
+		{
+			"id": "O6G4YJXRUSSZ4",
+			"filename": "Mr..Vampire.Saga.1988.1080p.BluRay.x264.AAC-[YTS.MX].mp4",
+			"hash": "0017e97db918c645a10c57bbd0a6059149793ad2",
+			"bytes": 1681220890,
+			"host": "real-debrid.com",
+			"split": 2000,
+			"progress": 100,
+			"status": "downloaded",
+			"added": "2026-10-29T21:24:00.000Z",
+			"links": [
+				"https://real-debrid.com/d/REDACTED0"
+			],
+			"ended": "2026-10-29T21:37:43.000Z"
+		}
+	]
+}
