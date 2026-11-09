@@ -46,7 +46,11 @@ for stock React Native, and two copies in one bundle leave the app unable to sta
 `npm run export:web` is a browser preview of the same screens. It is useful for
 layout checks, but it does not prove native device behavior; browser previews do
 not persist credentials because SecureStore is a native-only facility. The app
-does not use a WebView, paid EAS builds, signing, or store publication.
+does not use a WebView or paid EAS builds.
+
+Installed builds take JavaScript fixes over the air from our own update server,
+signed with our own key; native changes ship as store releases. Both are in
+[docs/releasing.md](docs/releasing.md).
 
 ## Signing in
 
