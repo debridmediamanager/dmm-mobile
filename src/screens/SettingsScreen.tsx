@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Alert, ScrollView, Text, View } from 'react-native';
+import { Alert, Platform, ScrollView, Text, View } from 'react-native';
 import { useApp } from '../AppContext';
 import { PROVIDERS, PROVIDER_META, type ProviderId } from '../model';
 import { playersForPlatform } from '../player';
@@ -46,7 +46,7 @@ export function SettingsScreen() {
 		<Screen>
 			<ScrollView contentContainerStyle={[styles.content, wide && styles.contentWide]}>
 				<Text style={[styles.heading, { color: theme.text }]}>Settings</Text>
-				{row('Open videos with', 'Used when you open a video file. Subtitles and other files open in the browser. The same list as DMM web.', <DropdownChip label={player.label} active={player.id !== 'browser'} onPress={() => setPicking('player')} />)}
+				{row('Open videos with', Platform.isTV ? 'Used when you open a video file. The same list as DMM web.' : 'Used when you open a video file. Subtitles and other files open in the browser. The same list as DMM web.', <DropdownChip label={player.label} active={player.id !== 'browser'} onPress={() => setPicking('player')} />)}
 				{row('Add to', 'The provider the Add screen and magnet links from other apps start on.', <DropdownChip label={addProvider ? PROVIDER_META[addProvider].label : 'First connected'} active={Boolean(addProvider)} onPress={() => setPicking('addProvider')} />)}
 				{row('Remembered across devices', 'Always on in the app. Sign in to any one provider here or on DMM web with "Remember my logins and settings across devices", and your other logins and these settings come back. Anyone who can sign in to one of those accounts gets all of them, so do not use a shared debrid account.', <Text style={{ color: theme.accent, fontWeight: '700' }}>On</Text>)}
 			</ScrollView>
