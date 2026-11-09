@@ -10,24 +10,30 @@ import { DetailScreen } from './screens/DetailScreen';
 import { LibraryScreen } from './screens/LibraryScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { useAppTheme } from './theme';
+import { Icon, type IconName } from './ui';
 import type { LibrarySession } from './session';
 import { PROVIDERS } from './model';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tabs = createBottomTabNavigator<MainTabParamList>();
+const TAB_ICONS: Record<keyof MainTabParamList, [IconName, IconName]> = {
+	Library: ['bookshelf', 'bookshelf'],
+	Accounts: ['account-key', 'account-key-outline'],
+	Settings: ['cog', 'cog-outline'],
+};
 
 function MainTabs() {
 	const theme = useAppTheme();
 	return (
 		<Tabs.Navigator
-			screenOptions={{
+			screenOptions={({ route }) => ({
 				headerShown: false,
-				tabBarIcon: () => null,
+				tabBarIcon: ({ focused, color, size }) => <Icon name={TAB_ICONS[route.name][focused ? 0 : 1]} size={size} color={color} />,
 				tabBarActiveTintColor: theme.accent,
 				tabBarInactiveTintColor: theme.muted,
 				tabBarStyle: { backgroundColor: theme.surface, borderTopColor: theme.border },
 				freezeOnBlur: true,
-			}}
+			})}
 		>
 			<Tabs.Screen name="Library" component={LibraryScreen} options={{ tabBarLabel: 'Library' }} />
 			<Tabs.Screen name="Accounts" component={AccountsScreen} options={{ tabBarLabel: 'Accounts' }} />

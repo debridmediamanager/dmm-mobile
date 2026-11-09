@@ -27,8 +27,8 @@ export function SettingsScreen() {
 	const addProvider = settings.addProvider && connected.includes(settings.addProvider as ProviderId) ? (settings.addProvider as ProviderId) : null;
 
 	const options: Record<SettingName, SheetAction[]> = {
-		player: players.map((option) => ({ label: `${option.id === player.id ? '✓ ' : ''}${option.label}`, onPress: () => save('player', option.id) })),
-		addProvider: connected.map((id) => ({ label: `${id === addProvider ? '✓ ' : ''}${PROVIDER_META[id].label}`, onPress: () => save('addProvider', id) })),
+		player: players.map((option) => ({ label: option.label, checked: option.id === player.id, onPress: () => save('player', option.id) })),
+		addProvider: connected.map((id) => ({ label: PROVIDER_META[id].label, checked: id === addProvider, onPress: () => save('addProvider', id) })),
 	};
 
 	const row = (title: string, detail: string, control: React.ReactNode) => (

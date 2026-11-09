@@ -2,11 +2,54 @@ import { memo, useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { ActivityIndicator, Linking, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { startDeviceLogin, supportsDeviceLogin, waitForApproval, type DeviceLogin, type StoredCredential } from './auth';
 import type { LibraryItem, MediaType, ProviderId } from './model';
 import { PROVIDER_META, statusLabel } from './model';
 import { formatBytes } from './core';
 import { useAppTheme } from './theme';
+
+/** The app's one icon set; its font is embedded at build time (expo-font in app.json), so icons draw on first frame. */
+export type IconName = keyof typeof MaterialCommunityIcons.glyphMap;
+export function Icon({ name, size = 20, color }: { name: IconName; size?: number; color: string }) {
+	return <MaterialCommunityIcons name={name} size={size} color={color} />;
+}
+
+/** A search box with a magnifier and a clear button that empties it in one tap. */
+export function SearchField({ value, onChangeText, placeholder, accessibilityLabel }: { value: string; onChangeText: (text: string) => void; placeholder: string; accessibilityLabel: string }) {
+	const theme = useAppTheme();
+	return (
+		<View style={[styles.searchBox, { backgroundColor: theme.input, borderColor: theme.border }]}>
+			<Icon name="magnify" size={20} color={theme.muted} />
+			<TextInput
+				accessibilityLabel={accessibilityLabel}
+				value={value}
+				onChangeText={onChangeText}
+				placeholder={placeholder}
+				placeholderTextColor={theme.muted}
+				autoCapitalize="none"
+				autoCorrect={false}
+				returnKeyType="search"
+				style={{ flex: 1, paddingVertical: 8, fontSize: 15, color: theme.text }}
+			/>
+			{value ? (
+				<Pressable accessibilityRole="button" accessibilityLabel="Clear search" onPress={() => onChangeText('')} hitSlop={12} style={{ padding: 2 }}>
+					<Icon name="close-circle" size={20} color={theme.muted} />
+				</Pressable>
+			) : null}
+		</View>
+	);
+}
+
+/** A round icon-only button for headers; the label is read out by screen readers. */
+export function IconButton({ icon, label, onPress, color, filled = false, disabled = false }: { icon: IconName; label: string; onPress: () => void; color: string; filled?: boolean; disabled?: boolean }) {
+	const theme = useAppTheme();
+	return (
+		<Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} disabled={disabled} hitSlop={4} style={({ pressed }) => [styles.iconButton, { backgroundColor: filled ? color : pressed ? theme.surface : 'transparent', borderColor: color, opacity: disabled ? 0.55 : 1 }]}>
+			<Icon name={icon} size={22} color={filled ? theme.onAccent : color} />
+		</Pressable>
+	);
+}
 
 export function Screen({ children, edges = ['top', 'bottom'] }: { children: ReactNode; edges?: Edge[] }) {
 	const theme = useAppTheme();
@@ -37,20 +80,24 @@ export function FilterButton({
 	label,
 	active,
 	onPress,
-	}: {
+	icon,
+}: {
 	label: string;
 	active: boolean;
 	onPress: () => void;
+	/** Drawn after the label, e.g. a close mark on a filter that can be cleared. */
+	icon?: IconName;
 }) {
 	const theme = useAppTheme();
 	return (
 		<Pressable
 			accessibilityRole="button"
 			accessibilityState={{ selected: active }}
-			style={[styles.filterButton, { borderColor: active ? theme.accent : theme.border, backgroundColor: active ? theme.accent : theme.surface }]}
+			style={[styles.filterButton, { flexDirection: 'row', alignItems: 'center', gap: 4, borderColor: active ? theme.accent : theme.border, backgroundColor: active ? theme.accent : theme.surface }]}
 			onPress={onPress}
 		>
 			<Text style={[styles.filterText, { color: active ? theme.onAccent : theme.text }]}>{label}</Text>
+			{icon ? <Icon name={icon} size={16} color={active ? theme.onAccent : theme.text} /> : null}
 		</Pressable>
 	);
 }
@@ -106,7 +153,7 @@ export const LibraryRow = memo(function LibraryRow({
 			onLongPress={() => onLongPress(item)}
 			style={({ pressed }) => [styles.row, { height: ROW_HEIGHT, paddingLeft: 12, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: theme.border, backgroundColor: selected ? theme.input : pressed ? theme.surface : theme.background }]}
 		>
-			{selecting ? <Text style={{ color: selected ? theme.accent : theme.muted, fontSize: 16, fontWeight: '700', width: 18 }}>{selected ? '✓' : '○'}</Text> : null}
+			{selecting ? <View style={{ width: 28 }}><Icon name={selected ? 'checkbox-marked-circle' : 'checkbox-blank-circle-outline'} size={22} color={selected ? theme.accent : theme.muted} /></View> : null}
 			<View style={{ flex: 1, justifyContent: 'center' }}>
 				<Text numberOfLines={1} style={{ color: item.status === 'error' ? theme.danger : theme.text, fontSize: 13.5, fontWeight: '600' }}>{item.title}</Text>
 				<View style={[styles.row, { gap: 6, marginTop: 2 }]}>
@@ -121,7 +168,7 @@ export const LibraryRow = memo(function LibraryRow({
 				{item.status !== 'finished' ? <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 2, backgroundColor: theme.border }}><View style={{ height: 2, width: `${Math.max(0, Math.min(100, item.progress))}%`, backgroundColor: theme.accent }} /></View> : null}
 			</View>
 			<Pressable accessibilityRole="button" accessibilityLabel={`More for ${item.title}`} onPress={() => onMore(item)} style={{ width: 40, height: ROW_HEIGHT, alignItems: 'center', justifyContent: 'center' }}>
-				<Text style={{ color: theme.muted, fontSize: 20, fontWeight: '700' }}>⋯</Text>
+				<Icon name="dots-vertical" size={22} color={theme.muted} />
 			</Pressable>
 		</Pressable>
 	);
@@ -131,8 +178,9 @@ export const LibraryRow = memo(function LibraryRow({
 export function DropdownChip({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
 	const theme = useAppTheme();
 	return (
-		<Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} style={{ height: 32, paddingHorizontal: 10, borderRadius: 16, borderWidth: 1, justifyContent: 'center', borderColor: active ? theme.accent : theme.border, backgroundColor: active ? theme.accent : theme.surface }}>
-			<Text numberOfLines={1} style={{ fontSize: 13, fontWeight: '600', color: active ? theme.onAccent : theme.text }}>{label} ▾</Text>
+		<Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} style={{ height: 32, paddingLeft: 12, paddingRight: 6, borderRadius: 16, borderWidth: 1, flexDirection: 'row', alignItems: 'center', gap: 2, borderColor: active ? theme.accent : theme.border, backgroundColor: active ? theme.accent : theme.surface }}>
+			<Text numberOfLines={1} style={{ fontSize: 13, fontWeight: '600', color: active ? theme.onAccent : theme.text }}>{label}</Text>
+			<Icon name="menu-down" size={18} color={active ? theme.onAccent : theme.muted} />
 		</Pressable>
 	);
 }
@@ -141,6 +189,8 @@ export interface SheetAction {
 	label: string;
 	onPress: () => void;
 	destructive?: boolean;
+	/** The current choice in a picker; drawn as a check mark. */
+	checked?: boolean;
 }
 
 /** A bottom sheet of actions; Android alerts hold three buttons at most. */
@@ -151,14 +201,15 @@ export function ActionSheet({ title, detail, actions, onClose }: { title: string
 			<Pressable style={styles.modalBackdrop} onPress={onClose} accessibilityLabel="Close actions">
 				<Pressable style={[styles.modalSheet, { backgroundColor: theme.surface }]} onPress={() => undefined}>
 					<View style={styles.rowBetween}>
-						<Text style={[styles.modalTitle, { color: theme.text }]}>{title}</Text>
-						<Pressable accessibilityRole="button" accessibilityLabel="Close actions" onPress={onClose}><Text style={{ color: theme.accent, fontWeight: '700' }}>Close</Text></Pressable>
+						<Text numberOfLines={3} style={[styles.modalTitle, { flex: 1, color: theme.text }]}>{title}</Text>
+						<Pressable accessibilityRole="button" accessibilityLabel="Close actions" onPress={onClose} hitSlop={10}><Icon name="close" size={24} color={theme.muted} /></Pressable>
 					</View>
 					{detail ? <Text style={[styles.subheading, { color: theme.muted }]}>{detail}</Text> : null}
 					<ScrollView style={{ maxHeight: 460 }} contentContainerStyle={{ gap: 8 }}>
 						{actions.map((action) => (
-							<Pressable key={action.label} accessibilityRole="button" accessibilityLabel={action.label} onPress={() => { onClose(); action.onPress(); }} style={[styles.outlineButton, { borderColor: action.destructive ? theme.danger : theme.border, minHeight: 46 }]}>
-								<Text style={[styles.outlineButtonText, { color: action.destructive ? theme.danger : theme.text, fontSize: 15 }]}>{action.label}</Text>
+							<Pressable key={action.label} accessibilityRole="button" accessibilityState={action.checked === undefined ? undefined : { selected: action.checked }} accessibilityLabel={action.label} onPress={() => { onClose(); action.onPress(); }} style={[styles.outlineButton, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderColor: action.checked ? theme.accent : action.destructive ? theme.danger : theme.border, minHeight: 46 }]}>
+								<Text style={[styles.outlineButtonText, { flex: 1, color: action.destructive ? theme.danger : action.checked ? theme.accent : theme.text, fontSize: 15 }]}>{action.label}</Text>
+								{action.checked ? <Icon name="check" size={20} color={theme.accent} /> : null}
 							</Pressable>
 						))}
 					</ScrollView>
@@ -306,7 +357,8 @@ export const styles = StyleSheet.create({
 	subheading: { fontSize: 14, marginTop: 4 },
 	rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
 	row: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-	search: { marginTop: 12, borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 11, fontSize: 16 },
+	searchBox: { flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderRadius: 10, paddingLeft: 10, paddingRight: 10 },
+	iconButton: { width: 38, height: 38, borderRadius: 19, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
 	filterBar: { flexGrow: 0, flexShrink: 0, height: 52 },
 	filterScroll: { paddingHorizontal: 16, paddingVertical: 8 },
 	filterButton: { alignSelf: 'flex-start', minHeight: 36, paddingHorizontal: 13, borderRadius: 18, borderWidth: 1, justifyContent: 'center' },
@@ -337,7 +389,7 @@ export const styles = StyleSheet.create({
 	inlineError: { fontSize: 13, lineHeight: 19 },
 	deviceCode: { fontSize: 32, fontWeight: '700', letterSpacing: 4, fontVariant: ['tabular-nums'] },
 	dividerText: { fontSize: 12, textAlign: 'center' },
-	detailSection: { marginTop: 16, marginHorizontal: 16 },
+	detailSection: { marginTop: 16 },
 	detailTitle: { fontSize: 23, fontWeight: '700', marginTop: 12 },
 	detailMeta: { fontSize: 14, marginTop: 6 },
 	fileRow: { paddingVertical: 12, borderBottomWidth: 1, flexDirection: 'row', alignItems: 'center', gap: 10 },

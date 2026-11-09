@@ -2,6 +2,7 @@ import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } f
 import {
 	ActivityIndicator,
 	Alert,
+	BackHandler,
 	FlatList,
 	KeyboardAvoidingView,
 	Linking,
@@ -18,6 +19,7 @@ import {
 } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useFocusEffect } from '@react-navigation/native';
 import { useApp } from '../AppContext';
 import {
 	duplicatesToDelete,
@@ -44,7 +46,7 @@ import { magnetForHash } from '../validation';
 import type { RootStackParamList } from '../navigation';
 import { useAppTheme } from '../theme';
 import { confirmNativeAction } from '../confirmAction';
-import { ActionSheet, DropdownChip, EmptyState, ErrorBanner, FilterButton, LibraryRow, ROW_HEIGHT, Screen, styles, type SheetAction } from '../ui';
+import { ActionSheet, DropdownChip, EmptyState, ErrorBanner, FilterButton, Icon, IconButton, LibraryRow, ROW_HEIGHT, Screen, SearchField, styles, type SheetAction } from '../ui';
 
 type Navigation = NativeStackNavigationProp<RootStackParamList, 'Main'>;
 
@@ -134,6 +136,17 @@ export function LibraryScreen({ navigation }: { navigation: Navigation }) {
 				setProgress('');
 			});
 	}, [checkRdUncached, query.view, snapshot.connected.rd, snapshot.rdUncachedChecked]);
+
+	// Android back leaves selection mode before it leaves the app.
+	const selecting = selected.size > 0;
+	useFocusEffect(useCallback(() => {
+		if (!selecting) return undefined;
+		const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+			setSelected(new Set());
+			return true;
+		});
+		return () => subscription.remove();
+	}, [selecting]));
 
 	// Rows that left the library leave the selection too.
 	useEffect(() => {
@@ -248,12 +261,12 @@ export function LibraryScreen({ navigation }: { navigation: Navigation }) {
 
 	const filtersActive = query.titleKey || query.hashKey;
 	const visibleViews = views.filter((view) => view.value !== 'rdblocked' || snapshot.connected.rd);
-	const check = (on: boolean, label: string) => `${on ? '✓ ' : ''}${label}`;
+
 	const pickerSheets: Record<NonNullable<typeof picker>, { title: string; actions: SheetAction[] }> = {
-		sort: { title: 'Sort', actions: sortModes.map((value) => ({ label: check(query.sort === value, value[0].toUpperCase() + value.slice(1)), onPress: () => set({ sort: value }) })) },
-		provider: { title: 'Provider', actions: picker !== 'provider' ? [] : [{ label: check(query.provider === 'all', 'All providers'), onPress: () => set({ provider: 'all' }) }, ...connectedProviders.map((id) => ({ label: check(query.provider === id, `${PROVIDER_META[id].label} (${baseItems.filter((item) => item.provider === id).length})`), onPress: () => set({ provider: id }) }))] },
-		media: { title: 'Type', actions: medias.map((media) => ({ label: check(query.media === media.value, media.label), onPress: () => set({ media: media.value }) })) },
-		view: { title: 'Show', actions: visibleViews.map((view) => ({ label: check(query.view === view.value, view.value === 'selected' ? `Selected (${selected.size})` : view.label), onPress: () => set({ view: view.value }) })) },
+		sort: { title: 'Sort', actions: sortModes.map((value) => ({ label: value[0].toUpperCase() + value.slice(1), checked: query.sort === value, onPress: () => set({ sort: value }) })) },
+		provider: { title: 'Provider', actions: picker !== 'provider' ? [] : [{ label: 'All providers', checked: query.provider === 'all', onPress: () => set({ provider: 'all' }) }, ...connectedProviders.map((id) => ({ label: `${PROVIDER_META[id].label} (${baseItems.filter((item) => item.provider === id).length})`, checked: query.provider === id, onPress: () => set({ provider: id }) }))] },
+		media: { title: 'Type', actions: medias.map((media) => ({ label: media.label, checked: query.media === media.value, onPress: () => set({ media: media.value }) })) },
+		view: { title: 'Show', actions: visibleViews.map((view) => ({ label: view.value === 'selected' ? `Selected (${selected.size})` : view.label, checked: query.view === view.value, onPress: () => set({ view: view.value }) })) },
 	};
 	const rowActions = (item: LibraryItem): SheetAction[] => [
 		{ label: 'Details and files', onPress: () => navigation.navigate('Detail', { itemId: item.id }) },
@@ -278,32 +291,22 @@ export function LibraryScreen({ navigation }: { navigation: Navigation }) {
 							{progress || `${items.length === baseItems.length ? `${baseItems.length} item${baseItems.length === 1 ? '' : 's'}` : `${items.length} of ${baseItems.length} shown`} · ${formatBytes(grouping.totalBytes)}${snapshot.fetchedAt ? ` · ${formatAgo(snapshot.fetchedAt)}` : ''}${selected.size ? ` · ${selected.size} selected` : ''}`}
 						</Text>
 					</View>
-					<Pressable accessibilityRole="button" accessibilityLabel={"Refresh library"} onPress={() => void refreshAll()} disabled={refreshing} style={[styles.outlineButton, { minHeight: 34, borderColor: snapshot.failures.length ? theme.danger : theme.accent, opacity: refreshing ? 0.55 : 1 }]}><Text style={[styles.outlineButtonText, { color: snapshot.failures.length ? theme.danger : theme.accent }]}>{refreshing ? 'Refreshing…' : 'Refresh'}</Text></Pressable>
-					<Pressable accessibilityRole="button" accessibilityLabel="Add to library" onPress={() => setAdding({ text: '' })} style={[styles.primaryButton, { minHeight: 34, backgroundColor: theme.accent }]}><Text style={[styles.primaryButtonText, { color: theme.onAccent }]}>Add</Text></Pressable>
+					{refreshing ? <View style={[styles.iconButton, { borderColor: 'transparent' }]}><ActivityIndicator color={theme.accent} /></View> : <IconButton icon="refresh" label="Refresh library" onPress={() => void refreshAll()} color={snapshot.failures.length ? theme.danger : theme.accent} />}
+					<IconButton icon="plus" label="Add to library" onPress={() => setAdding({ text: '' })} color={theme.accent} filled />
+					{/* Overflow menu last, as on Android; it fills in while items are selected, since it acts on them. */}
+					{progress ? <View style={[styles.iconButton, { borderColor: 'transparent' }]}><ActivityIndicator color={theme.accent} /></View> : <IconButton icon="dots-vertical" label={selected.size ? `Actions for ${selected.size} selected` : 'Library actions'} onPress={() => setSheet(true)} color={theme.accent} filled={selected.size > 0} />}
 				</View>
-				<TextInput
-					accessibilityLabel="Search library"
-					value={query.search}
-					onChangeText={(search) => set({ search })}
-					placeholder="Search names (regex), id, hash or status"
-					placeholderTextColor={theme.muted}
-					autoCapitalize="none"
-					autoCorrect={false}
-					style={{ borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 7, fontSize: 15, backgroundColor: theme.input, borderColor: theme.border, color: theme.text }}
-				/>
+				<SearchField accessibilityLabel="Search library" value={query.search} onChangeText={(search) => set({ search })} placeholder="Search names (regex), id, hash or status" />
 			</View>
-			<View style={[styles.row, { paddingRight: 12, gap: 0 }]}>
+			<View style={styles.row}>
 				<ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 12, paddingVertical: 6, gap: 6 }}>
 					<DropdownChip label={sortLabel} active={query.sort !== 'newest'} onPress={() => setPicker('sort')} />
 					<DropdownChip label={query.provider === 'all' ? 'Provider' : PROVIDER_META[query.provider].label} active={query.provider !== 'all'} onPress={() => setPicker('provider')} />
 					<DropdownChip label={medias.find((media) => media.value === query.media)?.label ?? 'Any type'} active={query.media !== 'all'} onPress={() => setPicker('media')} />
 					<DropdownChip label={query.view === 'selected' ? `Selected (${selected.size})` : viewLabel} active={query.view !== 'all'} onPress={() => setPicker('view')} />
-				{filtersActive ? <FilterButton label={`${query.titleKey ? 'One title' : 'One hash'} ✕`} active onPress={() => set({ titleKey: undefined, hashKey: undefined })} /> : null}
+				{filtersActive ? <FilterButton label={query.titleKey ? 'One title' : 'One hash'} icon="close" active onPress={() => set({ titleKey: undefined, hashKey: undefined })} /> : null}
 				{JSON.stringify({ ...query, search: '' }) !== JSON.stringify({ ...EMPTY_QUERY, search: '' }) ? <FilterButton label="Reset" active={false} onPress={() => setQuery({ ...EMPTY_QUERY, search: query.search })} /> : null}
 				</ScrollView>
-				<Pressable accessibilityRole="button" accessibilityLabel="Library actions" disabled={Boolean(progress)} onPress={() => setSheet(true)} style={[styles.outlineButton, { minHeight: 32, marginLeft: 6, borderColor: theme.accent, opacity: progress ? 0.55 : 1 }]}>
-					{progress ? <ActivityIndicator color={theme.accent} /> : <Text style={[styles.outlineButtonText, { color: theme.accent }]}>{selected.size ? `Actions (${selected.size})` : 'Actions'}</Text>}
-				</Pressable>
 			</View>
 			{startupError ? <ErrorBanner message={`Secure account storage: ${startupError}`} actionLabel="Retry secure account load" onAction={() => void retryStartup()} busy={!ready} /> : null}
 			{snapshot.failures.length > 0 ? <ErrorBanner message={snapshot.failures.map((failure) => `${PROVIDER_META[failure.provider].label}: ${failure.message}`).join('\n')} actionLabel="Retry library" onAction={() => void refreshAll()} busy={refreshing} /> : null}
@@ -325,6 +328,8 @@ export function LibraryScreen({ navigation }: { navigation: Navigation }) {
 					maxToRenderPerBatch={30}
 					windowSize={11}
 					removeClippedSubviews
+					keyboardDismissMode="on-drag"
+					keyboardShouldPersistTaps="handled"
 					renderItem={({ item }) => (
 						<LibraryRow
 							item={item}
@@ -423,7 +428,7 @@ function AddModal({ initialText, connectedProviders, onClose }: { initialText: s
 		<Modal visible animationType="slide" transparent onRequestClose={onClose}>
 			<KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.modalBackdrop}>
 				<ScrollView keyboardShouldPersistTaps="handled" style={[styles.modalSheet, { backgroundColor: theme.surface, maxHeight: '90%', width: '100%' }]} contentContainerStyle={{ gap: 12 }}>
-					<View style={styles.rowBetween}><Text style={[styles.modalTitle, { color: theme.text }]}>Add to library</Text><Pressable accessibilityRole="button" accessibilityLabel="Close add" onPress={onClose}><Text style={{ color: theme.accent, fontWeight: '700' }}>Close</Text></Pressable></View>
+					<View style={styles.rowBetween}><Text style={[styles.modalTitle, { color: theme.text }]}>Add to library</Text><Pressable accessibilityRole="button" accessibilityLabel="Close add" onPress={onClose} hitSlop={10}><Icon name="close" size={24} color={theme.muted} /></Pressable></View>
 					<View style={styles.modalButtonRow}>{connectedProviders.map((id) => <FilterButton key={id} label={PROVIDER_META[id].label} active={provider === id} onPress={() => setProvider(id)} />)}</View>
 					<TextInput accessibilityLabel="Magnets, hashes or links" value={text} onChangeText={setText} placeholder={'Magnets or info hashes, one per line\n(TorBox also takes web links)'} placeholderTextColor={theme.muted} autoCapitalize="none" autoCorrect={false} multiline style={[styles.input, { backgroundColor: theme.input, borderColor: theme.border, color: theme.text, minHeight: 110, textAlignVertical: 'top' }]} />
 					{provider === 'dl' ? <Text style={[styles.subheading, { color: theme.muted }]}>Debrid-Link adds a bare hash only when it is cached; paste a magnet to download it.</Text> : null}
@@ -474,7 +479,7 @@ function RestoreModal({ connectedProviders, onClose }: { connectedProviders: Pro
 		<Modal visible animationType="slide" transparent onRequestClose={onClose}>
 			<View style={styles.modalBackdrop}>
 				<ScrollView style={[styles.modalSheet, { backgroundColor: theme.surface, maxHeight: '90%' }]} contentContainerStyle={{ gap: 12 }}>
-					<View style={styles.rowBetween}><Text style={[styles.modalTitle, { color: theme.text }]}>Restore a backup</Text><Pressable accessibilityRole="button" accessibilityLabel="Close restore" onPress={onClose}><Text style={{ color: theme.accent, fontWeight: '700' }}>Close</Text></Pressable></View>
+					<View style={styles.rowBetween}><Text style={[styles.modalTitle, { color: theme.text }]}>Restore a backup</Text><Pressable accessibilityRole="button" accessibilityLabel="Close restore" onPress={onClose} hitSlop={10}><Icon name="close" size={24} color={theme.muted} /></Pressable></View>
 					<Text style={[styles.subheading, { color: theme.muted }]}>A .dmm.json from DMM web or this app. Hashes already on the provider are skipped.</Text>
 					<View style={styles.modalButtonRow}>{connectedProviders.map((id) => <FilterButton key={id} label={PROVIDER_META[id].label} active={provider === id} onPress={() => setProvider(id)} />)}</View>
 					<Pressable accessibilityRole="button" accessibilityLabel="Choose backup file" onPress={() => void pick()} style={[styles.outlineButton, { borderColor: theme.accent, alignItems: 'center', minHeight: 44 }]}><Text style={[styles.outlineButtonText, { color: theme.accent }]}>{hashes ? 'Choose another file' : 'Choose backup file'}</Text></Pressable>

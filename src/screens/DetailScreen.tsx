@@ -18,7 +18,7 @@ import { PROVIDER_META, statusLabel } from '../model';
 import { isSafeExternalUrl, magnetForHash } from '../validation';
 import type { RootStackParamList } from '../navigation';
 import { useAppTheme } from '../theme';
-import { EmptyState, ErrorBanner, FilterButton, ProviderBadge, Screen, styles } from '../ui';
+import { EmptyState, ErrorBanner, FilterButton, Icon, ProviderBadge, Screen, styles, type IconName } from '../ui';
 import { confirmNativeAction } from '../confirmAction';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Detail'>;
@@ -104,9 +104,10 @@ export function DetailScreen({ route, navigation }: Props) {
 
 	const confirmDelete = () => {
 		if (!item) return;
-		confirmNativeAction('Remove from library?', `Remove “${item.title}” from ${PROVIDER_META[item.provider].label}?`, () => {
+		confirmNativeAction('Delete?', `Remove “${item.title}” from ${PROVIDER_META[item.provider].label}?`, () => {
 			setAction('delete');
-			void remove(item.provider, item.id).then(() => setItem(undefined)).catch((caught) => setError(caught instanceof Error ? caught.message : 'Could not remove this item.')).finally(() => setAction(''));
+			// Back to the library once it is gone; the "Item removed" state stays for a screen left open elsewhere.
+			void remove(item.provider, item.id).then(() => { setItem(undefined); if (mountedRef.current && navigation.canGoBack()) navigation.goBack(); }).catch((caught) => setError(caught instanceof Error ? caught.message : 'Could not remove this item.')).finally(() => setAction(''));
 		});
 	};
 
@@ -181,6 +182,12 @@ export function DetailScreen({ route, navigation }: Props) {
 		}
 	};
 
+	const actionButton = (icon: IconName, label: string, accessibilityLabel: string, onPress: () => void, disabled = false, color = theme.accent) => (
+		<Pressable accessibilityRole="button" accessibilityLabel={accessibilityLabel} onPress={onPress} disabled={disabled} style={[styles.outlineButton, { flexDirection: 'row', alignItems: 'center', gap: 5, borderColor: color, opacity: disabled ? 0.55 : 1 }]}>
+			<Icon name={icon} size={16} color={color} />
+			<Text style={[styles.outlineButtonText, { color }]}>{label}</Text>
+		</Pressable>
+	);
 	const canSelect = item?.provider === 'rd';
 	const selectionChanged = item ? [...selectedIds].sort().join(',') !== item.files.filter((file) => file.selected).map((file) => file.id).sort().join(',') : false;
 
@@ -195,11 +202,11 @@ export function DetailScreen({ route, navigation }: Props) {
 				<Text style={[styles.detailMeta, { color: theme.muted }]}>{statusLabel(item.status)} · {Math.round(item.progress)}% · {formatBytes(item.size)}</Text>
 				<Text style={[styles.detailMeta, { color: theme.muted }]}>{item.serviceStatus}</Text>
 				<View style={[styles.row, { marginTop: 16, flexWrap: 'wrap' }]}>
-					<Pressable accessibilityRole="button" accessibilityLabel="Share item magnet" onPress={shareMagnet} style={[styles.outlineButton, { borderColor: theme.accent }]}><Text style={[styles.outlineButtonText, { color: theme.accent }]}>Share magnet</Text></Pressable>
-					<Pressable accessibilityRole="button" accessibilityLabel="Share hash list link" onPress={shareHashlist} style={[styles.outlineButton, { borderColor: theme.accent }]}><Text style={[styles.outlineButtonText, { color: theme.accent }]}>Hash list</Text></Pressable>
-					{item.files.length > 0 ? <Pressable accessibilityRole="button" accessibilityLabel="Share all file links" onPress={() => void shareAllLinks()} disabled={Boolean(action)} style={[styles.outlineButton, { borderColor: theme.accent }]}><Text style={[styles.outlineButtonText, { color: theme.accent }]}>{action.startsWith('links:') ? `Links ${action.slice(6)}…` : 'Share links'}</Text></Pressable> : null}
-					{item.reinsertable ? <Pressable accessibilityRole="button" accessibilityLabel="Reinsert item" onPress={confirmReinsert} disabled={Boolean(action)} style={[styles.outlineButton, { borderColor: theme.accent }]}><Text style={[styles.outlineButtonText, { color: theme.accent }]}>{action === 'reinsert' ? 'Reinserting…' : 'Reinsert'}</Text></Pressable> : null}
-					<Pressable accessibilityRole="button" accessibilityLabel="Remove item" onPress={confirmDelete} disabled={action === 'delete'} style={[styles.outlineButton, { borderColor: theme.danger }]}><Text style={[styles.outlineButtonText, { color: theme.danger }]}>{action === 'delete' ? 'Removing…' : 'Remove'}</Text></Pressable>
+					{actionButton('share-variant', 'Magnet', 'Share item magnet', shareMagnet)}
+					{actionButton('format-list-bulleted', 'Hash list', 'Share hash list link', shareHashlist)}
+					{item.files.length > 0 ? actionButton('link-variant', action.startsWith('links:') ? `Links ${action.slice(6)}…` : 'Links', 'Share all file links', () => void shareAllLinks(), Boolean(action)) : null}
+					{item.reinsertable ? actionButton('restore', action === 'reinsert' ? 'Reinserting…' : 'Reinsert', 'Reinsert item', confirmReinsert, Boolean(action)) : null}
+					{actionButton('delete-outline', action === 'delete' ? 'Deleting…' : 'Delete', 'Delete item', confirmDelete, action === 'delete', theme.danger)}
 				</View>
 				{error ? <ErrorBanner message={error} /> : null}
 				<View style={styles.detailSection}>
@@ -213,7 +220,7 @@ export function DetailScreen({ route, navigation }: Props) {
 					{item.files.length === 0 ? <EmptyState title="No files reported yet" detail="Refresh after the provider finishes preparing this item." /> : item.files.map((file) => {
 						const selected = selectedIds.includes(file.id);
 						return <View key={file.id} style={[styles.fileRow, { borderBottomColor: theme.border }]}>
-							{canSelect ? <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: selected }} accessibilityLabel={`Select ${file.name}`} onPress={() => toggleSelected(file)} style={[styles.outlineButton, { borderColor: selected ? theme.accent : theme.border, backgroundColor: selected ? theme.accent : 'transparent' }]}><Text style={{ color: selected ? theme.onAccent : theme.text }}>{selected ? '✓' : '○'}</Text></Pressable> : null}
+							{canSelect ? <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: selected }} accessibilityLabel={`Select ${file.name}`} onPress={() => toggleSelected(file)} style={[styles.outlineButton, { borderColor: selected ? theme.accent : theme.border, backgroundColor: selected ? theme.accent : 'transparent' }]}><Icon name={selected ? 'check' : 'checkbox-blank-outline'} size={18} color={selected ? theme.onAccent : theme.muted} /></Pressable> : null}
 							<Text numberOfLines={2} style={[styles.fileName, { color: theme.text }]}>{file.name}</Text>
 							<Text numberOfLines={1} style={[styles.fileSize, { color: theme.muted }]}>{formatBytes(file.size)}</Text>
 							<Pressable accessibilityRole="button" accessibilityLabel={`Open ${file.name}`} onPress={() => void open(file)} disabled={action === `open:${file.id}`} style={[styles.fileButton, { backgroundColor: theme.accent, opacity: action === `open:${file.id}` ? 0.55 : 1 }]}><Text style={[styles.fileButtonText, { color: theme.onAccent }]}>{action === `open:${file.id}` ? 'Opening…' : 'Open'}</Text></Pressable>
