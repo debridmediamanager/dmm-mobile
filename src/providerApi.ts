@@ -254,11 +254,15 @@ const rdStatus = (value: unknown): LibraryStatus => {
 const rdFiles = (row: Record<string, unknown>, includeLinks = true): LibraryFile[] => {
 	const files = Array.isArray(row.files) ? row.files : [];
 	const links = Array.isArray(row.links) ? row.links : [];
+	const selectedCount = files.filter((file) => assertObject(file, 'rd').selected === 1 || assertObject(file, 'rd').selected === true).length;
+	// Links map to selected files in order only when there is one each. Fewer links means
+	// Real-Debrid packed the selection into an archive, and no file has a link of its own.
+	const mapped = links.length === selectedCount;
 	let selectedLinkIndex = 0;
 	return files.map((file, index) => {
 		const entry = assertObject(file, 'rd');
 		const selected = entry.selected === 1 || entry.selected === true;
-		const link = selected && selectedLinkIndex < links.length ? links[selectedLinkIndex++] : undefined;
+		const link = mapped && selected ? links[selectedLinkIndex++] : undefined;
 		return {
 			id: String(entry.id ?? index),
 			name: displayName(entry.path, `File ${index + 1}`),
@@ -1015,6 +1019,10 @@ async function resolveRdFile(token: string, item: LibraryItem, fileId: string, s
 			signal
 		);
 		link = rdFiles(result.body, true).find((entry) => entry.id === fileId)?.link;
+		const links = Array.isArray(result.body.links) ? result.body.links : [];
+		if (!link && links.length > 0 && rdStatus(result.body.status) === 'finished') {
+			throw new ProviderApiError('rd', 'Real-Debrid packed the selected files into one archive, so this file has no link of its own. Select only the files you want to open.', 'archived_selection');
+		}
 	}
 	if (!link) throw new ProviderApiError('rd', 'Real-Debrid has not selected a playable file yet.', 'file_unavailable');
 	const result = await formRequest<Record<string, unknown>>('rd', `${RD_BASE}/unrestrict/link`, token, { link }, signal);

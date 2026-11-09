@@ -12,6 +12,7 @@ import type { LibraryItem } from './model';
 import rdFixture from './test/fixtures/rd-bdmv-single-selection-2026-10-12.json';
 import adFilesFixture from './test/fixtures/adfiles.json';
 import adStatusFixture from './test/fixtures/adstatus.json';
+import rdArchived from './test/fixtures/rd-info-archived-selection-2026-11-09.json';
 import rdEncodedXt from './test/fixtures/rd-addmagnet-encoded-xt-2026-11-09.json';
 import { parseBtihMagnet } from './validation';
 
@@ -81,6 +82,23 @@ describe('provider API envelopes and pagination', () => {
 			await expect(addMagnet(provider, 'token', 'magnet:?xt=urn:btih:not-a-v1-hash')).rejects.toMatchObject({ code: 'invalid_magnet' });
 		}
 		expect(fetchMock).not.toHaveBeenCalled();
+	});
+
+	it('does not hand out a Real-Debrid archive link as one of the files packed into it', async () => {
+		// Nine files selected, one link back: Real-Debrid served them as Sintel.rar (2026-11-09).
+		const files = _testing.rdFiles(rdArchived);
+		expect(files.filter((file) => file.selected)).toHaveLength(9);
+		expect(files.some((file) => file.link)).toBe(false);
+		const fetchMock = vi.fn((url: string) => {
+			if (url.includes('/torrents/info/')) return Promise.resolve(jsonResponse(rdArchived));
+			throw new Error(`unexpected ${url}`);
+		});
+		vi.stubGlobal('fetch', fetchMock);
+		const item = _testing.normalizeRd(rdArchived, files);
+		const mp4 = files.find((file) => file.name === '/Sintel.mp4')!;
+		await expect(resolveFile('rd', 'secret-token', item, mp4.id)).rejects.toMatchObject({ code: 'archived_selection' });
+		const srt = files.find((file) => file.name === '/Sintel.de.srt')!;
+		await expect(resolveFile('rd', 'secret-token', item, srt.id)).rejects.toMatchObject({ code: 'archived_selection' });
 	});
 
 	it('uses the selected-file cursor for Real-Debrid links', async () => {
