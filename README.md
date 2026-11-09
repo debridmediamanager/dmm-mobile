@@ -139,17 +139,45 @@ rest of DMM web's list).
 
 ## Screenshots
 
-Pixel 6, Android 16, release build.
+Release builds, full resolution (click one to open it). The libraries show Blender
+open movies (CC BY) from a screenshot fixture of the real screens; the two sign-in
+screens are the app as it ships.
+
+### Phones
+
+Pixel 6 (Android 16) and iPhone 17 Pro simulator (iOS 26.5).
 
 <p>
-<img src="docs/screenshots/sign-in.png" width="180" alt="Sign-in screen listing each provider">
-<img src="docs/screenshots/device-code.png" width="180" alt="Premiumize device code waiting for approval">
-<img src="docs/screenshots/library.png" width="180" alt="Library rows filtered to Real-Debrid, Blender open movies">
-<img src="docs/screenshots/detail.png" width="180" alt="Tears of Steel detail with file selection">
-<img src="docs/screenshots/accounts.png" width="180" alt="Accounts with Real-Debrid connected">
+<a href="docs/screenshots/android-phone-library.png"><img src="docs/screenshots/android-phone-library.png" width="200" alt="Library on an Android phone: one dense list across six providers with a download in progress"></a>
+<a href="docs/screenshots/android-phone-detail.png"><img src="docs/screenshots/android-phone-detail.png" width="200" alt="Tears of Steel detail with its files and subtitles"></a>
+<a href="docs/screenshots/android-phone-menu.png"><img src="docs/screenshots/android-phone-menu.png" width="200" alt="A row's menu: details, select, share, delete"></a>
+<a href="docs/screenshots/iphone-library.png"><img src="docs/screenshots/iphone-library.png" width="200" alt="Library on an iPhone"></a>
+<a href="docs/screenshots/iphone-sign-in.png"><img src="docs/screenshots/iphone-sign-in.png" width="200" alt="Sign-in on an iPhone, one card per provider"></a>
 </p>
 
-The library shows Blender open movies (CC BY) on a test account.
+### Tablets
+
+Pixel 6 set to a 10-inch tablet's screen (2560×1600) and iPad Pro 13-inch simulator.
+The tabs become a rail on the left.
+
+<p>
+<a href="docs/screenshots/android-tablet-library.png"><img src="docs/screenshots/android-tablet-library.png" width="560" alt="Library on an Android tablet in landscape with the tab rail"></a>
+<a href="docs/screenshots/ipad-library.png"><img src="docs/screenshots/ipad-library.png" width="300" alt="Library on an iPad"></a>
+</p>
+
+### TVs
+
+Fire TV Cube (Fire OS 7, 1080p) and Apple TV 4K simulator (tvOS 26.5, 4K). The
+focused control is outlined; a TV signs in by scanning a QR code with a phone.
+
+<p>
+<a href="docs/screenshots/firetv-sign-in.png"><img src="docs/screenshots/firetv-sign-in.png" width="440" alt="TV sign-in: a QR code and a short code to approve on debridmediamanager.com/tv"></a>
+<a href="docs/screenshots/firetv-library.png"><img src="docs/screenshots/firetv-library.png" width="440" alt="Library on a Fire TV with a row focused by the remote"></a>
+<a href="docs/screenshots/firetv-detail.png"><img src="docs/screenshots/firetv-detail.png" width="440" alt="Detail on a Fire TV"></a>
+<a href="docs/screenshots/appletv-library.png"><img src="docs/screenshots/appletv-library.png" width="440" alt="Library on an Apple TV in 4K"></a>
+<a href="docs/screenshots/appletv-menu.png"><img src="docs/screenshots/appletv-menu.png" width="440" alt="A row's menu on an Apple TV, opened with the remote"></a>
+<a href="docs/screenshots/appletv-select.png"><img src="docs/screenshots/appletv-select.png" width="440" alt="Selecting rows on an Apple TV for a bulk action"></a>
+</p>
 
 ### Tested on the device (2026-11-09)
 
@@ -161,6 +189,11 @@ The library shows Blender open movies (CC BY) on a test account.
 | AllDebrid | Pasted key and library; the PIN is created and shown on AllDebrid's page, approval not completed in this test |
 | TorBox | Pasted key and library; a free-plan key is refused |
 | Offcloud | Pasted key, library, provider filter, open a file (sizes show as unknown: Offcloud's history and file list carry none) |
+
+On TVs (2026-11-09): the Fire TV Cube signed in by scanning its QR code with a
+phone, then the library, remote navigation, search with the on-screen keyboard
+and opening a file were tested. The Apple TV simulator signed in the same way
+and was driven with the remote. A real Apple TV has not been tested yet.
 
 This project is distributed under AGPL-3.0-only. See `LICENSE` and `NOTICE.md`.
 
