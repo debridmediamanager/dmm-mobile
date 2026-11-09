@@ -847,22 +847,29 @@ export async function validateCredential(
 			const result = await request<unknown>('tb', `${TB_BASE}/user/me`, { headers: authHeaders(token) }, signal);
 			const body = assertTorBox(result.body);
 			const user = assertObject(body.data, 'tb');
+			// TorBox plans: 0 Free, 1 Essential, 2 Pro, 3 Standard. Free has no API access.
+			if (user.plan === 0) throw new ProviderApiError('tb', 'This TorBox account is on the free plan, which has no API access. A paid plan is needed.', 'not_premium');
 			return { label: typeof user.email === 'string' ? user.email : undefined };
 		}
 		case 'pm': {
 			const result = await formRequest<Record<string, unknown>>('pm', `${PM_BASE}/account/info`, token, {}, signal);
 			const body = assertPremiumize(result.body);
-			return { label: typeof body.customer_id === 'string' ? body.customer_id : undefined };
+			if (!(typeof body.premium_until === 'number' && body.premium_until * 1000 > Date.now())) {
+				throw new ProviderApiError('pm', 'That sign-in works, but the Premiumize account is not premium.', 'not_premium');
+			}
+			return { label: body.customer_id === undefined ? undefined : String(body.customer_id) };
 		}
 		case 'oc': {
 			const result = await request<Record<string, unknown>>('oc', `${OC_BASE}/account/info`, { headers: authHeaders(token) }, signal);
 			const body = assertOffcloud(result.body);
+			if (body.is_premium !== true) throw new ProviderApiError('oc', 'That key works, but the Offcloud account is not premium.', 'not_premium');
 			return { label: typeof body.email === 'string' ? body.email : undefined };
 		}
 		case 'dl': {
 			const result = await request<unknown>('dl', `${DL_BASE}/account/infos`, { headers: authHeaders(token) }, signal);
 			const body = assertDebridLink(result.body);
 			const account = assertObject(body.value, 'dl');
+			if (account.accountType !== 1) throw new ProviderApiError('dl', 'That sign-in works, but the Debrid-Link account is not premium.', 'not_premium');
 			return { label: typeof account.username === 'string' ? account.username : undefined };
 		}
 	}

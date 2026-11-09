@@ -1,0 +1,8 @@
+{
+ "device_code": "L2RMU6GP5GGGDW45PNYMKUUSLUFVIRFBJ3J4CEDUTKM32GF7E26A",
+ "user_code": "7PD7HVD7",
+ "interval": 5,
+ "expires_in": 900,
+ "verification_url": "https://real-debrid.com/device",
+ "direct_verification_url": "https://real-debrid.com/authorize?client_id=X245A4XAIBGVM&device_id=L2RMU6GP5GGGDW45PNYMKUUSLUFVIRFBJ3J4CEDUTKM32GF7E26A"
+}

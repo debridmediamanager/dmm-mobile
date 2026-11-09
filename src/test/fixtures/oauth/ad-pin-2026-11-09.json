@@ -1,0 +1,10 @@
+{
+ "status": "success",
+ "data": {
+  "pin": "5559",
+  "check": "d0425680fe665071fb900551fcce9f5e6a313fa5",
+  "expires_in": 593,
+  "user_url": "https://alldebrid.com/pin/?pin=5559",
+  "base_url": "https://alldebrid.com/pin/"
+ }
+}

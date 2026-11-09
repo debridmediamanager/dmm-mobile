@@ -143,6 +143,7 @@ const api = {
 		currentItems = currentItems.filter((item) => item.id !== itemId);
 	},
 	selectRealDebridFiles: async () => undefined,
+	renewCredential: async (_provider, credential) => credential,
 } as SessionApi;
 
 const session = new LibrarySession(storage, api);

@@ -3,13 +3,14 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { AppProvider } from './AppContext';
+import { AppProvider, useApp } from './AppContext';
 import type { MainTabParamList, RootStackParamList } from './navigation';
 import { AccountsScreen } from './screens/AccountsScreen';
 import { DetailScreen } from './screens/DetailScreen';
 import { LibraryScreen, TransfersScreen } from './screens/LibraryScreen';
 import { useAppTheme } from './theme';
 import type { LibrarySession } from './session';
+import { PROVIDERS } from './model';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tabs = createBottomTabNavigator<MainTabParamList>();
@@ -36,6 +37,9 @@ function MainTabs() {
 
 export function AppNavigation() {
 	const theme = useAppTheme();
+	const { ready, startupError, snapshot } = useApp();
+	// Sign-in comes first; a storage error stays on the tabs so its Retry banner is reachable.
+	const needsSignIn = ready && !startupError && !PROVIDERS.some((provider) => snapshot.connected[provider]);
 	const navigationTheme = theme.dark ? NavigationDarkTheme : NavigationDefaultTheme;
 	return (
 		<NavigationContainer
@@ -45,8 +49,14 @@ export function AppNavigation() {
 			}}
 		>
 			<Stack.Navigator screenOptions={{ contentStyle: { backgroundColor: theme.background }, headerStyle: { backgroundColor: theme.surface }, headerTintColor: theme.text, headerShadowVisible: false }}>
-				<Stack.Screen name="Main" component={MainTabs} options={{ headerShown: false }} />
-				<Stack.Screen name="Detail" component={DetailScreen} options={{ title: 'Library item' }} />
+				{needsSignIn ? (
+					<Stack.Screen name="SignIn" component={AccountsScreen} options={{ headerShown: false }} />
+				) : (
+					<>
+						<Stack.Screen name="Main" component={MainTabs} options={{ headerShown: false }} />
+						<Stack.Screen name="Detail" component={DetailScreen} options={{ title: 'Library item' }} />
+					</>
+				)}
 			</Stack.Navigator>
 			<StatusBar style={theme.dark ? 'light' : 'dark'} />
 		</NavigationContainer>

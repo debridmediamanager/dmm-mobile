@@ -14,6 +14,7 @@ import {
 	selectRealDebridFiles,
 	validateCredential,
 } from './providerApi';
+import { needsRenewal, parseCredential, renewCredential, serializeCredential, type StoredCredential } from './auth';
 import type { CredentialStorage } from './storage';
 import { secureCredentialStorage } from './storage';
 
@@ -25,6 +26,7 @@ export interface SessionApi {
 	addMagnet: typeof addMagnet;
 	deleteLibraryItem: typeof deleteLibraryItem;
 	selectRealDebridFiles: typeof selectRealDebridFiles;
+	renewCredential: typeof renewCredential;
 }
 
 export interface SessionSnapshot {
@@ -43,6 +45,7 @@ const defaultApi: SessionApi = {
 	addMagnet,
 	deleteLibraryItem,
 	selectRealDebridFiles,
+	renewCredential,
 };
 
 const emptySnapshot = (): SessionSnapshot => ({
@@ -60,6 +63,8 @@ export class LibrarySession {
 	private readonly storage: CredentialStorage;
 	private readonly api: SessionApi;
 	private readonly tokens: ProviderTokens = {};
+	private readonly credentials: Partial<Record<ProviderId, StoredCredential>> = {};
+	private readonly renewals = new Map<ProviderId, Promise<void>>();
 	private readonly itemsByProvider: Partial<Record<ProviderId, LibraryItem[]>> = {};
 	private readonly labels: Partial<Record<ProviderId, string>> = {};
 	private readonly failures = new Map<ProviderId, ProviderFailure>();
@@ -119,7 +124,11 @@ export class LibrarySession {
 		);
 		for (const { provider, token, generation, operation } of reads) {
 			if (generation !== this.generations[provider] || operation !== this.connectionOperations[provider]) continue;
-			if (token) this.tokens[provider] = token;
+			if (!token) continue;
+			const credential = parseCredential(token);
+			this.credentials[provider] = credential;
+			this.tokens[provider] = credential.token;
+			if (credential.label) this.labels[provider] = credential.label;
 		}
 		this.notify();
 	}
@@ -136,21 +145,51 @@ export class LibrarySession {
 		return snapshot;
 	}
 
-	private tokenFor(provider: ProviderId): string {
+	/** Renews an OAuth access token shortly before it expires; one renewal per provider at a time. */
+	private renewIfDue(provider: ProviderId): Promise<void> | null {
+		const credential = this.credentials[provider];
+		if (!credential || !needsRenewal(credential)) return null;
+		const pending = this.renewals.get(provider);
+		if (pending) return pending;
+		const generation = this.generations[provider];
+		const operation = this.connectionOperations[provider];
+		const renewal = (async () => {
+			const renewed = await this.api.renewCredential(provider, credential);
+			if (!this.isCurrentConnection(provider, generation, operation)) return;
+			await this.enqueueStorage(provider, () => this.storage.set(provider, serializeCredential(renewed)));
+			if (!this.isCurrentConnection(provider, generation, operation)) return;
+			this.credentials[provider] = renewed;
+			this.tokens[provider] = renewed.token;
+		})().finally(() => this.renewals.delete(provider));
+		this.renewals.set(provider, renewal);
+		return renewal;
+	}
+
+	/** Synchronous unless a renewal is due, so a disconnect cannot slip in between. */
+	private async tokenFor(provider: ProviderId): Promise<string> {
+		const renewal = this.renewIfDue(provider);
+		if (renewal) await renewal;
+		return this.currentToken(provider);
+	}
+
+	private currentToken(provider: ProviderId): string {
 		const token = this.tokens[provider];
 		if (!token) throw new Error('Connect this provider in Accounts first.');
 		return token;
 	}
 
-	async connect(provider: ProviderId, token: string): Promise<void> {
-		const cleanToken = token.trim();
+	/** Takes a pasted key or a credential from a device sign-in. */
+	async connect(provider: ProviderId, input: string | StoredCredential): Promise<void> {
+		const credential = typeof input === 'string' ? { token: input.trim() } : { ...input, token: input.token.trim() };
 		const generation = this.generations[provider];
 		const operation = ++this.connectionOperations[provider];
-		const account = await this.api.validateCredential(provider, cleanToken);
+		const account = await this.api.validateCredential(provider, credential.token);
 		if (!this.isCurrentConnection(provider, generation, operation)) throw new Error('Connection was cancelled.');
-		await this.enqueueStorage(provider, () => this.storage.set(provider, cleanToken));
+		if (account.label) credential.label = account.label;
+		await this.enqueueStorage(provider, () => this.storage.set(provider, serializeCredential(credential)));
 		if (!this.isCurrentConnection(provider, generation, operation)) throw new Error('Connection was cancelled.');
-		this.tokens[provider] = cleanToken;
+		this.credentials[provider] = credential;
+		this.tokens[provider] = credential.token;
 		if (account.label) this.labels[provider] = account.label;
 		this.failures.delete(provider);
 		this.notify();
@@ -162,6 +201,7 @@ export class LibrarySession {
 		this.controllers.get(provider)?.abort();
 		this.controllers.delete(provider);
 		delete this.tokens[provider];
+		delete this.credentials[provider];
 		delete this.labels[provider];
 		delete this.itemsByProvider[provider];
 		this.failures.delete(provider);
@@ -177,6 +217,15 @@ export class LibrarySession {
 	}
 
 	async refreshProvider(provider: ProviderId): Promise<void> {
+		if (!this.tokens[provider]) return;
+		try {
+			const renewal = this.renewIfDue(provider);
+			if (renewal) await renewal;
+		} catch (error) {
+			this.failures.set(provider, { provider, message: messageOf(error) });
+			this.notify();
+			return;
+		}
 		const token = this.tokens[provider];
 		if (!token) return;
 		const generation = this.generations[provider];
@@ -218,7 +267,9 @@ export class LibrarySession {
 	}
 
 	async detail(provider: ProviderId, itemId: string): Promise<LibraryItem> {
-		const token = this.tokenFor(provider);
+		const renewal = this.renewIfDue(provider);
+		if (renewal) await renewal;
+		const token = this.currentToken(provider);
 		const generation = this.generations[provider];
 		const item = await this.api.getLibraryDetail(provider, token, itemId);
 		if (generation !== this.generations[provider] || this.tokens[provider] !== token) {
@@ -233,7 +284,9 @@ export class LibrarySession {
 	}
 
 	async openFile(provider: ProviderId, item: LibraryItem, fileId: string): Promise<string> {
-		const token = this.tokenFor(provider);
+		const renewal = this.renewIfDue(provider);
+		if (renewal) await renewal;
+		const token = this.currentToken(provider);
 		const generation = this.generations[provider];
 		const url = await this.api.resolveFile(provider, token, item, fileId);
 		if (generation !== this.generations[provider] || this.tokens[provider] !== token) {
@@ -243,18 +296,18 @@ export class LibrarySession {
 	}
 
 	async add(provider: ProviderId, magnet: string): Promise<void> {
-		await this.api.addMagnet(provider, this.tokenFor(provider), magnet);
+		await this.api.addMagnet(provider, await this.tokenFor(provider), magnet);
 		await this.refreshProvider(provider);
 	}
 
 	async remove(provider: ProviderId, itemId: string): Promise<void> {
-		await this.api.deleteLibraryItem(provider, this.tokenFor(provider), itemId);
+		await this.api.deleteLibraryItem(provider, await this.tokenFor(provider), itemId);
 		await this.refreshProvider(provider);
 	}
 
 	async selectFiles(item: LibraryItem, files: LibraryFile[]): Promise<void> {
 		if (item.provider !== 'rd') throw new Error('File selection is only available for Real-Debrid waiting items.');
-		await this.api.selectRealDebridFiles(this.tokenFor('rd'), item.id, files.map((file) => file.id));
+		await this.api.selectRealDebridFiles(await this.tokenFor('rd'), item.id, files.map((file) => file.id));
 		await this.refreshProvider('rd');
 	}
 }

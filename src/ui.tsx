@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Linking, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
+import { startDeviceLogin, supportsDeviceLogin, waitForApproval, type DeviceLogin, type StoredCredential } from './auth';
 import type { LibraryItem, ProviderId } from './model';
 import { PROVIDER_META, statusLabel } from './model';
 import { formatBytes } from './core';
@@ -111,7 +112,7 @@ export function CredentialInput({
 	provider: ProviderId;
 	connected: boolean;
 	label?: string;
-	onConnect: (token: string) => Promise<void>;
+	onConnect: (credential: string | StoredCredential) => Promise<void>;
 	onDisconnect: () => Promise<void>;
 	busy: boolean;
 	error?: string;
@@ -119,6 +120,10 @@ export function CredentialInput({
 	const theme = useAppTheme();
 	const [token, setToken] = useState('');
 	const [localError, setLocalError] = useState('');
+	const [device, setDevice] = useState<DeviceLogin | null>(null);
+	const [starting, setStarting] = useState(false);
+	const waiting = useRef<AbortController | null>(null);
+	useEffect(() => () => waiting.current?.abort(), []);
 	const meta = PROVIDER_META[provider];
 	const submit = async () => {
 		setLocalError('');
@@ -129,6 +134,38 @@ export function CredentialInput({
 			setLocalError(caught instanceof Error ? caught.message : 'Could not connect.');
 		}
 	};
+	const signIn = async () => {
+		if (!supportsDeviceLogin(provider)) return;
+		setLocalError('');
+		setStarting(true);
+		const controller = new AbortController();
+		waiting.current?.abort();
+		waiting.current = controller;
+		try {
+			const login = await startDeviceLogin(provider);
+			if (controller.signal.aborted) return;
+			setDevice(login);
+			void Linking.openURL(login.verificationUrl).catch(() => undefined);
+			const credential = await waitForApproval(login, controller.signal);
+			if (!credential) return;
+			await onConnect(credential);
+		} catch (caught) {
+			if (!controller.signal.aborted) setLocalError(caught instanceof Error ? caught.message : 'Could not sign in.');
+		} finally {
+			if (waiting.current === controller) {
+				waiting.current = null;
+				setDevice(null);
+				setStarting(false);
+			}
+		}
+	};
+	const cancel = () => {
+		waiting.current?.abort();
+		waiting.current = null;
+		setDevice(null);
+		setStarting(false);
+	};
+	const host = (url: string) => url.replace(/^https?:\/\//, '').split(/[/?]/, 1)[0];
 	return (
 		<View style={[styles.accountCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
 			<View style={styles.rowBetween}>
@@ -142,8 +179,31 @@ export function CredentialInput({
 						{busy ? <ActivityIndicator color={theme.danger} /> : <Text style={[styles.outlineButtonText, { color: theme.danger }]}>Disconnect</Text>}
 					</Pressable>
 				</View>
+			) : device ? (
+				<View style={{ gap: 10, alignItems: 'center' }}>
+					<Text style={[styles.subheading, { color: theme.muted, textAlign: 'center' }]}>Approve this code on {host(device.verificationUrl)}:</Text>
+					<Text selectable accessibilityLabel={`${meta.label} sign-in code ${device.userCode}`} style={[styles.deviceCode, { color: theme.text }]}>{device.userCode}</Text>
+					<Pressable accessibilityRole="link" accessibilityLabel={`Open ${host(device.verificationUrl)}`} onPress={() => void Linking.openURL(device.verificationUrl)} style={[styles.primaryButton, { backgroundColor: theme.accent, alignSelf: 'stretch' }]}>
+						<Text style={[styles.primaryButtonText, { color: theme.onAccent }]}>Open {host(device.verificationUrl)}</Text>
+					</Pressable>
+					<View style={styles.row}>
+						<ActivityIndicator color={theme.muted} />
+						<Text style={[styles.detailMeta, { color: theme.muted, marginTop: 0 }]}>{busy ? 'Signed in, checking the account…' : 'Waiting for approval…'}</Text>
+					</View>
+					<Pressable accessibilityRole="button" accessibilityLabel={`Cancel ${meta.label} sign-in`} onPress={cancel} hitSlop={8}>
+						<Text style={{ color: theme.accent, fontWeight: '700' }}>Cancel</Text>
+					</Pressable>
+				</View>
 			) : (
 				<>
+					{supportsDeviceLogin(provider) ? (
+						<>
+							<Pressable accessibilityRole="button" accessibilityLabel={`Sign in with ${meta.label}`} onPress={() => void signIn()} disabled={busy || starting} style={[styles.primaryButton, { backgroundColor: theme.accent, opacity: busy || starting ? 0.55 : 1 }]}>
+								{starting ? <ActivityIndicator color={theme.onAccent} /> : <Text style={[styles.primaryButtonText, { color: theme.onAccent }]}>Sign in with {meta.label}</Text>}
+							</Pressable>
+							<Text style={[styles.dividerText, { color: theme.muted }]}>or paste an {meta.credentialLabel}</Text>
+						</>
+					) : null}
 					<TextInput
 						accessibilityLabel={`${meta.label} ${meta.credentialLabel}`}
 						value={token}
@@ -155,9 +215,14 @@ export function CredentialInput({
 						autoCorrect={false}
 						style={[styles.input, { backgroundColor: theme.input, borderColor: theme.border, color: theme.text }]}
 					/>
-					<Pressable accessibilityRole="button" accessibilityLabel={`Connect ${meta.label}`} onPress={() => void submit()} disabled={busy || !token.trim()} style={[styles.primaryButton, { backgroundColor: theme.accent, opacity: busy || !token.trim() ? 0.55 : 1 }]}>
-						{busy ? <ActivityIndicator color={theme.onAccent} /> : <Text style={[styles.primaryButtonText, { color: theme.onAccent }]}>Validate and connect</Text>}
-					</Pressable>
+					<View style={styles.row}>
+						<Pressable accessibilityRole="button" accessibilityLabel={`Connect ${meta.label}`} onPress={() => void submit()} disabled={busy || !token.trim()} style={[supportsDeviceLogin(provider) ? styles.outlineButton : styles.primaryButton, supportsDeviceLogin(provider) ? { borderColor: theme.accent, flex: 1, alignItems: 'center', minHeight: 44 } : { backgroundColor: theme.accent, flex: 1 }, { opacity: busy || !token.trim() ? 0.55 : 1 }]}>
+							{busy ? <ActivityIndicator color={supportsDeviceLogin(provider) ? theme.accent : theme.onAccent} /> : <Text style={[styles.primaryButtonText, { color: supportsDeviceLogin(provider) ? theme.accent : theme.onAccent }]}>Save key</Text>}
+						</Pressable>
+						<Pressable accessibilityRole="link" accessibilityLabel={`Get a ${meta.label} ${meta.credentialLabel}`} onPress={() => void Linking.openURL(meta.keyUrl)} hitSlop={8}>
+							<Text style={{ color: theme.accent, fontWeight: '700' }}>Get key</Text>
+						</Pressable>
+					</View>
 				</>
 			)}
 			{localError || error ? <Text style={[styles.inlineError, { color: theme.danger }]}>{localError || error}</Text> : null}
@@ -202,6 +267,8 @@ export const styles = StyleSheet.create({
 	outlineButton: { minHeight: 38, borderWidth: 1, borderRadius: 9, paddingHorizontal: 10, justifyContent: 'center' },
 	outlineButtonText: { fontWeight: '700', fontSize: 13 },
 	inlineError: { fontSize: 13, lineHeight: 19 },
+	deviceCode: { fontSize: 32, fontWeight: '700', letterSpacing: 4, fontVariant: ['tabular-nums'] },
+	dividerText: { fontSize: 12, textAlign: 'center' },
 	detailSection: { marginTop: 16, marginHorizontal: 16 },
 	detailTitle: { fontSize: 23, fontWeight: '700', marginTop: 12 },
 	detailMeta: { fontSize: 14, marginTop: 6 },

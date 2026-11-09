@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import type { StoredCredential } from './auth';
 import type { LibraryFile, LibraryItem, ProviderId } from './model';
 import { LibrarySession, type SessionSnapshot } from './session';
 
@@ -6,7 +7,7 @@ interface AppContextValue {
 	ready: boolean;
 	startupError?: string;
 	snapshot: SessionSnapshot;
-	connect(provider: ProviderId, token: string): Promise<void>;
+	connect(provider: ProviderId, credential: string | StoredCredential): Promise<void>;
 	disconnect(provider: ProviderId): Promise<void>;
 	refreshAll(): Promise<void>;
 	detail(provider: ProviderId, itemId: string): Promise<LibraryItem>;
@@ -61,8 +62,8 @@ export function AppProvider({ children, session: injectedSession }: { children: 
 		[sync]
 	);
 	const connect = useCallback(
-		(provider: ProviderId, token: string) => run(async () => {
-			await session.connect(provider, token);
+		(provider: ProviderId, credential: string | StoredCredential) => run(async () => {
+			await session.connect(provider, credential);
 			await session.refreshProvider(provider);
 		}),
 		[run, session]

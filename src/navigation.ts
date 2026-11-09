@@ -1,4 +1,5 @@
 export type RootStackParamList = {
+	SignIn: undefined;
 	Main: undefined;
 	Detail: { itemId: string };
 };

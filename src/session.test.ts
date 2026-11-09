@@ -50,6 +50,7 @@ const api = (listLibrary: SessionApi['listLibrary']): SessionApi => ({
 	addMagnet: vi.fn(),
 	deleteLibraryItem: vi.fn(),
 	selectRealDebridFiles: vi.fn(),
+	renewCredential: vi.fn(),
 });
 
 describe('secure session lifecycle', () => {
@@ -169,7 +170,7 @@ describe('secure session lifecycle', () => {
 			},
 			remove: async (provider) => { writes.push('remove'); values.delete(provider); },
 		};
-		const validate = vi.fn(async (_provider: ProviderId, token: string) => ({ label: token }));
+		const validate = vi.fn(async () => ({}));
 		const session = new LibrarySession(saved, { ...api(vi.fn()), validateCredential: validate });
 		const oldConnect = session.connect('rd', 'old-token');
 		await Promise.resolve();
@@ -194,5 +195,44 @@ describe('secure session lifecycle', () => {
 		await expect(session.disconnect('rd')).rejects.toThrow('keychain unavailable');
 		expect(session.snapshot().connected.rd).toBe(false);
 		expect(session.snapshot().failures[0]?.message).toContain('Secure credential removal failed');
+	});
+
+	it('renews an expiring device sign-in before listing and saves the new token', async () => {
+		const saved = storage();
+		await saved.set('rd', JSON.stringify({ token: 'old', refresh: 'device', clientId: 'C', clientSecret: 'S', expiresAt: Date.now() - 1 }));
+		const list = vi.fn(async () => [row('rd:1')]);
+		const renew = vi.fn(async (_provider: ProviderId, credential: { token: string }) => ({ ...credential, token: 'fresh', expiresAt: Date.now() + 86_400_000 }));
+		const session = new LibrarySession(saved, { ...api(list), renewCredential: renew });
+		await session.loadCredentials();
+		await Promise.all([session.refreshProvider('rd'), session.refreshProvider('rd')]);
+		expect(renew).toHaveBeenCalledTimes(1);
+		expect(list).toHaveBeenLastCalledWith('rd', 'fresh', expect.anything());
+		expect(JSON.parse((await saved.get('rd')) ?? '{}')).toMatchObject({ token: 'fresh', refresh: 'device' });
+	});
+
+	it('shows a failed renewal instead of listing with a dead token', async () => {
+		const saved = storage();
+		await saved.set('dl', JSON.stringify({ token: 'old', refresh: 'r', expiresAt: 1 }));
+		const list = vi.fn();
+		const session = new LibrarySession(saved, { ...api(list), renewCredential: vi.fn(async () => { throw new Error('Sign in again.'); }) });
+		await session.loadCredentials();
+		await session.refreshProvider('dl');
+		expect(list).not.toHaveBeenCalled();
+		expect(session.snapshot().failures[0]).toMatchObject({ provider: 'dl', message: 'Sign in again.' });
+	});
+
+	it('keeps the account label across a restart and still reads a bare key from older installs', async () => {
+		const saved = storage();
+		await new LibrarySession(saved, api(vi.fn())).connect('tb', '  key  ');
+		const restarted = new LibrarySession(saved, api(vi.fn()));
+		await restarted.loadCredentials();
+		expect(restarted.snapshot().labels.tb).toBe('account');
+
+		await saved.set('ad', 'bare-key');
+		const list = vi.fn(async () => []);
+		const older = new LibrarySession(saved, api(list));
+		await older.loadCredentials();
+		await older.refreshProvider('ad');
+		expect(list).toHaveBeenCalledWith('ad', 'bare-key', expect.anything());
 	});
 });

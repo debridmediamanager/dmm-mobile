@@ -15,6 +15,7 @@ import adStatusFixture from './test/fixtures/adstatus.json';
 import rdArchived from './test/fixtures/rd-info-archived-selection-2026-11-09.json';
 import rdEncodedXt from './test/fixtures/rd-addmagnet-encoded-xt-2026-11-09.json';
 import { parseBtihMagnet } from './validation';
+import tbFreePlan from './test/fixtures/tb-user-me-free-plan-2026-11-09.json';
 
 const jsonResponse = (body: unknown, status = 200, headers: Record<string, string> = {}) =>
 	new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json', ...headers } });
@@ -273,6 +274,30 @@ describe('provider request envelopes', () => {
 			const rows = await listLibrary(provider, 'secret-token');
 			expect(rows.length, provider).toBeGreaterThan(0);
 		}
+	});
+});
+
+describe('sign-in account checks', () => {
+	afterEach(() => _testing.resetDebridLinkFloodLockouts());
+
+	it('refuses a free TorBox plan, which has no API access', async () => {
+		vi.stubGlobal('fetch', vi.fn(() => Promise.resolve(jsonResponse(tbFreePlan))));
+		await expect(validateCredential('tb', 'key')).rejects.toMatchObject({ code: 'not_premium' });
+	});
+
+	it('refuses lapsed Premiumize, Offcloud and Debrid-Link accounts', async () => {
+		vi.stubGlobal('fetch', vi.fn(() => Promise.resolve(jsonResponse({ status: 'success', customer_id: '1', premium_until: 1 }))));
+		await expect(validateCredential('pm', 'key')).rejects.toMatchObject({ code: 'not_premium' });
+		vi.stubGlobal('fetch', vi.fn(() => Promise.resolve(jsonResponse({ email: 'a@example.invalid', is_premium: false }))));
+		await expect(validateCredential('oc', 'key')).rejects.toMatchObject({ code: 'not_premium' });
+		_testing.resetDebridLinkFloodLockouts();
+		vi.stubGlobal('fetch', vi.fn(() => Promise.resolve(jsonResponse({ success: true, value: { username: 'u', accountType: 0 } }))));
+		await expect(validateCredential('dl', 'key')).rejects.toMatchObject({ code: 'not_premium' });
+	});
+
+	it('accepts a premium Premiumize account and labels it by customer id', async () => {
+		vi.stubGlobal('fetch', vi.fn(() => Promise.resolve(jsonResponse({ status: 'success', customer_id: '704233992', premium_until: 1821398400 }))));
+		await expect(validateCredential('pm', 'key')).resolves.toEqual({ label: '704233992' });
 	});
 });
 
