@@ -241,7 +241,7 @@ function LibraryListScreen({ navigation, transfersOnly }: { navigation: Navigati
 					<View style={{ flex: 1 }}>
 						<Text style={[styles.heading, { color: theme.text }]}>{transfersOnly ? 'Transfers' : 'Library'}</Text>
 						<Text style={[styles.subheading, { color: theme.muted }]}>
-							{snapshot.items.length} item{snapshot.items.length === 1 ? '' : 's'} · {formatBytes(grouping.totalBytes)}{snapshot.fetchedAt ? ` · ${formatAgo(snapshot.fetchedAt)}` : ''}
+							{baseItems.length} item{baseItems.length === 1 ? '' : 's'} · {formatBytes(grouping.totalBytes)}{snapshot.fetchedAt ? ` · ${formatAgo(snapshot.fetchedAt)}` : ''}
 						</Text>
 					</View>
 					<Pressable accessibilityRole="button" accessibilityLabel={`Refresh ${transfersOnly ? 'transfers' : 'library'}`} onPress={() => void refreshAll()} disabled={refreshing} style={[styles.outlineButton, { borderColor: snapshot.failures.length ? theme.danger : theme.accent, opacity: refreshing ? 0.55 : 1 }]}><Text style={[styles.outlineButtonText, { color: snapshot.failures.length ? theme.danger : theme.accent }]}>{refreshing ? 'Refreshing…' : 'Refresh'}</Text></Pressable>
