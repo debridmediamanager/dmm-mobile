@@ -159,9 +159,43 @@ export function filterAndSortLibrary(
 	grouping: LibraryGrouping = groupLibrary(items),
 	now = Date.now()
 ): LibraryItem[] {
+	return filterLibrary(sortLibrary(items, query.sort), query, grouping, now);
+}
+
+/**
+ * Sorts once per sort change; filtering keeps the order, so a keystroke only filters.
+ * Keys are read once per row: comparing parsed dates or localeCompare inside the comparator
+ * took seconds on 7,205 rows on a Pixel 6 (2026-11-09).
+ */
+export function sortLibrary(items: readonly LibraryItem[], sort: SortMode): LibraryItem[] {
+	const keyed = items.map((item) => {
+		switch (sort) {
+			case 'title':
+				return { item, a: item.title.toLowerCase(), b: 0 };
+			case 'size':
+				return { item, a: -item.size, b: item.title.toLowerCase() };
+			case 'progress':
+				return { item, a: item.progress, b: item.title.toLowerCase() };
+			case 'oldest':
+				return { item, a: Date.parse(item.added) || 0, b: 0 };
+			default:
+				return { item, a: -(Date.parse(item.added) || 0), b: 0 };
+		}
+	});
+	keyed.sort((x, y) => (x.a < y.a ? -1 : x.a > y.a ? 1 : x.b < y.b ? -1 : x.b > y.b ? 1 : 0));
+	return keyed.map((entry) => entry.item);
+}
+
+/** The query's filters, in the order the rows came. */
+export function filterLibrary(
+	items: readonly LibraryItem[],
+	query: LibraryQuery,
+	grouping: LibraryGrouping = groupLibrary(items),
+	now = Date.now()
+): LibraryItem[] {
 	const search = query.search.trim();
 	const matches = search ? searchMatcher(search) : null;
-	const filtered = items.filter((item) => {
+	return items.filter((item) => {
 		if (query.provider !== 'all' && item.provider !== query.provider) return false;
 		if (query.media !== 'all' && mediaTypeOf(item) !== query.media) return false;
 		if (query.titleKey && titleKeyOf(item) !== query.titleKey) return false;
@@ -193,21 +227,6 @@ export function filterAndSortLibrary(
 				break;
 		}
 		return !matches || matches(item);
-	});
-
-	return filtered.sort((a, b) => {
-		switch (query.sort) {
-			case 'title':
-				return a.title.localeCompare(b.title);
-			case 'size':
-				return b.size - a.size || a.title.localeCompare(b.title);
-			case 'progress':
-				return a.progress - b.progress || a.title.localeCompare(b.title);
-			case 'oldest':
-				return new Date(a.added).getTime() - new Date(b.added).getTime();
-			default:
-				return new Date(b.added).getTime() - new Date(a.added).getTime();
-		}
 	});
 }
 

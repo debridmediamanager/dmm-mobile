@@ -67,7 +67,7 @@ export function ProviderBadge({ provider }: { provider: ProviderId }) {
 const MEDIA_LABEL = { movie: 'Movie', tv: 'TV', other: 'Other' } as const;
 const SHORT_PROVIDER = { rd: 'RD', ad: 'AD', tb: 'TB', pm: 'PM', oc: 'OC', dl: 'DL' } as const;
 /** Every row is this tall, so the list can jump and scroll thousands without measuring. */
-export const ROW_HEIGHT = 64;
+export const ROW_HEIGHT = 54;
 
 /** One dense library row, like a DMM web table row: name, then provider, size, type, state and date. */
 export const LibraryRow = memo(function LibraryRow({
@@ -110,10 +110,10 @@ export const LibraryRow = memo(function LibraryRow({
 		>
 			{selecting ? <Text style={{ color: selected ? theme.accent : theme.muted, fontSize: 16, fontWeight: '700', width: 18 }}>{selected ? '✓' : '○'}</Text> : null}
 			<View style={{ flex: 1, justifyContent: 'center' }}>
-				<Text numberOfLines={1} style={{ color: item.status === 'error' ? theme.danger : theme.text, fontSize: 14, fontWeight: '600' }}>{item.title}</Text>
-				<View style={[styles.row, { gap: 6, marginTop: 3 }]}>
+				<Text numberOfLines={1} style={{ color: item.status === 'error' ? theme.danger : theme.text, fontSize: 13.5, fontWeight: '600' }}>{item.title}</Text>
+				<View style={[styles.row, { gap: 6, marginTop: 2 }]}>
 					<View style={{ backgroundColor: meta.color, borderRadius: 4, paddingHorizontal: 4 }}><Text style={{ fontSize: 10, fontWeight: '800', color: item.provider === 'tb' || item.provider === 'pm' ? '#fff' : '#111827' }}>{SHORT_PROVIDER[item.provider]}</Text></View>
-					<Text numberOfLines={1} style={{ flexShrink: 1, color: theme.muted, fontSize: 12 }}>
+					<Text numberOfLines={1} style={{ flexShrink: 1, color: theme.muted, fontSize: 11.5 }}>
 						{formatBytes(item.size).replace('Unknown size', '—')} · {MEDIA_LABEL[mediaType]} · {new Date(item.added).toLocaleDateString()}{state}{live}
 					</Text>
 					{hashCount > 1 ? <Pressable accessibilityRole="button" accessibilityLabel={`${hashCount} same hash`} onPress={() => onGroup(item, 'hash')} hitSlop={12}><Text style={{ color: '#f97316', fontSize: 11, fontWeight: '700' }}>{hashCount}× hash</Text></Pressable> : null}
@@ -121,7 +121,7 @@ export const LibraryRow = memo(function LibraryRow({
 				</View>
 				{item.status !== 'finished' ? <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 2, backgroundColor: theme.border }}><View style={{ height: 2, width: `${Math.max(0, Math.min(100, item.progress))}%`, backgroundColor: theme.accent }} /></View> : null}
 			</View>
-			<Pressable accessibilityRole="button" accessibilityLabel={`More for ${item.title}`} onPress={() => onMore(item)} style={{ width: 44, height: ROW_HEIGHT, alignItems: 'center', justifyContent: 'center' }}>
+			<Pressable accessibilityRole="button" accessibilityLabel={`More for ${item.title}`} onPress={() => onMore(item)} style={{ width: 40, height: ROW_HEIGHT, alignItems: 'center', justifyContent: 'center' }}>
 				<Text style={{ color: theme.muted, fontSize: 20, fontWeight: '700' }}>⋯</Text>
 			</Pressable>
 		</Pressable>

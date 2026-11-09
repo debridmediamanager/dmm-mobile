@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import {
 	ActivityIndicator,
 	Alert,
@@ -23,7 +23,8 @@ import { useApp } from '../AppContext';
 import {
 	duplicatesToDelete,
 	EMPTY_QUERY,
-	filterAndSortLibrary,
+	filterLibrary,
+	sortLibrary,
 	formatAgo,
 	formatBytes,
 	groupLibrary,
@@ -108,7 +109,10 @@ function LibraryListScreen({ navigation, transfersOnly }: { navigation: Navigati
 	const [progress, setProgress] = useState('');
 	const baseItems = useMemo(() => (transfersOnly ? transferItems(snapshot.items) : snapshot.items), [snapshot.items, transfersOnly]);
 	const grouping = useMemo(() => groupLibrary(baseItems), [baseItems]);
-	const items = useMemo(() => filterAndSortLibrary(baseItems, { ...query, selected }, grouping), [baseItems, grouping, query, selected]);
+	const sorted = useMemo(() => sortLibrary(baseItems, query.sort), [baseItems, query.sort]);
+	// The search field renders each keystroke at once; the list follows when React has time.
+	const deferredQuery = useDeferredValue(query);
+	const items = useMemo(() => filterLibrary(sorted, { ...deferredQuery, selected }, grouping), [sorted, grouping, deferredQuery, selected]);
 	const connectedProviders = PROVIDERS.filter((id) => snapshot.connected[id]);
 	const refreshing = Object.values(snapshot.loading).some(Boolean);
 	const set = (patch: Partial<LibraryQuery>) => setQuery((current) => ({ ...current, ...patch }));
@@ -258,7 +262,7 @@ function LibraryListScreen({ navigation, transfersOnly }: { navigation: Navigati
 	const check = (on: boolean, label: string) => `${on ? '✓ ' : ''}${label}`;
 	const pickerSheets: Record<NonNullable<typeof picker>, { title: string; actions: SheetAction[] }> = {
 		sort: { title: 'Sort', actions: sortModes.map((value) => ({ label: check(query.sort === value, value[0].toUpperCase() + value.slice(1)), onPress: () => set({ sort: value }) })) },
-		provider: { title: 'Provider', actions: [{ label: check(query.provider === 'all', 'All providers'), onPress: () => set({ provider: 'all' }) }, ...connectedProviders.map((id) => ({ label: check(query.provider === id, `${PROVIDER_META[id].label} (${baseItems.filter((item) => item.provider === id).length})`), onPress: () => set({ provider: id }) }))] },
+		provider: { title: 'Provider', actions: picker !== 'provider' ? [] : [{ label: check(query.provider === 'all', 'All providers'), onPress: () => set({ provider: 'all' }) }, ...connectedProviders.map((id) => ({ label: check(query.provider === id, `${PROVIDER_META[id].label} (${baseItems.filter((item) => item.provider === id).length})`), onPress: () => set({ provider: id }) }))] },
 		media: { title: 'Type', actions: medias.map((media) => ({ label: check(query.media === media.value, media.label), onPress: () => set({ media: media.value }) })) },
 		view: { title: 'Show', actions: visibleViews.map((view) => ({ label: check(query.view === view.value, view.value === 'selected' ? `Selected (${selected.size})` : view.label), onPress: () => set({ view: view.value }) })) },
 	};
@@ -278,9 +282,9 @@ function LibraryListScreen({ navigation, transfersOnly }: { navigation: Navigati
 			<View style={{ paddingHorizontal: 12, paddingTop: 6, gap: 6 }}>
 				<View style={styles.rowBetween}>
 					<View style={{ flex: 1 }}>
-						<Text style={{ color: theme.text, fontSize: 22, fontWeight: '700' }}>{transfersOnly ? 'Transfers' : 'Library'}</Text>
-						<Text numberOfLines={1} style={{ color: theme.muted, fontSize: 12 }}>
-							{baseItems.length} item{baseItems.length === 1 ? '' : 's'} · {formatBytes(grouping.totalBytes)}{snapshot.fetchedAt ? ` · ${formatAgo(snapshot.fetchedAt)}` : ''}
+						<Text style={{ color: theme.text, fontSize: 20, fontWeight: '700' }}>{transfersOnly ? 'Transfers' : 'Library'}</Text>
+						<Text numberOfLines={1} style={{ color: progress ? theme.accent : theme.muted, fontSize: 12 }}>
+							{progress || `${items.length === baseItems.length ? `${baseItems.length} item${baseItems.length === 1 ? '' : 's'}` : `${items.length} of ${baseItems.length} shown`} · ${formatBytes(grouping.totalBytes)}${snapshot.fetchedAt ? ` · ${formatAgo(snapshot.fetchedAt)}` : ''}${selected.size ? ` · ${selected.size} selected` : ''}`}
 						</Text>
 					</View>
 					<Pressable accessibilityRole="button" accessibilityLabel={`Refresh ${transfersOnly ? 'transfers' : 'library'}`} onPress={() => void refreshAll()} disabled={refreshing} style={[styles.outlineButton, { minHeight: 34, borderColor: snapshot.failures.length ? theme.danger : theme.accent, opacity: refreshing ? 0.55 : 1 }]}><Text style={[styles.outlineButtonText, { color: snapshot.failures.length ? theme.danger : theme.accent }]}>{refreshing ? 'Refreshing…' : 'Refresh'}</Text></Pressable>
@@ -297,17 +301,16 @@ function LibraryListScreen({ navigation, transfersOnly }: { navigation: Navigati
 					style={{ borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 7, fontSize: 15, backgroundColor: theme.input, borderColor: theme.border, color: theme.text }}
 				/>
 			</View>
-			<ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0, flexShrink: 0 }} contentContainerStyle={{ paddingHorizontal: 12, paddingVertical: 6, gap: 6 }}>
-				<DropdownChip label={sortLabel} active={query.sort !== 'newest'} onPress={() => setPicker('sort')} />
-				<DropdownChip label={query.provider === 'all' ? 'Provider' : PROVIDER_META[query.provider].label} active={query.provider !== 'all'} onPress={() => setPicker('provider')} />
-				<DropdownChip label={medias.find((media) => media.value === query.media)?.label ?? 'Any type'} active={query.media !== 'all'} onPress={() => setPicker('media')} />
-				<DropdownChip label={query.view === 'selected' ? `Selected (${selected.size})` : viewLabel} active={query.view !== 'all'} onPress={() => setPicker('view')} />
+			<View style={[styles.row, { paddingRight: 12, gap: 0 }]}>
+				<ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 12, paddingVertical: 6, gap: 6 }}>
+					<DropdownChip label={sortLabel} active={query.sort !== 'newest'} onPress={() => setPicker('sort')} />
+					<DropdownChip label={query.provider === 'all' ? 'Provider' : PROVIDER_META[query.provider].label} active={query.provider !== 'all'} onPress={() => setPicker('provider')} />
+					<DropdownChip label={medias.find((media) => media.value === query.media)?.label ?? 'Any type'} active={query.media !== 'all'} onPress={() => setPicker('media')} />
+					<DropdownChip label={query.view === 'selected' ? `Selected (${selected.size})` : viewLabel} active={query.view !== 'all'} onPress={() => setPicker('view')} />
 				{filtersActive ? <FilterButton label={`${query.titleKey ? 'One title' : 'One hash'} ✕`} active onPress={() => set({ titleKey: undefined, hashKey: undefined })} /> : null}
 				{JSON.stringify({ ...query, search: '' }) !== JSON.stringify({ ...EMPTY_QUERY, search: '' }) ? <FilterButton label="Reset" active={false} onPress={() => setQuery({ ...EMPTY_QUERY, search: query.search })} /> : null}
-			</ScrollView>
-			<View style={[styles.rowBetween, { paddingHorizontal: 12, paddingBottom: 4 }]}>
-				<Text numberOfLines={1} style={{ color: theme.muted, fontSize: 12, flex: 1 }}>{progress || `${items.length} shown${selected.size ? ` · ${selected.size} selected` : ''}`}</Text>
-				<Pressable accessibilityRole="button" accessibilityLabel="Library actions" disabled={Boolean(progress)} onPress={() => setSheet(true)} style={[styles.outlineButton, { minHeight: 30, borderColor: theme.accent, opacity: progress ? 0.55 : 1 }]}>
+				</ScrollView>
+				<Pressable accessibilityRole="button" accessibilityLabel="Library actions" disabled={Boolean(progress)} onPress={() => setSheet(true)} style={[styles.outlineButton, { minHeight: 32, borderColor: theme.accent, opacity: progress ? 0.55 : 1 }]}>
 					{progress ? <ActivityIndicator color={theme.accent} /> : <Text style={[styles.outlineButtonText, { color: theme.accent }]}>{selected.size ? `Actions (${selected.size})` : 'Actions'}</Text>}
 				</Pressable>
 			</View>
