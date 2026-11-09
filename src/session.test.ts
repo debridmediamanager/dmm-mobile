@@ -238,4 +238,25 @@ describe('secure session lifecycle', () => {
 		await older.refreshProvider('ad');
 		expect(list).toHaveBeenCalledWith('ad', 'bare-key', expect.anything());
 	});
+
+	it('lists a provider again a few seconds after an add, since TorBox lists a new torrent late', async () => {
+		vi.useFakeTimers();
+		try {
+			// 2026-11-09 on the Pixel 6: TorBox answered createtorrent, the refresh right after it
+			// did not list the torrent yet, and a manual refresh seconds later did.
+			const added = { ...row('tb:9'), provider: 'tb' as const };
+			let listed = false;
+			const listLibrary = vi.fn(async () => (listed ? [added] : []));
+			const saved = storage();
+			await saved.set('tb', 'token');
+			const session = new LibrarySession(saved, { ...api(listLibrary), addMagnet: vi.fn(async () => { setTimeout(() => { listed = true; }, 1000); }) });
+			await session.loadCredentials();
+			await session.addMany('tb', [{ kind: 'hash', hash: 'a'.repeat(40) }]);
+			expect(session.snapshot().items).toEqual([]);
+			await vi.advanceTimersByTimeAsync(5000);
+			expect(session.snapshot().items.map((item) => item.id)).toEqual(['tb:9']);
+		} finally {
+			vi.useRealTimers();
+		}
+	});
 });

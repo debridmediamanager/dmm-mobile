@@ -51,6 +51,8 @@ export interface SessionSnapshot {
 	fetchedAt?: number;
 }
 
+const LATE_LISTING_MS = 4000;
+
 const defaultApi: SessionApi = {
 	validateCredential,
 	listLibrary,
@@ -319,7 +321,13 @@ export class LibrarySession {
 
 	async add(provider: ProviderId, magnet: string): Promise<void> {
 		await this.api.addMagnet(provider, await this.tokenFor(provider), magnet);
+		await this.refreshAfterAdd(provider);
+	}
+
+	/** TorBox lists a new torrent a few seconds after accepting it (2026-11-09), so look twice. */
+	private async refreshAfterAdd(provider: ProviderId): Promise<void> {
 		await this.refreshProvider(provider);
+		setTimeout(() => void this.refreshProvider(provider), LATE_LISTING_MS);
 	}
 
 	/** Magnets, bare hashes and (TorBox) web links; the list refreshes once afterwards. */
@@ -340,13 +348,13 @@ export class LibrarySession {
 				provider === 'rd' ? 1 : 4
 			);
 		} finally {
-			await this.refreshProvider(provider);
+			await this.refreshAfterAdd(provider);
 		}
 	}
 
 	async addFile(provider: ProviderId, file: PickedFile): Promise<void> {
 		await this.api.addTorrentFile(provider, await this.tokenFor(provider), file);
-		await this.refreshProvider(provider);
+		await this.refreshAfterAdd(provider);
 	}
 
 	async reinsert(item: LibraryItem, fileIds?: string[]): Promise<void> {
