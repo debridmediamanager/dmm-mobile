@@ -23,7 +23,8 @@ export function SettingsScreen() {
 	const players = playersForPlatform();
 	const player = players.find((option) => option.id === settings.player) ?? players[0];
 	const connected = PROVIDERS.filter((id) => snapshot.connected[id]);
-	const addProvider = settings.addProvider && PROVIDERS.includes(settings.addProvider as ProviderId) ? (settings.addProvider as ProviderId) : null;
+	// A saved provider that is not connected here (it may be on DMM web) leaves adds on the first connected one.
+	const addProvider = settings.addProvider && connected.includes(settings.addProvider as ProviderId) ? (settings.addProvider as ProviderId) : null;
 
 	const options: Record<SettingName, SheetAction[]> = {
 		player: players.map((option) => ({ label: `${option.id === player.id ? '✓ ' : ''}${option.label}`, onPress: () => save('player', option.id) })),
