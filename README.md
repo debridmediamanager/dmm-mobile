@@ -76,7 +76,8 @@ about 6 s, smooth scrolling, search under a second per keystroke).
   progress, slow, failed, uncached, names Real-Debrid blocks, same hash, same
   title, selected). Sort by newest, oldest, title, size or progress.
 - **Rows** show the provider, size, type, date, progress and speed, and how many
-  copies share the hash or title; tapping those opens just that group.
+  copies share the hash or title; a row's ⋯ menu opens just that group, and has
+  the row's own actions.
 - **Selection and bulk actions**: long press selects. Actions take the
   selection, or everything shown when nothing is selected: reinsert, delete,
   share a hash list, back up, delete duplicates (keep the bigger, smaller,
