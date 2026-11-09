@@ -2,7 +2,7 @@ import lzString from 'lz-string';
 import { describe, expect, it } from 'vitest';
 import type { LibraryItem } from './model';
 import { runBulk } from './core';
-import { backupJson, hashlistUrl, parseAddInput, parseBackup } from './share';
+import { backupJson, hashlistUrl, parseAddInput, parseBackup, parseIncomingLink } from './share';
 
 const HASH = '0123456789abcdef0123456789abcdef01234567';
 const row = (overrides: Partial<LibraryItem>): LibraryItem => ({
@@ -56,5 +56,27 @@ describe('sharing and backups', () => {
 		expect(peak).toBe(4);
 		expect(result).toEqual({ done: 6, failed: [{ label: 'item 3', message: 'refused' }] });
 		expect(progress).toEqual([1, 2, 3, 4, 5, 6, 7]);
+	});
+});
+
+describe('links other apps open the app with', () => {
+	it('takes magnets from magnet: links and the app scheme', () => {
+		const magnet = 'magnet:?xt=urn:btih:a88fda5954e89178c372716a6a78b8180ed4dad3&dn=wired';
+		expect(parseIncomingLink(magnet)).toEqual({ kind: 'magnet', magnet });
+		expect(parseIncomingLink(`dmm-library://add?magnet=${encodeURIComponent(magnet)}`)).toEqual({ kind: 'magnet', magnet });
+	});
+
+	it('takes .torrent files from Android content URIs and iOS Inbox copies', () => {
+		// Shapes from the Pixel 6 (Files app, MediaStore) and an iOS Open In copy.
+		expect(parseIncomingLink('content://com.android.externalstorage.documents/document/primary%3ADownload%2Fwired-cd.torrent')).toEqual({ kind: 'torrent', uri: 'content://com.android.externalstorage.documents/document/primary%3ADownload%2Fwired-cd.torrent', name: 'wired-cd.torrent' });
+		expect(parseIncomingLink('content://media/external/file/523')).toEqual({ kind: 'torrent', uri: 'content://media/external/file/523', name: 'upload.torrent' });
+		expect(parseIncomingLink('file:///private/var/mobile/Containers/Data/Application/X/Documents/Inbox/Sintel%20(2010).torrent')).toMatchObject({ kind: 'torrent', name: 'Sintel (2010).torrent' });
+	});
+
+	it('ignores links that are neither', () => {
+		expect(parseIncomingLink(null)).toBeNull();
+		expect(parseIncomingLink('dmm-library://')).toBeNull();
+		expect(parseIncomingLink('https://example.com/a.torrent')).toBeNull();
+		expect(parseIncomingLink('dmm-library://add?magnet=%E0%A4%A')).toBeNull();
 	});
 });

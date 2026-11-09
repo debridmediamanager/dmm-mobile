@@ -18,6 +18,7 @@ import {
 	View,
 } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
+import { File, Paths } from 'expo-file-system';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import { useApp } from '../AppContext';
@@ -41,8 +42,9 @@ import {
 import type { LibraryItem, MediaType, ProviderId, SortMode } from '../model';
 import { PROVIDERS, PROVIDER_META } from '../model';
 import type { BulkResult } from '../session';
+import type { PickedFile } from '../providerApi';
 import { loadSettings, saveSetting } from '../settings';
-import { backupJson, hashlistUrl, parseAddInput, parseBackup, shareableItems } from '../share';
+import { backupJson, hashlistUrl, parseAddInput, parseBackup, parseIncomingLink, shareableItems } from '../share';
 import { magnetForHash } from '../validation';
 import type { RootStackParamList } from '../navigation';
 import { useAppTheme } from '../theme';
@@ -81,20 +83,12 @@ const shareMagnet = (item: LibraryItem) => {
 	}
 };
 
-/** A magnet handed to the app (magnet: link, or dmm-library://add?magnet=…). */
-const magnetFromUrl = (url: string | null | undefined): string | null => {
-	if (!url) return null;
-	if (/^magnet:\?/i.test(url)) return url;
-	const match = url.match(/[?&]magnet=([^&]+)/);
-	return match ? decodeURIComponent(match[1]) : null;
-};
-
 export function LibraryScreen({ navigation }: { navigation: Navigation }) {
 	const theme = useAppTheme();
 	const { ready, startupError, snapshot, refreshAll, retryStartup, bulk, remove, reinsert, checkRdUncached } = useApp();
 	const [query, setQuery] = useState<LibraryQuery>(EMPTY_QUERY);
 	const [selected, setSelected] = useState<Set<string>>(new Set());
-	const [adding, setAdding] = useState<{ text: string } | null>(null);
+	const [adding, setAdding] = useState<{ text: string; file?: PickedFile } | null>(null);
 	const [restoring, setRestoring] = useState(false);
 	const [sheet, setSheet] = useState(false);
 	const [picker, setPicker] = useState<'sort' | 'provider' | 'media' | 'view' | null>(null);
@@ -116,8 +110,9 @@ export function LibraryScreen({ navigation }: { navigation: Navigation }) {
 
 	useEffect(() => {
 		const open = (url: string | null | undefined) => {
-			const magnet = magnetFromUrl(url);
-			if (magnet) setAdding({ text: magnet });
+			const link = parseIncomingLink(url);
+			if (link?.kind === 'magnet') setAdding({ text: link.magnet });
+			else if (link?.kind === 'torrent') setAdding({ text: '', file: { uri: link.uri, name: link.name } });
 		};
 		void Linking.getInitialURL().then(open);
 		const subscription = Linking.addEventListener('url', (event) => open(event.url));
@@ -351,10 +346,22 @@ export function LibraryScreen({ navigation }: { navigation: Navigation }) {
 			{picker ? <ActionSheet title={pickerSheets[picker].title} actions={pickerSheets[picker].actions} onClose={() => setPicker(null)} /> : null}
 			{rowMenu ? <ActionSheet title={rowMenu.title} detail={`${PROVIDER_META[rowMenu.provider].label} · ${formatBytes(rowMenu.size)}`} actions={rowActions(rowMenu)} onClose={() => setRowMenu(null)} /> : null}
 			{sheet ? <ActionSheet title="Library actions" detail={`Acts on ${targetLabel}. Long press an item to select it.`} actions={actions} onClose={() => setSheet(false)} /> : null}
-			{adding ? <AddModal initialText={adding.text} connectedProviders={connectedProviders} onClose={() => setAdding(null)} /> : null}
+			{adding ? <AddModal initialText={adding.text} initialFile={adding.file} connectedProviders={connectedProviders} onClose={() => setAdding(null)} /> : null}
 			{restoring ? <RestoreModal connectedProviders={connectedProviders} onClose={() => setRestoring(false)} /> : null}
 		</Screen>
 	);
+}
+
+/**
+ * Another app's content:// file (Android "Open with"), copied into the cache: the upload reads it
+ * with expo/fetch, which takes file:// only. Picker and iOS Inbox files are file:// already.
+ */
+async function readableCopy(file: PickedFile): Promise<PickedFile> {
+	if (!/^content:/i.test(file.uri)) return file;
+	const copy = new File(Paths.cache, `incoming-${Date.now()}.torrent`);
+	// copy() is async; reading the destination before it settles uploads a partial file (torrent_file_invalid).
+	await new File(file.uri).copy(copy);
+	return { uri: copy.uri, name: file.name };
 }
 
 /** The provider the last add went to, DMM web's `settings:addMagnetProvider`. */
@@ -371,7 +378,7 @@ function useAddProvider(connectedProviders: ProviderId[]): [ProviderId | null, (
 	return [addProviderFor(wanted, connectedProviders), choose];
 }
 
-function AddModal({ initialText, connectedProviders, onClose }: { initialText: string; connectedProviders: ProviderId[]; onClose: () => void }) {
+function AddModal({ initialText, initialFile, connectedProviders, onClose }: { initialText: string; initialFile?: PickedFile; connectedProviders: ProviderId[]; onClose: () => void }) {
 	const theme = useAppTheme();
 	const { addMany, addFile } = useApp();
 	const [provider, setProvider] = useAddProvider(connectedProviders);
@@ -408,12 +415,20 @@ function AddModal({ initialText, connectedProviders, onClose }: { initialText: s
 		setError('');
 		if (!provider) return;
 		const picked = await DocumentPicker.getDocumentAsync({ type: ['application/x-bittorrent', 'application/octet-stream', '*/*'], multiple: true, copyToCacheDirectory: true });
-		if (picked.canceled) return;
+		if (!picked.canceled) await upload(picked.assets);
+	};
+
+	const upload = async (files: readonly PickedFile[]) => {
+		setError('');
+		if (!provider) {
+			setError('Connect a provider in Accounts first.');
+			return;
+		}
 		const failures: string[] = [];
-		for (const [index, asset] of picked.assets.entries()) {
-			setBusy(`Uploading ${index + 1}/${picked.assets.length}…`);
+		for (const [index, asset] of files.entries()) {
+			setBusy(`Uploading ${index + 1}/${files.length}…`);
 			try {
-				await addFile(provider, { uri: asset.uri, name: asset.name });
+				await addFile(provider, await readableCopy(asset));
 			} catch (caught) {
 				failures.push(`${asset.name}: ${caught instanceof Error ? caught.message : 'upload failed'}`);
 			}
@@ -429,10 +444,19 @@ function AddModal({ initialText, connectedProviders, onClose }: { initialText: s
 				<ScrollView keyboardShouldPersistTaps="handled" style={[styles.modalSheet, { backgroundColor: theme.surface, maxHeight: '90%', width: '100%' }]} contentContainerStyle={{ gap: 12 }}>
 					<View style={styles.rowBetween}><Text style={[styles.modalTitle, { color: theme.text }]}>Add to library</Text><Pressable accessibilityRole="button" accessibilityLabel="Close add" onPress={onClose} hitSlop={10}><Icon name="close" size={24} color={theme.muted} /></Pressable></View>
 					<View style={styles.modalButtonRow}>{connectedProviders.map((id) => <FilterButton key={id} label={PROVIDER_META[id].label} active={provider === id} onPress={() => setProvider(id)} />)}</View>
+					{initialFile ? (
+						<View style={[styles.row, styles.input, { backgroundColor: theme.input, borderColor: theme.border }]}>
+							<Icon name="file-download-outline" size={22} color={theme.accent} />
+							<Text numberOfLines={2} style={{ flex: 1, color: theme.text, fontSize: 15 }}>{initialFile.name}</Text>
+						</View>
+					) : <>
 					<TextInput accessibilityLabel="Magnets, hashes or links" value={text} onChangeText={setText} placeholder={'Magnets or info hashes, one per line\n(TorBox also takes web links)'} placeholderTextColor={theme.muted} autoCapitalize="none" autoCorrect={false} multiline style={[styles.input, { backgroundColor: theme.input, borderColor: theme.border, color: theme.text, minHeight: 110, textAlignVertical: 'top' }]} />
 					{provider === 'dl' ? <Text style={[styles.subheading, { color: theme.muted }]}>Debrid-Link adds a bare hash only when it is cached; paste a magnet to download it.</Text> : null}
+					</>}
 					{error ? <Text style={[styles.inlineError, { color: theme.danger }]}>{error}</Text> : null}
+					{initialFile ? <Pressable accessibilityRole="button" accessibilityLabel="Add torrent file" onPress={() => void upload([initialFile])} disabled={Boolean(busy) || !provider} style={[styles.primaryButton, { backgroundColor: theme.accent, opacity: busy || !provider ? 0.55 : 1 }]}><Text style={[styles.primaryButtonText, { color: theme.onAccent }]}>{busy || 'Add torrent file'}</Text></Pressable> : (
 					<Pressable accessibilityRole="button" accessibilityLabel="Submit magnets" onPress={() => void submit()} disabled={Boolean(busy) || !text.trim()} style={[styles.primaryButton, { backgroundColor: theme.accent, opacity: busy || !text.trim() ? 0.55 : 1 }]}>{busy ? <Text style={[styles.primaryButtonText, { color: theme.onAccent }]}>{busy}</Text> : <Text style={[styles.primaryButtonText, { color: theme.onAccent }]}>Add</Text>}</Pressable>
+					)}
 					<Pressable accessibilityRole="button" accessibilityLabel="Upload torrent files" onPress={() => void pickTorrent()} disabled={Boolean(busy) || !provider} style={[styles.outlineButton, { borderColor: theme.accent, alignItems: 'center', minHeight: 44, opacity: busy ? 0.55 : 1 }]}><Text style={[styles.outlineButtonText, { color: theme.accent }]}>Upload .torrent files</Text></Pressable>
 				</ScrollView>
 			</KeyboardAvoidingView>

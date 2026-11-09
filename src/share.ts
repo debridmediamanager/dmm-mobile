@@ -67,3 +67,30 @@ export function parseAddInput(text: string): { entries: AddEntry[]; invalid: str
 	}
 	return { entries, invalid };
 }
+
+/** What the OS handed the app: a magnet (magnet: link or dmm-library://add?magnet=…) or a .torrent file to upload. */
+export type IncomingLink = { kind: 'magnet'; magnet: string } | { kind: 'torrent'; uri: string; name: string };
+
+export function parseIncomingLink(url: string | null | undefined): IncomingLink | null {
+	if (!url) return null;
+	if (/^magnet:\?/i.test(url)) return { kind: 'magnet', magnet: url };
+	// Android opens a .torrent as content:// (or file://), iOS as a file:// copy in the app's Inbox.
+	if (/^(content|file):\/\//i.test(url)) {
+		let last = url.split(/[?#]/, 1)[0];
+		try {
+			last = decodeURIComponent(last);
+		} catch {
+			// a malformed escape keeps the raw path
+		}
+		last = last.split(/[/:]/).pop() ?? '';
+		// A media-store id ("…/file/523") carries no file name; the providers need only some .torrent name.
+		return { kind: 'torrent', uri: url, name: /\.torrent$/i.test(last) ? last : 'upload.torrent' };
+	}
+	const match = url.match(/[?&]magnet=([^&]+)/);
+	if (!match) return null;
+	try {
+		return { kind: 'magnet', magnet: decodeURIComponent(match[1]) };
+	} catch {
+		return null;
+	}
+}

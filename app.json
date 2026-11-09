@@ -12,14 +12,63 @@
     "icon": "./assets/icon.png",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.debridmediamanager.library"
+      "bundleIdentifier": "com.debridmediamanager.library",
+      "infoPlist": {
+        "CFBundleDocumentTypes": [
+          {
+            "CFBundleTypeName": "BitTorrent file",
+            "CFBundleTypeRole": "Viewer",
+            "LSHandlerRank": "Alternate",
+            "LSItemContentTypes": [
+              "org.bittorrent.torrent"
+            ]
+          }
+        ],
+        "UTImportedTypeDeclarations": [
+          {
+            "UTTypeIdentifier": "org.bittorrent.torrent",
+            "UTTypeDescription": "BitTorrent file",
+            "UTTypeConformsTo": [
+              "public.data"
+            ],
+            "UTTypeTagSpecification": {
+              "public.filename-extension": [
+                "torrent"
+              ],
+              "public.mime-type": [
+                "application/x-bittorrent"
+              ]
+            }
+          }
+        ],
+        "LSSupportsOpeningDocumentsInPlace": false
+      }
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#00A0B0",
         "foregroundImage": "./assets/adaptive-icon.png"
       },
-      "package": "com.debridmediamanager.library"
+      "package": "com.debridmediamanager.library",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "category": [
+            "DEFAULT",
+            "BROWSABLE"
+          ],
+          "data": [
+            {
+              "scheme": "content",
+              "mimeType": "application/x-bittorrent"
+            },
+            {
+              "scheme": "file",
+              "mimeType": "application/x-bittorrent"
+            }
+          ]
+        }
+      ]
     },
     "plugins": [
       "expo-secure-store",
