@@ -1258,15 +1258,15 @@ export interface PickedFile {
 
 /** Uploads a .torrent file as each provider's own endpoint takes it. */
 export async function addTorrentFile(provider: ProviderId, token: string, file: PickedFile, signal?: AbortSignal): Promise<void> {
-	const part = { uri: file.uri, name: file.name, type: 'application/x-bittorrent' } as unknown as Blob;
+	// expo/fetch takes Blob parts only; a React Native {uri} part fails before any request is sent.
+	const bytes = await (await fetch(file.uri)).blob();
 	const multipart = async <T,>(url: string, field: string): Promise<T> => {
 		const form = new FormData();
-		form.append(field, part);
+		(form.append as (name: string, value: Blob, filename: string) => void)(field, bytes, file.name);
 		return (await request<T>(provider, url, { method: 'POST', headers: authHeaders(token), body: form }, signal)).body;
 	};
 	switch (provider) {
 		case 'rd': {
-			const bytes = await (await fetch(file.uri)).blob();
 			const result = await request<Record<string, unknown>>('rd', `${RD_BASE}/torrents/addTorrent`, { method: 'PUT', headers: { ...authHeaders(token), 'Content-Type': 'application/x-bittorrent' }, body: bytes }, signal);
 			await selectRdDefault(token, rdAddedId(assertObject(result.body, 'rd')), signal);
 			return;

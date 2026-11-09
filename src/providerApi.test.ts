@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
 	_testing,
 	addMagnet,
+	addTorrentFile,
 	getLibraryDetail,
 	listLibrary,
 	ProviderApiError,
@@ -419,5 +420,31 @@ describe('Real-Debrid list page size', () => {
 		const rows = await listLibrary('rd', 'token');
 		expect(rows).toHaveLength(5);
 		expect(rows.filter((row) => row.uncached).map((row) => row.title)).toEqual([]);
+	});
+});
+
+describe('torrent file uploads', () => {
+	it('sends the file bytes as a Blob part, since expo/fetch refuses React Native {uri} parts', async () => {
+		// 2026-11-09 on the Pixel 6: every multipart upload failed with "could not be reached" while
+		// Real-Debrid's raw PUT of the same file worked. expo/fetch's convertFormData takes Blobs only.
+		const bytes = new Uint8Array([100, 56, 58, 97, 110, 110, 111, 117, 110, 99, 101]);
+		const bodies: unknown[] = [];
+		vi.stubGlobal('fetch', vi.fn((url: string, init: RequestInit = {}) => {
+			if (url.startsWith('file://')) return Promise.resolve(new Response(bytes));
+			bodies.push(init.body);
+			const body = url.includes('alldebrid') ? { status: 'success', data: { files: [{ name: 'sintel.torrent', id: 1 }] } }
+				: url.includes('torbox') ? { success: true, data: { torrent_id: 1 } }
+				: url.includes('premiumize') ? { status: 'success', id: 'x' }
+				: url.includes('offcloud') ? { requestId: 'r1' }
+				: { success: true, value: { id: 'x' } };
+			return Promise.resolve(jsonResponse(body));
+		}));
+		const fields = { ad: 'files[]', tb: 'file', pm: 'src', oc: 'file', dl: 'file' } as const;
+		for (const [provider, field] of Object.entries(fields)) {
+			await addTorrentFile(provider as keyof typeof fields, 'token', { uri: 'file:///cache/sintel.torrent', name: 'sintel.torrent' });
+			const part = (bodies.at(-1) as FormData).get(field);
+			expect(part, provider).toBeInstanceOf(Blob);
+			expect(new Uint8Array(await (part as Blob).arrayBuffer())).toEqual(bytes);
+		}
 	});
 });
