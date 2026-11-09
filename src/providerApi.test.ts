@@ -435,6 +435,26 @@ describe('Real-Debrid list page size', () => {
 		expect(fetchMock.mock.calls.every(([url]) => new URL(url).searchParams.get('limit') === '100')).toBe(true);
 		expect(progress).toEqual([1]);
 	});
+
+	it('waits out a 429 and asks for the page again, since the token budget is shared with zurg', async () => {
+		// 2026-11-09 on the Pixel 6, ymsita (also fun's production zurg): 4 parallel pages got too_many_requests.
+		vi.useFakeTimers();
+		try {
+			let refused = false;
+			vi.stubGlobal('fetch', vi.fn(() => {
+				if (!refused) {
+					refused = true;
+					return Promise.resolve(jsonResponse({ error: 'too_many_requests', error_code: 34 }, 429));
+				}
+				return Promise.resolve(jsonResponse(rdLinksByLimit.limit100, 200, { 'x-total-count': '5' }));
+			}));
+			const pending = findRealDebridUncached('token');
+			await vi.advanceTimersByTimeAsync(10_000);
+			expect([...(await pending)]).toEqual([]);
+		} finally {
+			vi.useRealTimers();
+		}
+	});
 });
 
 describe('torrent file uploads', () => {

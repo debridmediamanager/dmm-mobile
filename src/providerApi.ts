@@ -21,8 +21,10 @@ const PAGE_SIZE = 1000;
  */
 const RD_PAGE_SIZE = 5000;
 const RD_LINKS_PAGE_SIZE = 100;
-/** RD allows 250 requests a minute. */
-const RD_LINKS_CONCURRENCY = 4;
+/** RD allows 250 requests a minute per token, shared with anything else using it (zurg): 4 at once got 429s. */
+const RD_LINKS_CONCURRENCY = 2;
+const RD_RETRY_MS = 5000;
+const RD_RETRIES = 5;
 const MAX_PAGES = 100;
 const REQUEST_TIMEOUT_MS = 30_000;
 const DL_FLOOD_LOCKOUT_MS = 60 * 60 * 1000;
@@ -709,7 +711,16 @@ async function listRealDebrid(token: string, signal?: AbortSignal): Promise<Libr
 /** Ids of finished RD torrents with no links, read from 100-row pages, the only size that reports links fully. */
 export async function findRealDebridUncached(token: string, onProgress?: (done: number, total: number) => void, signal?: AbortSignal): Promise<Set<string>> {
 	const page = async (n: number) => {
-		const result = await request<unknown>('rd', `${RD_BASE}/torrents?page=${n}&limit=${RD_LINKS_PAGE_SIZE}&_fresh=${Date.now()}`, { headers: authHeaders(token) }, signal);
+		let result: HttpResult<unknown>;
+		for (let attempt = 0; ; attempt++) {
+			try {
+				result = await request<unknown>('rd', `${RD_BASE}/torrents?page=${n}&limit=${RD_LINKS_PAGE_SIZE}&_fresh=${Date.now()}`, { headers: authHeaders(token) }, signal);
+				break;
+			} catch (error) {
+				if (!(error instanceof ProviderApiError && error.status === 429) || attempt >= RD_RETRIES) throw error;
+				await new Promise((resolve) => setTimeout(resolve, RD_RETRY_MS));
+			}
+		}
 		if (!Array.isArray(result.body)) throw new ProviderApiError('rd', 'Real-Debrid returned an invalid library list.', 'invalid_response');
 		return { rows: result.body.map((row) => assertObject(row, 'rd')), total: Number(result.response.headers.get('x-total-count')) };
 	};
