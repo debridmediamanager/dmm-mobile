@@ -533,8 +533,9 @@ const buildPremiumizeItems = (
 		if (linkedRoot) usedRootIds.add(linkedRoot.id);
 		const name = transfer.name || linkedRoot?.name || transfer.id;
 		const entries = linkedRoot?.type === 'folder' ? filesUnder(linkedRoot.name) : linkedRoot ? [linkedRoot] : filesUnder(name);
-		const progress = normalizePercent(transfer.progress ?? 0);
 		const status = pmStatus(transfer.status);
+		// Premiumize reports a finished transfer's progress as null.
+		const progress = status === 'finished' ? 100 : normalizePercent(transfer.progress ?? 0);
 		const createdAt = entries
 			.map((entry) => safeNumber(entry.created_at, -1))
 			.filter((value) => value >= 0)

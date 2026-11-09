@@ -12,6 +12,7 @@ import {
 } from './providerApi';
 import rdMovie from './test/fixtures/rdinfo_movie.json';
 import rdTv from './test/fixtures/rdinfo_tv.json';
+import pmFinishedNull from './test/fixtures/pm-transfer-list-finished-null-progress-2026-11-09.json';
 import rdLinksByLimit from './test/fixtures/rd-torrents-links-by-limit-2026-11-09.json';
 import type { LibraryItem } from './model';
 import rdFixture from './test/fixtures/rd-bdmv-single-selection-2026-10-12.json';
@@ -446,5 +447,12 @@ describe('torrent file uploads', () => {
 			expect(part, provider).toBeInstanceOf(Blob);
 			expect(new Uint8Array(await (part as Blob).arrayBuffer())).toEqual(bytes);
 		}
+	});
+});
+
+describe('Premiumize finished transfers', () => {
+	it('shows a finished transfer as 100%, though Premiumize reports its progress as null', () => {
+		const items = _testing.buildPremiumizeItems(pmFinishedNull.transfers, [], []);
+		expect(items.map((item) => [item.status, item.progress])).toEqual([['finished', 100], ['finished', 100]]);
 	});
 });
