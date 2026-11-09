@@ -49,7 +49,7 @@ describe('external players', () => {
 	it('says to pick another player when the chosen one is not installed', async () => {
 		native.saved = 'android/com.brouken.player';
 		vi.mocked(IntentLauncher.startActivityAsync).mockRejectedValue(new Error('No Activity found'));
-		await expect(openFileLink(TB, 'a.mkv')).rejects.toThrow(/Just Player is not installed/);
+		await expect(openFileLink(TB, 'a.mkv')).rejects.toThrow(/Just Player is not installed.*Choose another player in Settings/);
 	});
 
 	it('ignores a saved player from the other platform', async () => {

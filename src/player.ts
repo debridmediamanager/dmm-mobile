@@ -74,13 +74,13 @@ export async function openFileLink(url: string, fileName: string): Promise<void>
 		try {
 			await IntentLauncher.startActivityAsync('android.intent.action.VIEW', { data: url, type: 'video/*', ...(option?.activity ? { packageName: pkg, className: option.activity } : {}) });
 		} catch {
-			throw new Error(`${label} is not installed, or would not open this file. Choose another player in Accounts.`);
+			throw new Error(`${label} is not installed, or would not open this file. Choose another player in Settings.`);
 		}
 		return;
 	}
 	try {
 		await Linking.openURL(iosPlayerUrl(player, url));
 	} catch {
-		throw new Error(`${label} is not installed. Choose another player in Accounts.`);
+		throw new Error(`${label} is not installed. Choose another player in Settings.`);
 	}
 }
