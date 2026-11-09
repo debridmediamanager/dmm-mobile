@@ -1050,7 +1050,11 @@ async function resolveRdFile(token: string, item: LibraryItem, fileId: string, s
 			{ headers: authHeaders(token) },
 			signal
 		);
-		link = rdFiles(result.body, true).find((entry) => entry.id === fileId)?.link;
+		const current = rdFiles(result.body, true).find((entry) => entry.id === fileId);
+		if (current && !current.selected && rdStatus(result.body.status) === 'finished') {
+			throw new ProviderApiError('rd', 'This file is not selected on Real-Debrid, so it has no link. Select it and save to add it.', 'not_selected');
+		}
+		link = current?.link;
 		const links = Array.isArray(result.body.links) ? result.body.links : [];
 		if (!link && links.length > 0 && rdStatus(result.body.status) === 'finished') {
 			throw new ProviderApiError('rd', 'Real-Debrid packed the selected files into one archive, so this file has no link of its own. Select only the files you want to open.', 'archived_selection');

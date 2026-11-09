@@ -13,6 +13,7 @@ import {
 import rdMovie from './test/fixtures/rdinfo_movie.json';
 import rdTv from './test/fixtures/rdinfo_tv.json';
 import pmFinishedNull from './test/fixtures/pm-transfer-list-finished-null-progress-2026-11-09.json';
+import rdVideoOnly from './test/fixtures/rd-info-video-only-selection-2026-11-09.json';
 import rdLinksByLimit from './test/fixtures/rd-torrents-links-by-limit-2026-11-09.json';
 import type { LibraryItem } from './model';
 import rdFixture from './test/fixtures/rd-bdmv-single-selection-2026-10-12.json';
@@ -454,5 +455,14 @@ describe('Premiumize finished transfers', () => {
 	it('shows a finished transfer as 100%, though Premiumize reports its progress as null', () => {
 		const items = _testing.buildPremiumizeItems(pmFinishedNull.transfers, [], []);
 		expect(items.map((item) => [item.status, item.progress])).toEqual([['finished', 100], ['finished', 100]]);
+	});
+});
+
+describe('Real-Debrid files outside the selection', () => {
+	it('says an unselected file is not selected, not that the selection was packed into an archive', async () => {
+		vi.stubGlobal('fetch', vi.fn(() => Promise.resolve(jsonResponse(rdVideoOnly))));
+		const item = { ..._testing.normalizeRd(rdVideoOnly, _testing.rdFiles(rdVideoOnly, false)), id: `rd:${rdVideoOnly.id}` };
+		const subtitle = item.files.find((file) => file.name.endsWith('.srt') && !file.selected);
+		await expect(resolveFile('rd', 'token', item, subtitle!.id)).rejects.toMatchObject({ code: 'not_selected' });
 	});
 });
