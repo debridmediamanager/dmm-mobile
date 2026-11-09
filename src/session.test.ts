@@ -54,6 +54,7 @@ const api = (listLibrary: SessionApi['listLibrary']): SessionApi => ({
 	addTorrentFile: vi.fn(),
 	addWebDownload: vi.fn(),
 	reinsertItem: vi.fn(),
+	findRealDebridUncached: vi.fn(),
 });
 
 describe('secure session lifecycle', () => {
@@ -258,5 +259,20 @@ describe('secure session lifecycle', () => {
 		} finally {
 			vi.useRealTimers();
 		}
+	});
+
+	it('marks Real-Debrid rows uncached only after the 100-row lookup, and keeps the marks across a refresh', async () => {
+		const saved = storage();
+		await saved.set('rd', 'token');
+		const findRealDebridUncached = vi.fn(async () => new Set(['rd:b']));
+		const session = new LibrarySession(saved, { ...api(vi.fn(async () => [row('rd:a'), row('rd:b')])), findRealDebridUncached });
+		await session.loadCredentials();
+		await session.refreshAll();
+		expect(session.snapshot().items.filter((item) => item.uncached)).toEqual([]);
+		expect(session.snapshot().rdUncachedChecked).toBe(false);
+		await session.checkRdUncached();
+		expect(session.snapshot().items.filter((item) => item.uncached).map((item) => item.id)).toEqual(['rd:b']);
+		await session.refreshAll();
+		expect(session.snapshot().items.filter((item) => item.uncached).map((item) => item.id)).toEqual(['rd:b']);
 	});
 });

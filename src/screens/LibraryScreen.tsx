@@ -97,7 +97,7 @@ export function TransfersScreen({ navigation }: { navigation: Navigation }) {
 
 function LibraryListScreen({ navigation, transfersOnly }: { navigation: Navigation; transfersOnly: boolean }) {
 	const theme = useAppTheme();
-	const { ready, startupError, snapshot, refreshAll, retryStartup, bulk } = useApp();
+	const { ready, startupError, snapshot, refreshAll, retryStartup, bulk, remove, reinsert, checkRdUncached } = useApp();
 	const [query, setQuery] = useState<LibraryQuery>(EMPTY_QUERY);
 	const [selected, setSelected] = useState<Set<string>>(new Set());
 	const [adding, setAdding] = useState<{ text: string } | null>(null);
@@ -128,6 +128,20 @@ function LibraryListScreen({ navigation, transfersOnly }: { navigation: Navigati
 		return () => subscription.remove();
 	}, [transfersOnly]);
 
+	// Real-Debrid's list cannot tell cached rows from uncached ones; look them up when that view is opened.
+	const checkingRd = useRef(false);
+	useEffect(() => {
+		if (query.view !== 'uncached' || !snapshot.connected.rd || snapshot.rdUncachedChecked || checkingRd.current) return;
+		checkingRd.current = true;
+		setProgress('Checking Real-Debrid links…');
+		void checkRdUncached((done, total) => setProgress(`Checking Real-Debrid links ${done}/${total}…`))
+			.catch((error) => Alert.alert('Real-Debrid check failed', error instanceof Error ? error.message : String(error)))
+			.finally(() => {
+				checkingRd.current = false;
+				setProgress('');
+			});
+	}, [checkRdUncached, query.view, snapshot.connected.rd, snapshot.rdUncachedChecked]);
+
 	// Rows that left the library leave the selection too.
 	useEffect(() => {
 		setSelected((current) => {
@@ -150,7 +164,6 @@ function LibraryListScreen({ navigation, transfersOnly }: { navigation: Navigati
 	const openRow = useCallback((item: LibraryItem) => (selectingRef.current ? toggle(item) : navigation.navigate('Detail', { itemId: item.id })), [navigation, toggle]);
 	const groupRow = useCallback((item: LibraryItem, group: 'hash' | 'title') =>
 		setQuery((current) => ({ ...current, ...(group === 'hash' ? { hashKey: hashKeyOf(item), titleKey: undefined } : { titleKey: titleKeyOf(item), hashKey: undefined }) })), []);
-	const { remove, reinsert } = useApp();
 
 	const runBulk = (verb: string, action: 'delete' | 'reinsert', rows: readonly LibraryItem[]) => {
 		setProgress(`${verb} 0/${rows.length}…`);

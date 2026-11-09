@@ -14,10 +14,15 @@ const OC_BASE = 'https://offcloud.com/api';
 const DL_BASE = 'https://debrid-link.fr/api/v2';
 
 const PAGE_SIZE = 1000;
-/** Above 100, RD returns `links: []` for rows that were cached when added (measured 2026-11-09). */
-const RD_PAGE_SIZE = 100;
-/** 100,000 rows; RD allows 250 requests a minute. */
-const RD_MAX_PAGES = 1000;
+/**
+ * RD lists 5,000 rows a page (DMM web's size), but above 100 a page returns `links: []` for rows
+ * that were cached when added: 6,383 of 6,439 on one account (2026-11-09). So the list never says
+ * "uncached"; that takes the 100-row pages of findRealDebridUncached, run only when asked.
+ */
+const RD_PAGE_SIZE = 5000;
+const RD_LINKS_PAGE_SIZE = 100;
+/** RD allows 250 requests a minute. */
+const RD_LINKS_CONCURRENCY = 4;
 const MAX_PAGES = 100;
 const REQUEST_TIMEOUT_MS = 30_000;
 const DL_FLOOD_LOCKOUT_MS = 60 * 60 * 1000;
@@ -295,7 +300,7 @@ const normalizeRdLink = (link: string): string => {
 	return link;
 };
 
-const normalizeRd = (row: Record<string, unknown>, files: LibraryFile[] = []): LibraryItem => {
+const normalizeRd = (row: Record<string, unknown>, files: LibraryFile[] = [], linksComplete = true): LibraryItem => {
 	const filename = displayName(row.original_filename ?? row.filename ?? row.hash);
 	const status = rdStatus(row.status);
 	return {
@@ -316,7 +321,7 @@ const normalizeRd = (row: Record<string, unknown>, files: LibraryFile[] = []): L
 		seeders: optionalNumber(row.seeders),
 		speed: optionalNumber(row.speed),
 		reinsertable: true,
-		uncached: status === 'finished' && Array.isArray(row.links) && row.links.length === 0,
+		uncached: linksComplete && status === 'finished' && Array.isArray(row.links) && row.links.length === 0,
 	};
 
 };
@@ -682,7 +687,7 @@ const normalizeDebridLink = (row: DebridLinkTorrent): LibraryItem => {
 
 async function listRealDebrid(token: string, signal?: AbortSignal): Promise<LibraryItem[]> {
 	const items: LibraryItem[] = [];
-	for (let page = 1; page <= RD_MAX_PAGES; page++) {
+	for (let page = 1; page <= MAX_PAGES; page++) {
 		const result = await request<unknown>(
 			'rd',
 			`${RD_BASE}/torrents?page=${page}&limit=${RD_PAGE_SIZE}&_fresh=${Date.now()}`,
@@ -693,12 +698,37 @@ async function listRealDebrid(token: string, signal?: AbortSignal): Promise<Libr
 			throw new ProviderApiError('rd', 'Real-Debrid returned an invalid library list.', 'invalid_response');
 		}
 		const rows = result.body;
-		items.push(...rows.map((row) => normalizeRd(assertObject(row, 'rd'))));
+		items.push(...rows.map((row) => normalizeRd(assertObject(row, 'rd'), [], false)));
 		const header = result.response.headers.get('x-total-count');
 		const total = header ? Number(header) : NaN;
 		if (rows.length === 0 || (Number.isFinite(total) && items.length >= total) || (!Number.isFinite(total) && rows.length < RD_PAGE_SIZE)) return items;
 	}
 	throw new PaginationLimitError('rd');
+}
+
+/** Ids of finished RD torrents with no links, read from 100-row pages, the only size that reports links fully. */
+export async function findRealDebridUncached(token: string, onProgress?: (done: number, total: number) => void, signal?: AbortSignal): Promise<Set<string>> {
+	const page = async (n: number) => {
+		const result = await request<unknown>('rd', `${RD_BASE}/torrents?page=${n}&limit=${RD_LINKS_PAGE_SIZE}&_fresh=${Date.now()}`, { headers: authHeaders(token) }, signal);
+		if (!Array.isArray(result.body)) throw new ProviderApiError('rd', 'Real-Debrid returned an invalid library list.', 'invalid_response');
+		return { rows: result.body.map((row) => assertObject(row, 'rd')), total: Number(result.response.headers.get('x-total-count')) };
+	};
+	const uncached = new Set<string>();
+	const collect = (rows: Record<string, unknown>[]) => rows.forEach((row) => normalizeRd(row).uncached && uncached.add(`rd:${String(row.id)}`));
+	const first = await page(1);
+	collect(first.rows);
+	const pages = Number.isFinite(first.total) ? Math.ceil(first.total / RD_LINKS_PAGE_SIZE) : 1;
+	let next = 2;
+	let done = 1;
+	onProgress?.(done, pages);
+	const worker = async () => {
+		while (next <= pages) {
+			collect((await page(next++)).rows);
+			onProgress?.(++done, pages);
+		}
+	};
+	await Promise.all(Array.from({ length: RD_LINKS_CONCURRENCY }, worker));
+	return uncached;
 }
 
 async function listAllDebrid(token: string, signal?: AbortSignal): Promise<LibraryItem[]> {

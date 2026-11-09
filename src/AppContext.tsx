@@ -21,6 +21,7 @@ interface AppContextValue {
 	addFile(provider: ProviderId, file: PickedFile): Promise<void>;
 	reinsert(item: LibraryItem, fileIds?: string[]): Promise<void>;
 	bulk(action: 'delete' | 'reinsert', items: readonly LibraryItem[], onProgress?: (finished: number, total: number) => void): Promise<BulkResult>;
+	checkRdUncached(onProgress?: (done: number, total: number) => void): Promise<void>;
 	retryStartup(): Promise<void>;
 }
 
@@ -84,6 +85,7 @@ export function AppProvider({ children, session: injectedSession }: { children: 
 	const addMany = useCallback((provider: ProviderId, entries: readonly AddEntry[], options?: AddOptions, onProgress?: (finished: number, total: number) => void) => run(() => session.addMany(provider, entries, options, onProgress)), [run, session]);
 	const addFile = useCallback((provider: ProviderId, file: PickedFile) => run(() => session.addFile(provider, file)), [run, session]);
 	const reinsert = useCallback((item: LibraryItem, fileIds?: string[]) => run(() => session.reinsert(item, fileIds)), [run, session]);
+	const checkRdUncached = useCallback((onProgress?: (done: number, total: number) => void) => run(() => session.checkRdUncached(onProgress)), [run, session]);
 	const bulk = useCallback((action: 'delete' | 'reinsert', items: readonly LibraryItem[], onProgress?: (finished: number, total: number) => void) => run(() => session.bulk(action, items, onProgress)), [run, session]);
 
 	const value = useMemo<AppContextValue>(
@@ -103,9 +105,10 @@ export function AppProvider({ children, session: injectedSession }: { children: 
 			addFile,
 			reinsert,
 			bulk,
+			checkRdUncached,
 			retryStartup: bootstrap,
 		}),
-		[add, addFile, addMany, bulk, reinsert, bootstrap, connect, detail, disconnect, openFile, ready, refreshAll, remove, selectFiles, snapshot, startupError]
+		[add, addFile, addMany, bulk, checkRdUncached, reinsert, bootstrap, connect, detail, disconnect, openFile, ready, refreshAll, remove, selectFiles, snapshot, startupError]
 	);
 
 	return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

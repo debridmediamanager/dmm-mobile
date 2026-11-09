@@ -3,6 +3,7 @@ import {
 	_testing,
 	addMagnet,
 	addTorrentFile,
+	findRealDebridUncached,
 	getLibraryDetail,
 	listLibrary,
 	ProviderApiError,
@@ -414,14 +415,25 @@ describe('adds, reinserts and the cached-only paths', () => {
 });
 
 describe('Real-Debrid list page size', () => {
-	it('pages at 100, the largest limit at which RD still returns every link, so cached rows are not called uncached', async () => {
-		vi.stubGlobal('fetch', vi.fn((url: string) => {
-			const limit = Number(new URL(url).searchParams.get('limit'));
-			return Promise.resolve(jsonResponse(limit <= 100 ? rdLinksByLimit.limit100 : rdLinksByLimit.limit1000, 200, { 'x-total-count': '5' }));
-		}));
+	const serve = (limit100: unknown[]) => vi.fn((url: string) => {
+		const limit = Number(new URL(url).searchParams.get('limit'));
+		return Promise.resolve(jsonResponse(limit <= 100 ? limit100 : rdLinksByLimit.limit1000, 200, { 'x-total-count': '5' }));
+	});
+
+	it('does not call cached rows uncached from a large page, where RD drops their links', async () => {
+		vi.stubGlobal('fetch', serve(rdLinksByLimit.limit100));
 		const rows = await listLibrary('rd', 'token');
 		expect(rows).toHaveLength(5);
 		expect(rows.filter((row) => row.uncached).map((row) => row.title)).toEqual([]);
+	});
+
+	it('finds uncached rows from 100-row pages only', async () => {
+		const fetchMock = serve(rdLinksByLimit.limit100.map((row, index) => (index === 1 ? { ...row, links: [] } : row)));
+		vi.stubGlobal('fetch', fetchMock);
+		const progress: number[] = [];
+		expect([...(await findRealDebridUncached('token', (done) => progress.push(done)))]).toEqual([`rd:${rdLinksByLimit.limit100[1].id}`]);
+		expect(fetchMock.mock.calls.every(([url]) => new URL(url).searchParams.get('limit') === '100')).toBe(true);
+		expect(progress).toEqual([1]);
 	});
 });
 

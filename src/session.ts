@@ -9,6 +9,7 @@ import {
 	addMagnet,
 	addTorrentFile,
 	addWebDownload,
+	findRealDebridUncached,
 	reinsertItem,
 	type AddOptions,
 	type PickedFile,
@@ -39,6 +40,7 @@ export interface SessionApi {
 	addTorrentFile: typeof addTorrentFile;
 	addWebDownload: typeof addWebDownload;
 	reinsertItem: typeof reinsertItem;
+	findRealDebridUncached: typeof findRealDebridUncached;
 }
 
 export interface SessionSnapshot {
@@ -49,6 +51,8 @@ export interface SessionSnapshot {
 	failures: ProviderFailure[];
 	/** When the oldest connected provider list was fetched, or undefined before any. */
 	fetchedAt?: number;
+	/** Whether Real-Debrid's uncached rows have been looked up (it takes 100-row pages). */
+	rdUncachedChecked: boolean;
 }
 
 const LATE_LISTING_MS = 4000;
@@ -65,6 +69,7 @@ const defaultApi: SessionApi = {
 	addTorrentFile,
 	addWebDownload,
 	reinsertItem,
+	findRealDebridUncached,
 };
 
 const emptySnapshot = (): SessionSnapshot => ({
@@ -73,6 +78,7 @@ const emptySnapshot = (): SessionSnapshot => ({
 	items: [],
 	loading: { rd: false, ad: false, tb: false, pm: false, oc: false, dl: false },
 	failures: [],
+	rdUncachedChecked: false,
 });
 
 const messageOf = (error: unknown): string =>
@@ -98,6 +104,7 @@ export class LibrarySession {
 	};
 	private readonly controllers = new Map<ProviderId, AbortController>();
 	private readonly fetchedAt: Partial<Record<ProviderId, number>> = {};
+	private rdUncached: Set<string> | null = null;
 	private readonly listeners = new Set<() => void>();
 	private readonly connectionOperations: Record<ProviderId, number> = {
 		rd: 0,
@@ -164,6 +171,7 @@ export class LibrarySession {
 		const times = (Object.keys(this.generations) as ProviderId[]).filter((provider) => this.tokens[provider]).map((provider) => this.fetchedAt[provider]);
 		if (times.length > 0 && times.every((time) => time !== undefined)) snapshot.fetchedAt = Math.min(...(times as number[]));
 		snapshot.failures = [...this.failures.values()];
+		snapshot.rdUncachedChecked = this.rdUncached !== null;
 		return snapshot;
 	}
 
@@ -227,6 +235,7 @@ export class LibrarySession {
 		delete this.labels[provider];
 		delete this.itemsByProvider[provider];
 		delete this.fetchedAt[provider];
+		if (provider === 'rd') this.rdUncached = null;
 		this.failures.delete(provider);
 		this.loading.delete(provider);
 		this.notify();
@@ -265,7 +274,7 @@ export class LibrarySession {
 		try {
 			const items = await this.api.listLibrary(provider, token, controller.signal);
 			if (!isCurrent()) return;
-			this.itemsByProvider[provider] = items;
+			this.itemsByProvider[provider] = provider === 'rd' ? this.markRdUncached(items) : items;
 			this.fetchedAt[provider] = Date.now();
 			this.notify();
 		} catch (error) {
@@ -360,6 +369,21 @@ export class LibrarySession {
 	async reinsert(item: LibraryItem, fileIds?: string[]): Promise<void> {
 		await this.api.reinsertItem(await this.tokenFor(item.provider), item, fileIds);
 		await this.refreshProvider(item.provider);
+	}
+
+	private markRdUncached(items: LibraryItem[]): LibraryItem[] {
+		const ids = this.rdUncached;
+		return ids ? items.map((item) => (Boolean(item.uncached) === ids.has(item.id) ? item : { ...item, uncached: ids.has(item.id) })) : items;
+	}
+
+	/** Looks up which Real-Debrid rows it no longer serves; the list's large pages cannot tell. */
+	async checkRdUncached(onProgress?: (done: number, total: number) => void): Promise<void> {
+		const generation = this.generations.rd;
+		const ids = await this.api.findRealDebridUncached(await this.tokenFor('rd'), onProgress);
+		if (generation !== this.generations.rd) return;
+		this.rdUncached = ids;
+		if (this.itemsByProvider.rd) this.itemsByProvider.rd = this.markRdUncached(this.itemsByProvider.rd);
+		this.notify();
 	}
 
 	/** Deletes or reinserts many rows, then refreshes each touched provider once. */

@@ -147,6 +147,7 @@ const api = {
 	addTorrentFile: async () => undefined,
 	addWebDownload: async () => undefined,
 	reinsertItem: async () => undefined,
+	findRealDebridUncached: async () => new Set<string>(),
 } as SessionApi;
 
 const session = new LibrarySession(storage, api);
