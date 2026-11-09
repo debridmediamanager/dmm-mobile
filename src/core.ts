@@ -317,3 +317,7 @@ export const formatAgo = (since: number, now = Date.now()): string => {
 
 export const filePath = (name: string, path?: string): string =>
 	path ? `${path.replace(/^\/+|\/+$/g, '')}/${name}` : name;
+
+/** The provider an add goes to: the saved or picked one while it is connected, else the first connected one. */
+export const addProviderFor = (wanted: string | null | undefined, connected: readonly ProviderId[]): ProviderId | null =>
+	wanted && connected.includes(wanted as ProviderId) ? (wanted as ProviderId) : connected[0] ?? null;

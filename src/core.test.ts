@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { duplicatesToDelete, EMPTY_QUERY, filterAndSortLibrary, groupLibrary, mediaTypeOf, sameHashMergeGroups, titleKeyOf, type LibraryQuery } from './core';
+import { addProviderFor, duplicatesToDelete, EMPTY_QUERY, filterAndSortLibrary, groupLibrary, mediaTypeOf, sameHashMergeGroups, titleKeyOf, type LibraryQuery } from './core';
 import type { LibraryItem } from './model';
 import { _testing } from './providerApi';
 import { isSafeExternalUrl, magnetForHash, parseBtihMagnet } from './validation';
@@ -180,5 +180,15 @@ describe('provider normalization', () => {
 		expect(isSafeExternalUrl('http://cdn.example/file.mkv')).toBe(true);
 		expect(isSafeExternalUrl('file:///etc/passwd')).toBe(false);
 		expect(isSafeExternalUrl('javascript:alert(1)')).toBe(false);
+	});
+});
+
+describe('the provider an add goes to', () => {
+	it('follows the logins as they load, so a link that cold-starts the app gets one', () => {
+		// The Add sheet opens from the link before secure storage has reported any login.
+		expect(addProviderFor('pm', [])).toBeNull();
+		expect(addProviderFor('pm', ['rd', 'ad', 'pm'])).toBe('pm');
+		expect(addProviderFor(undefined, ['rd', 'ad'])).toBe('rd');
+		expect(addProviderFor('tb', ['rd', 'ad'])).toBe('rd');
 	});
 });

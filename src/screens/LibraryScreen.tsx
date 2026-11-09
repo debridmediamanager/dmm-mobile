@@ -22,6 +22,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import { useApp } from '../AppContext';
 import {
+	addProviderFor,
 	duplicatesToDelete,
 	EMPTY_QUERY,
 	filterLibrary,
@@ -358,18 +359,16 @@ export function LibraryScreen({ navigation }: { navigation: Navigation }) {
 
 /** The provider the last add went to, DMM web's `settings:addMagnetProvider`. */
 function useAddProvider(connectedProviders: ProviderId[]): [ProviderId | null, (provider: ProviderId) => void] {
-	const [provider, setProvider] = useState<ProviderId | null>(connectedProviders[0] ?? null);
+	// Derived on every render: a magnet or .torrent that cold-starts the app opens this before the logins load.
+	const [wanted, setWanted] = useState<string | undefined>();
 	useEffect(() => {
-		void loadSettings().then(({ addProvider }) => {
-			if (addProvider && connectedProviders.includes(addProvider as ProviderId)) setProvider(addProvider as ProviderId);
-		});
-		// eslint-disable-next-line react-hooks/exhaustive-deps
+		void loadSettings().then(({ addProvider }) => setWanted((current) => current ?? addProvider));
 	}, []);
 	const choose = (next: ProviderId) => {
-		setProvider(next);
+		setWanted(next);
 		void saveSetting('addProvider', next).catch(() => undefined);
 	};
-	return [provider, choose];
+	return [addProviderFor(wanted, connectedProviders), choose];
 }
 
 function AddModal({ initialText, connectedProviders, onClose }: { initialText: string; connectedProviders: ProviderId[]; onClose: () => void }) {
