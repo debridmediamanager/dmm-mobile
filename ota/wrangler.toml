@@ -1,8 +1,10 @@
 name = "dmm-mobile-ota"
 main = "worker.ts"
 compatibility_date = "2026-11-01"
-# workers.dev, not a debridmediamanager.com hostname: that zone's Bot Fight Mode challenges app requests
-# and cannot be skipped per host on the free plan. The URL is built into every app, so never rename this.
+# Every app has its update URL built in, so neither address may change. ota.debridmediamanager.com works only
+# while the zone's Bot Fight Mode stays off: it challenges the app's requests and the free plan cannot exempt
+# one host. workers.dev stays for the 0.1.0 test build, which was built with that address.
+routes = [{ pattern = "ota.debridmediamanager.com", custom_domain = true }]
 workers_dev = true
 preview_urls = false
 

@@ -119,7 +119,7 @@
       "./plugins/withReleaseSigning"
     ],
     "updates": {
-      "url": "https://dmm-mobile-ota.bensarmiento.workers.dev/manifest",
+      "url": "https://ota.debridmediamanager.com/manifest",
       "checkAutomatically": "ON_LOAD",
       "fallbackToCacheTimeout": 0,
       "codeSigningCertificate": "./certs/certificate.pem",

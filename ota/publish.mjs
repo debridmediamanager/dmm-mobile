@@ -7,7 +7,7 @@ import { copyFileSync, mkdirSync, readdirSync, readFileSync, writeFileSync } fro
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-export const BASE_URL = 'https://dmm-mobile-ota.bensarmiento.workers.dev';
+export const BASE_URL = 'https://ota.debridmediamanager.com';
 export const PLATFORMS = ['android', 'ios'];
 const ACCOUNT_ID = '4c2342b589308b36931e9d3e129083ed';
 const NAMESPACE_ID = process.env.OTA_KV_NAMESPACE_ID ?? '08e06b1d45be471294a21aa779c2edc4';

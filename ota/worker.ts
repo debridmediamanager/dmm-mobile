@@ -1,4 +1,4 @@
-// dmm-mobile-ota.bensarmiento.workers.dev: serves DMM Mobile's over-the-air updates (Expo Updates protocol v1) from KV.
+// ota.debridmediamanager.com: serves DMM Mobile's over-the-air updates (Expo Updates protocol v1) from KV.
 // ota/publish.mjs writes `update:<runtime>:<platform>` (the signed manifest) and `asset:<sha256>` (its files).
 
 interface KV {

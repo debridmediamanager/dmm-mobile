@@ -89,13 +89,14 @@ app goes through a store release.
 |---|---|
 | Signing key (RSA, keyid `main`) | Bitwarden "DMM Mobile OTA signing key" (base64 of the PEM) and the Actions secret `OTA_SIGNING_KEY`. Never commit it. |
 | Certificate | `certs/certificate.pem`, built into every binary. A new certificate only reaches users through a store release, so a lost key means a store release before the next OTA update. |
-| Update server | Cloudflare Worker `dmm-mobile-ota` (`ota/worker.ts`) at `https://dmm-mobile-ota.bensarmiento.workers.dev`, reading the KV namespace `dmm-mobile-ota`. |
+| Update server | Cloudflare Worker `dmm-mobile-ota` (`ota/worker.ts`) at `https://ota.debridmediamanager.com` (also `https://dmm-mobile-ota.bensarmiento.workers.dev`, which only the 0.1.0 test build uses), reading the KV namespace `dmm-mobile-ota`. |
 | Publish token | Bitwarden "Cloudflare dmm-mobile OTA publish token" (Workers KV write only) and the Actions secret `CLOUDFLARE_OTA_TOKEN`. |
 
-Every app has the server URL built in, so the Worker keeps its name and
-address. It is not on a debridmediamanager.com hostname because that zone's Bot
-Fight Mode challenges the app's requests and the free plan cannot exempt one
-host. Deploy a change to the Worker with the account's Cloudflare credentials:
+Every app has the server URL built in, so the Worker keeps its name and both
+addresses. **Keep Bot Fight Mode off on the debridmediamanager.com zone**
+(Security → Bots): it answers the app's update requests with a challenge page,
+which phones cannot pass, and the free plan cannot exempt one host. It was
+switched off for this on 2026-11-09. Deploy a change to the Worker with the account's Cloudflare credentials:
 
 ```sh
 cd ota && npx wrangler@4.152.0 deploy
