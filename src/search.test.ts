@@ -20,8 +20,17 @@ describe('searchTitles', () => {
 			path: '/show/tt22003362',
 		});
 		expect(rows.some((row) => row.path.startsWith('/movie/tt'))).toBe(true);
-		// No IMDb id: DMM web sends those to its search page.
-		expect(rows.at(-1)?.path).toMatch(/^\/search\?query=/);
+	});
+
+	// Trakt answers 50; all of them pushed the anime rows out of sight below the titles.
+	it('keeps the six best titles, as DMM web does', async () => {
+		expect(trakt.length).toBe(7);
+		expect(await searchTitles('test', answer(200, trakt))).toHaveLength(6);
+	});
+
+	it('sends a title with no IMDb id to DMM search', async () => {
+		const [row] = await searchTitles('test', answer(200, [trakt.at(-1)]));
+		expect(row.path).toMatch(/^\/search\?query=/);
 	});
 
 	it('says so when DMM refuses', async () => {

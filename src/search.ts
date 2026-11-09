@@ -23,6 +23,8 @@ const defaultFetch = fetch as unknown as Fetch;
 /** As DMM web: two letters of a romanized title match almost any anime, so those go to Trakt only. */
 export const ANIME_MIN_LENGTH = 3;
 export const ANIME_LIMIT = 3;
+/** As DMM web's dropdown: the six best titles, so the anime rows stay in view below them. */
+export const TITLE_LIMIT = 6;
 
 /** A typed IMDb id goes straight to its page, as on DMM web. */
 export const imdbIdIn = (query: string): string | null => /(tt\d{7,})/.exec(query)?.[1] ?? null;
@@ -39,7 +41,7 @@ export async function searchTitles(query: string, fetcher: Fetch = defaultFetch)
 	if (res.status !== 200) throw new Error(`Search failed (${res.status}). Try again in a minute.`);
 	const results = await res.json();
 	if (!Array.isArray(results)) return [];
-	return results.flatMap((result: { type?: string; movie?: TraktMedia; show?: TraktMedia }, index): SearchRow[] => {
+	return results.slice(0, TITLE_LIMIT).flatMap((result: { type?: string; movie?: TraktMedia; show?: TraktMedia }, index): SearchRow[] => {
 		const type = result.type === 'show' ? 'show' : 'movie';
 		const media = result[type];
 		if (!media?.title) return [];
