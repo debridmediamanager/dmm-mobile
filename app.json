@@ -5,7 +5,7 @@
     "version": "0.1.0",
     "orientation": "portrait",
 		"userInterfaceStyle": "automatic",
-		"scheme": "dmm-library",
+		"scheme": ["dmm-library", "magnet"],
 		"icon": "./assets/icon.png",
 		"ios": {
       "supportsTablet": true,

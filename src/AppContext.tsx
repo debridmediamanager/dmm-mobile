@@ -1,7 +1,9 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { StoredCredential } from './auth';
 import type { LibraryFile, LibraryItem, ProviderId } from './model';
-import { LibrarySession, type SessionSnapshot } from './session';
+import { LibrarySession, type BulkResult, type SessionSnapshot } from './session';
+import type { AddOptions, PickedFile } from './providerApi';
+import type { AddEntry } from './share';
 
 interface AppContextValue {
 	ready: boolean;
@@ -15,6 +17,10 @@ interface AppContextValue {
 	add(provider: ProviderId, magnet: string): Promise<void>;
 	remove(provider: ProviderId, itemId: string): Promise<void>;
 	selectFiles(item: LibraryItem, files: LibraryFile[]): Promise<void>;
+	addMany(provider: ProviderId, entries: readonly AddEntry[], options?: AddOptions, onProgress?: (finished: number, total: number) => void): Promise<BulkResult>;
+	addFile(provider: ProviderId, file: PickedFile): Promise<void>;
+	reinsert(item: LibraryItem, fileIds?: string[]): Promise<void>;
+	bulk(action: 'delete' | 'reinsert', items: readonly LibraryItem[], onProgress?: (finished: number, total: number) => void): Promise<BulkResult>;
 	retryStartup(): Promise<void>;
 }
 
@@ -75,6 +81,10 @@ export function AppProvider({ children, session: injectedSession }: { children: 
 	const add = useCallback((provider: ProviderId, magnet: string) => run(() => session.add(provider, magnet)), [run, session]);
 	const remove = useCallback((provider: ProviderId, itemId: string) => run(() => session.remove(provider, itemId)), [run, session]);
 	const selectFiles = useCallback((item: LibraryItem, files: LibraryFile[]) => run(() => session.selectFiles(item, files)), [run, session]);
+	const addMany = useCallback((provider: ProviderId, entries: readonly AddEntry[], options?: AddOptions, onProgress?: (finished: number, total: number) => void) => run(() => session.addMany(provider, entries, options, onProgress)), [run, session]);
+	const addFile = useCallback((provider: ProviderId, file: PickedFile) => run(() => session.addFile(provider, file)), [run, session]);
+	const reinsert = useCallback((item: LibraryItem, fileIds?: string[]) => run(() => session.reinsert(item, fileIds)), [run, session]);
+	const bulk = useCallback((action: 'delete' | 'reinsert', items: readonly LibraryItem[], onProgress?: (finished: number, total: number) => void) => run(() => session.bulk(action, items, onProgress)), [run, session]);
 
 	const value = useMemo<AppContextValue>(
 		() => ({
@@ -89,9 +99,13 @@ export function AppProvider({ children, session: injectedSession }: { children: 
 			add,
 			remove,
 			selectFiles,
+			addMany,
+			addFile,
+			reinsert,
+			bulk,
 			retryStartup: bootstrap,
 		}),
-		[add, bootstrap, connect, detail, disconnect, openFile, ready, refreshAll, remove, selectFiles, snapshot, startupError]
+		[add, addFile, addMany, bulk, reinsert, bootstrap, connect, detail, disconnect, openFile, ready, refreshAll, remove, selectFiles, snapshot, startupError]
 	);
 
 	return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

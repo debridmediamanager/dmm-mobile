@@ -7,6 +7,11 @@ import type {
 } from './model';
 import {
 	addMagnet,
+	addTorrentFile,
+	addWebDownload,
+	reinsertItem,
+	type AddOptions,
+	type PickedFile,
 	deleteLibraryItem,
 	getLibraryDetail,
 	listLibrary,
@@ -16,6 +21,10 @@ import {
 } from './providerApi';
 import { needsRenewal, parseCredential, renewCredential, serializeCredential, type StoredCredential } from './auth';
 import type { CredentialStorage } from './storage';
+import type { AddEntry } from './share';
+import { runBulk, type BulkResult } from './core';
+
+export type { BulkResult };
 import { secureCredentialStorage } from './storage';
 
 export interface SessionApi {
@@ -27,6 +36,9 @@ export interface SessionApi {
 	deleteLibraryItem: typeof deleteLibraryItem;
 	selectRealDebridFiles: typeof selectRealDebridFiles;
 	renewCredential: typeof renewCredential;
+	addTorrentFile: typeof addTorrentFile;
+	addWebDownload: typeof addWebDownload;
+	reinsertItem: typeof reinsertItem;
 }
 
 export interface SessionSnapshot {
@@ -35,6 +47,8 @@ export interface SessionSnapshot {
 	items: LibraryItem[];
 	loading: Record<ProviderId, boolean>;
 	failures: ProviderFailure[];
+	/** When the oldest connected provider list was fetched, or undefined before any. */
+	fetchedAt?: number;
 }
 
 const defaultApi: SessionApi = {
@@ -46,6 +60,9 @@ const defaultApi: SessionApi = {
 	deleteLibraryItem,
 	selectRealDebridFiles,
 	renewCredential,
+	addTorrentFile,
+	addWebDownload,
+	reinsertItem,
 };
 
 const emptySnapshot = (): SessionSnapshot => ({
@@ -78,6 +95,7 @@ export class LibrarySession {
 		dl: 0,
 	};
 	private readonly controllers = new Map<ProviderId, AbortController>();
+	private readonly fetchedAt: Partial<Record<ProviderId, number>> = {};
 	private readonly listeners = new Set<() => void>();
 	private readonly connectionOperations: Record<ProviderId, number> = {
 		rd: 0,
@@ -141,6 +159,8 @@ export class LibrarySession {
 			if (this.labels[provider]) snapshot.labels[provider] = this.labels[provider];
 		}
 		snapshot.items = (Object.values(this.itemsByProvider) as LibraryItem[][]).flat();
+		const times = (Object.keys(this.generations) as ProviderId[]).filter((provider) => this.tokens[provider]).map((provider) => this.fetchedAt[provider]);
+		if (times.length > 0 && times.every((time) => time !== undefined)) snapshot.fetchedAt = Math.min(...(times as number[]));
 		snapshot.failures = [...this.failures.values()];
 		return snapshot;
 	}
@@ -204,6 +224,7 @@ export class LibrarySession {
 		delete this.credentials[provider];
 		delete this.labels[provider];
 		delete this.itemsByProvider[provider];
+		delete this.fetchedAt[provider];
 		this.failures.delete(provider);
 		this.loading.delete(provider);
 		this.notify();
@@ -243,6 +264,7 @@ export class LibrarySession {
 			const items = await this.api.listLibrary(provider, token, controller.signal);
 			if (!isCurrent()) return;
 			this.itemsByProvider[provider] = items;
+			this.fetchedAt[provider] = Date.now();
 			this.notify();
 		} catch (error) {
 			if (!isCurrent()) return;
@@ -298,6 +320,56 @@ export class LibrarySession {
 	async add(provider: ProviderId, magnet: string): Promise<void> {
 		await this.api.addMagnet(provider, await this.tokenFor(provider), magnet);
 		await this.refreshProvider(provider);
+	}
+
+	/** Magnets, bare hashes and (TorBox) web links; the list refreshes once afterwards. */
+	async addMany(provider: ProviderId, entries: readonly AddEntry[], options: AddOptions = {}, onProgress?: (finished: number, total: number) => void): Promise<BulkResult> {
+		try {
+			return await runBulk(
+				entries,
+				async (entry) => {
+					const token = await this.tokenFor(provider);
+					if (entry.kind === 'url') {
+						if (provider !== 'tb') throw new Error('Only TorBox downloads web links.');
+						await this.api.addWebDownload(token, entry.url);
+					} else await this.api.addMagnet(provider, token, entry.kind === 'magnet' ? entry.magnet : entry.hash, undefined, options);
+				},
+				(entry) => (entry.kind === 'url' ? entry.url : entry.hash),
+				onProgress,
+				// RD answers parallel adds with a pause; DMM web paces it too.
+				provider === 'rd' ? 1 : 4
+			);
+		} finally {
+			await this.refreshProvider(provider);
+		}
+	}
+
+	async addFile(provider: ProviderId, file: PickedFile): Promise<void> {
+		await this.api.addTorrentFile(provider, await this.tokenFor(provider), file);
+		await this.refreshProvider(provider);
+	}
+
+	async reinsert(item: LibraryItem, fileIds?: string[]): Promise<void> {
+		await this.api.reinsertItem(await this.tokenFor(item.provider), item, fileIds);
+		await this.refreshProvider(item.provider);
+	}
+
+	/** Deletes or reinserts many rows, then refreshes each touched provider once. */
+	async bulk(action: 'delete' | 'reinsert', items: readonly LibraryItem[], onProgress?: (finished: number, total: number) => void): Promise<BulkResult> {
+		try {
+			return await runBulk(
+				items,
+				async (item) => {
+					const token = await this.tokenFor(item.provider);
+					if (action === 'delete') await this.api.deleteLibraryItem(item.provider, token, item.id);
+					else await this.api.reinsertItem(token, item);
+				},
+				(item) => item.title,
+				onProgress
+			);
+		} finally {
+			await Promise.all([...new Set(items.map((item) => item.provider))].map((provider) => this.refreshProvider(provider)));
+		}
 	}
 
 	async remove(provider: ProviderId, itemId: string): Promise<void> {

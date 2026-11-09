@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { filterAndSortLibrary, transferItems } from './core';
+import { duplicatesToDelete, EMPTY_QUERY, filterAndSortLibrary, groupLibrary, mediaTypeOf, sameHashMergeGroups, titleKeyOf, transferItems, type LibraryQuery } from './core';
 import type { LibraryItem } from './model';
 import { _testing } from './providerApi';
 import { isSafeExternalUrl, magnetForHash, parseBtihMagnet } from './validation';
@@ -38,15 +38,102 @@ describe('magnet and library boundaries', () => {
 		expect(magnetForHash(HASH, 'A Movie')).toBe(`magnet:?xt=urn:btih:${HASH}&dn=A+Movie`);
 	});
 
-	it('searches title and filename, filters provider/status, and sorts requested fields', () => {
+	it('searches title and filename, filters provider and view, and sorts requested fields', () => {
 		const rows = [
 			item({ id: 'rd:1', title: 'Zulu', size: 100, added: '2026-01-01T00:00:00Z' }),
-			item({ id: 'tb:2', provider: 'tb', title: 'Alpha', size: 300, status: 'downloading', added: '2026-01-03T00:00:00Z' }),
-			item({ id: 'pm:3', provider: 'pm', title: 'Bravo', filename: 'hidden-search-name', size: 200, status: 'error' }),
+			item({ id: 'tb:2', provider: 'tb', title: 'Alpha', size: 300, progress: 20, status: 'downloading', added: '2026-01-03T00:00:00Z' }),
+			item({ id: 'pm:3', provider: 'pm', title: 'Bravo', filename: 'hidden-search-name', size: 200, progress: 0, status: 'error' }),
 		];
-		expect(filterAndSortLibrary(rows, { search: 'hidden-search', provider: 'all', status: 'all', sort: 'newest' }).map((row) => row.id)).toEqual(['pm:3']);
-		expect(filterAndSortLibrary(rows, { search: '', provider: 'tb', status: 'downloading', sort: 'title' }).map((row) => row.id)).toEqual(['tb:2']);
-		expect(filterAndSortLibrary(rows, { search: '', provider: 'all', status: 'all', sort: 'size' }).map((row) => row.id)).toEqual(['tb:2', 'pm:3', 'rd:1']);
+		const ids = (query: Partial<LibraryQuery>) => filterAndSortLibrary(rows, { ...EMPTY_QUERY, ...query }).map((row) => row.id);
+		expect(ids({ search: 'hidden-search' })).toEqual(['pm:3']);
+		expect(ids({ provider: 'tb', view: 'inprogress', sort: 'title' })).toEqual(['tb:2']);
+		expect(ids({ view: 'failed' })).toEqual(['pm:3']);
+		expect(ids({ sort: 'size' })).toEqual(['tb:2', 'pm:3', 'rd:1']);
+		expect(ids({ sort: 'progress' })).toEqual(['pm:3', 'tb:2', 'rd:1']);
+		expect(ids({ sort: 'oldest' })[0]).toBe('rd:1');
+	});
+
+	it('matches every search word, as a regex, id, provider prefix, hash or provider status', () => {
+		const rows = [
+			item({ id: 'rd:ABC123', filename: 'Big.Buck.Bunny.2008.1080p.mkv', serviceStatus: 'downloaded' }),
+			item({ id: 'ad:9', provider: 'ad', filename: 'Sintel.2010.720p.mkv', hash: 'b'.repeat(40), serviceStatus: 'Ready' }),
+		];
+		const ids = (search: string) => filterAndSortLibrary(rows, { ...EMPTY_QUERY, search }).map((row) => row.id);
+		expect(ids('bunny 1080p')).toEqual(['rd:ABC123']);
+		expect(ids('bunny 720p')).toEqual([]);
+		expect(ids('sintel|bunny').sort()).toEqual(['ad:9', 'rd:ABC123']);
+		expect(ids('abc123')).toEqual(['rd:ABC123']);
+		expect(ids('ad:')).toEqual(['ad:9']);
+		expect(ids('b'.repeat(40))).toEqual(['ad:9']);
+		expect(ids('ready')).toEqual(['ad:9']);
+		expect(ids('[')).toEqual([]);
+	});
+
+	it('guesses media type from the name as DMM web does, and calls a videoless pack other', () => {
+		expect(mediaTypeOf(item({ filename: 'Show.Name.S01E02.1080p.mkv' }))).toBe('tv');
+		expect(mediaTypeOf(item({ filename: 'Show Name Season 2 Complete' }))).toBe('tv');
+		expect(mediaTypeOf(item({ filename: 'Tears.of.Steel.2012.1080p.mkv' }))).toBe('movie');
+		expect(mediaTypeOf(item({ filename: 'Album.2020.FLAC', files: [{ id: '1', name: '01.flac', size: 1 }] }))).toBe('other');
+		const rows = [item({ id: 'rd:1', filename: 'Show.S01E01.mkv' }), item({ id: 'rd:2', filename: 'Film.2001.mkv' })];
+		expect(filterAndSortLibrary(rows, { ...EMPTY_QUERY, media: 'tv' }).map((row) => row.id)).toEqual(['rd:1']);
+	});
+
+	it('groups same hash per provider and same title across releases, counting bytes once per hash', () => {
+		const rows = [
+			item({ id: 'rd:1', filename: 'Sintel.2010.1080p.WEB.mkv', size: 10 }),
+			item({ id: 'rd:2', filename: 'Sintel.2010.720p.BluRay.mkv', hash: 'c'.repeat(40), size: 5 }),
+			item({ id: 'rd:3', filename: 'Sintel.2010.1080p.WEB.mkv', size: 10 }),
+			item({ id: 'pm:4', provider: 'pm', filename: 'Sintel.2010.1080p.WEB.mkv', size: 10 }),
+			item({ id: 'rd:5', filename: 'Elephants.Dream.2006.mkv', hash: 'd'.repeat(40), size: 1 }),
+		];
+		const grouping = groupLibrary(rows);
+		expect(grouping.totalBytes).toBe(26);
+		const view = (v: LibraryQuery['view']) => filterAndSortLibrary(rows, { ...EMPTY_QUERY, view: v }, grouping).map((row) => row.id).sort();
+		expect(view('samehash')).toEqual(['rd:1', 'rd:3']);
+		expect(view('sametitle')).toEqual(['pm:4', 'rd:1', 'rd:2', 'rd:3']);
+		expect(filterAndSortLibrary(rows, { ...EMPTY_QUERY, titleKey: titleKeyOf(rows[4]) }).map((row) => row.id)).toEqual(['rd:5']);
+	});
+
+	it('filters slow, uncached, RD-blocked and selected rows as DMM web does', () => {
+		const now = Date.parse('2026-11-09T12:00:00Z');
+		const rows = [
+			item({ id: 'rd:slow', status: 'downloading', seeders: 0, added: '2026-11-09T11:00:00Z' }),
+			item({ id: 'rd:young', status: 'downloading', seeders: 0, added: '2026-11-09T11:50:00Z' }),
+			item({ id: 'tb:w:web', provider: 'tb', kind: 'web', status: 'downloading', seeders: 0, added: '2026-11-09T10:00:00Z' }),
+			item({ id: 'rd:gone', uncached: true }),
+			item({ id: 'rd:blocked', filename: 'Movie.2020.1080p.WEB-DL.mkv' }),
+			item({ id: 'pm:blocked', provider: 'pm', filename: 'Movie.2020.1080p.WEB-DL.mkv' }),
+			item({ id: 'rd:scene', filename: 'Movie.2020.1080p.WEB.h264-GRP.mkv' }),
+		];
+		const view = (v: LibraryQuery['view'], selected?: Set<string>) => filterAndSortLibrary(rows, { ...EMPTY_QUERY, view: v, selected }, undefined, now).map((row) => row.id);
+		expect(view('slow')).toEqual(['rd:slow']);
+		expect(view('uncached')).toEqual(['rd:gone']);
+		expect(view('rdblocked')).toEqual(['rd:blocked']);
+		expect(view('selected', new Set(['rd:gone']))).toEqual(['rd:gone']);
+	});
+
+	it('picks duplicates to delete by size or date and keeps one per title', () => {
+		const rows = [
+			item({ id: 'rd:small', filename: 'Sintel.2010.720p.mkv', size: 1, added: '2026-01-03T00:00:00Z' }),
+			item({ id: 'rd:big', filename: 'Sintel.2010.2160p.mkv', size: 9, added: '2026-01-01T00:00:00Z' }),
+			item({ id: 'rd:mid', filename: 'Sintel.2010.1080p.mkv', size: 5, added: '2026-01-02T00:00:00Z' }),
+			item({ id: 'rd:only', filename: 'Cosmos.Laundromat.2015.mkv', size: 3 }),
+		];
+		const ids = (rule: Parameters<typeof duplicatesToDelete>[1]) => duplicatesToDelete(rows, rule).map((row) => row.id).sort();
+		expect(ids('smaller')).toEqual(['rd:mid', 'rd:small']);
+		expect(ids('bigger')).toEqual(['rd:big', 'rd:mid']);
+		expect(ids('older')).toEqual(['rd:big', 'rd:mid']);
+		expect(ids('newer')).toEqual(['rd:mid', 'rd:small']);
+	});
+
+	it('merges only finished rows that share a hash on the same provider', () => {
+		const rows = [
+			item({ id: 'rd:1' }),
+			item({ id: 'rd:2' }),
+			item({ id: 'rd:3', status: 'downloading' }),
+			item({ id: 'ad:4', provider: 'ad' }),
+		];
+		expect(sameHashMergeGroups(rows).map((group) => group.map((row) => row.id))).toEqual([['rd:1', 'rd:2']]);
 	});
 
 	it('transfers is a view of actual non-finished statuses', () => {

@@ -232,6 +232,11 @@ const asArray = <T>(value: unknown): T[] => {
 	return Array.isArray(value) ? (value as T[]) : [value as T];
 };
 
+const optionalNumber = (value: unknown): number | undefined => {
+	const numeric = typeof value === 'number' ? value : Number(value);
+	return value === undefined || value === null || !Number.isFinite(numeric) ? undefined : numeric;
+};
+
 const clampStatus = (value: number): number => Math.max(0, Math.min(100, value));
 
 const rdStatus = (value: unknown): LibraryStatus => {
@@ -304,6 +309,10 @@ const normalizeRd = (row: Record<string, unknown>, files: LibraryFile[] = []): L
 		filesLoaded: files.length > 0,
 		needsFileSelection: row.status === 'waiting_files_selection',
 		kind: 'torrent',
+		seeders: optionalNumber(row.seeders),
+		speed: optionalNumber(row.speed),
+		reinsertable: true,
+		uncached: status === 'finished' && Array.isArray(row.links) && row.links.length === 0,
 	};
 
 };
@@ -367,6 +376,11 @@ const normalizeAd = (row: Record<string, unknown>, files = adFilesFromRow(row)):
 		files,
 		filesLoaded: files.length > 0,
 		kind: 'torrent',
+		seeders: optionalNumber(row.seeders),
+		speed: optionalNumber(row.downloadSpeed),
+		// AllDebrid statusCode 5 and up are failures, the only ones magnet/restart accepts.
+		reinsertable: Number(row.statusCode) >= 5,
+		uncached: Number(row.statusCode) === 11,
 	};
 };
 
@@ -417,6 +431,10 @@ const normalizeTorBox = (
 		files: torboxFiles(row),
 		filesLoaded: Array.isArray(row.files),
 		kind,
+		seeders: optionalNumber(row.seeds),
+		speed: optionalNumber(row.download_speed),
+		// TorBox answers a reannounce of any finished torrent with DOWNLOAD_SERVER_ERROR.
+		reinsertable: kind === 'torrent' && row.active === true,
 	};
 };
 
@@ -652,6 +670,8 @@ const normalizeDebridLink = (row: DebridLinkTorrent): LibraryItem => {
 		files,
 		filesLoaded: files.length > 0,
 		kind: 'torrent',
+		seeders: row.peersConnected,
+		speed: row.downloadSpeed,
 	};
 };
 
@@ -1138,19 +1158,44 @@ export async function resolveFile(
 	}
 }
 
+export interface AddOptions {
+	/** TorBox and AllDebrid: add only what is cached already (a backup restore's default). */
+	cachedOnly?: boolean;
+}
+
+const isVideoPath = (name: string): boolean => /\.(mkv|mp4|avi|m4v|mov|wmv|ts|m2ts|webm|mpg|mpeg|flv|vob|iso)$/i.test(name);
+
+/** DMM web's selection after an RD add: every video, or every file when there is none. */
+async function selectRdDefault(token: string, rdId: string, signal?: AbortSignal): Promise<void> {
+	const info = await request<Record<string, unknown>>('rd', `${RD_BASE}/torrents/info/${encodeURIComponent(rdId)}`, { headers: authHeaders(token) }, signal);
+	const files = rdFiles(info.body, false);
+	if (files.length === 0 || info.body.status !== 'waiting_files_selection') return;
+	const videos = files.filter((file) => isVideoPath(file.name));
+	await formRequest('rd', `${RD_BASE}/torrents/selectFiles/${encodeURIComponent(rdId)}`, token, { files: (videos.length ? videos : files).map((file) => file.id).join(',') }, signal);
+}
+
+const rdAddedId = (body: Record<string, unknown>): string => {
+	if (typeof body.id !== 'string' || !body.id) throw new ProviderApiError('rd', 'Real-Debrid returned no torrent id.', 'invalid_response');
+	return body.id;
+};
+
+/** Adds a magnet, or a bare info hash. Debrid-Link takes a bare hash only when it is cached, which spares its daily quota. */
 export async function addMagnet(
 	provider: ProviderId,
 	token: string,
-	magnet: string,
-	signal?: AbortSignal
+	magnetOrHash: string,
+	signal?: AbortSignal,
+	options: AddOptions = {}
 ): Promise<void> {
+	const bare = isBtih(magnetOrHash);
+	const magnet = bare ? `magnet:?xt=urn:btih:${magnetOrHash.trim().toLowerCase()}` : magnetOrHash;
 	if (!/^magnet:\?/i.test(magnet) || !isBtih(magnetHash(magnet))) {
 		throw new ProviderApiError(provider, 'The magnet must contain a valid v1 BTIH.', 'invalid_magnet');
 	}
 	switch (provider) {
 		case 'rd': {
 			const result = await formRequest<Record<string, unknown>>('rd', `${RD_BASE}/torrents/addMagnet`, token, { magnet }, signal);
-			if (!result.body.id) throw new ProviderApiError('rd', 'Real-Debrid returned no torrent id.', 'invalid_response');
+			await selectRdDefault(token, rdAddedId(result.body), signal);
 			return;
 		}
 		case 'ad': {
@@ -1161,10 +1206,16 @@ export async function addMagnet(
 			const failed = magnetResults.find((entry) => entry.error);
 			if (failed) throw new ProviderApiError('ad', errorText(failed.error, 'AllDebrid rejected the magnet.'), String(assertObject(failed.error, 'ad').code ?? 'provider_error'));
 			if (!body.data) throw new ProviderApiError('ad', 'AllDebrid returned no magnet id.', 'invalid_response');
+			// AllDebrid has no cache probe left: the upload reports `ready`, and a miss is removed again.
+			const uploaded = magnetResults[0];
+			if (options.cachedOnly && uploaded && uploaded.ready !== true) {
+				await formRequest('ad', `${AD_BASE}/magnet/delete`, token, { id: String(uploaded.id) }, signal);
+				throw new ProviderApiError('ad', 'Not cached on AllDebrid, so it was not kept.', 'not_cached');
+			}
 			return;
 		}
 		case 'tb': {
-			const result = await formRequest<unknown>('tb', `${TB_BASE}/torrents/createtorrent`, token, { magnet }, signal);
+			const result = await formRequest<unknown>('tb', `${TB_BASE}/torrents/createtorrent`, token, { magnet, add_only_if_cached: options.cachedOnly ? 'true' : undefined }, signal);
 			const body = assertTorBox(result.body);
 			if (!body.data) throw new ProviderApiError('tb', 'TorBox returned no torrent id.', 'invalid_response');
 			return;
@@ -1181,12 +1232,100 @@ export async function addMagnet(
 			return;
 		}
 		case 'dl': {
-			const result = await formRequest<unknown>('dl', `${DL_BASE}/seedbox/add`, token, { url: magnet }, signal);
+			const result = await formRequest<unknown>('dl', `${DL_BASE}/seedbox/add`, token, { url: bare ? magnetOrHash.trim().toLowerCase() : magnet }, signal);
 			const body = assertDebridLink(result.body);
 			if (!body.value) throw new ProviderApiError('dl', 'Debrid-Link returned no torrent.', 'invalid_response');
 			return;
 		}
 	}
+}
+
+/** TorBox alone downloads plain web links. */
+export async function addWebDownload(token: string, link: string, signal?: AbortSignal): Promise<void> {
+	if (!/^https?:\/\//i.test(link)) throw new ProviderApiError('tb', 'Enter an http or https link.', 'invalid_link');
+	const result = await formRequest<unknown>('tb', `${TB_BASE}/webdl/createwebdownload`, token, { link }, signal);
+	assertTorBox(result.body);
+}
+
+export interface PickedFile {
+	uri: string;
+	name: string;
+}
+
+/** Uploads a .torrent file as each provider's own endpoint takes it. */
+export async function addTorrentFile(provider: ProviderId, token: string, file: PickedFile, signal?: AbortSignal): Promise<void> {
+	const part = { uri: file.uri, name: file.name, type: 'application/x-bittorrent' } as unknown as Blob;
+	const multipart = async <T,>(url: string, field: string): Promise<T> => {
+		const form = new FormData();
+		form.append(field, part);
+		return (await request<T>(provider, url, { method: 'POST', headers: authHeaders(token), body: form }, signal)).body;
+	};
+	switch (provider) {
+		case 'rd': {
+			const bytes = await (await fetch(file.uri)).blob();
+			const result = await request<Record<string, unknown>>('rd', `${RD_BASE}/torrents/addTorrent`, { method: 'PUT', headers: { ...authHeaders(token), 'Content-Type': 'application/x-bittorrent' }, body: bytes }, signal);
+			await selectRdDefault(token, rdAddedId(assertObject(result.body, 'rd')), signal);
+			return;
+		}
+		case 'ad': {
+			const body = assertAd(await multipart<unknown>(`${AD_BASE.replace('/v4.1', '/v4')}/magnet/upload/file`, 'files[]'));
+			const refused = asArray<Record<string, unknown>>(assertObject(body.data, 'ad').files).find((entry) => entry.error);
+			if (refused) throw new ProviderApiError('ad', errorText(refused.error, 'AllDebrid rejected the torrent file.'), 'provider_error');
+			return;
+		}
+		case 'tb':
+			assertTorBox(await multipart<unknown>(`${TB_BASE}/torrents/createtorrent`, 'file'));
+			return;
+		case 'pm':
+			assertPremiumize(await multipart<unknown>(`${PM_BASE}/transfer/create`, 'src'));
+			return;
+		case 'oc': {
+			const body = assertOffcloud(await multipart<unknown>(`${OC_BASE}/cloud`, 'file'));
+			if (typeof body.requestId !== 'string') throw new ProviderApiError('oc', 'Offcloud returned no request id.', 'invalid_response');
+			return;
+		}
+		case 'dl':
+			assertDebridLink(await multipart<unknown>(`${DL_BASE}/seedbox/add`, 'file'));
+			return;
+	}
+}
+
+/**
+ * Real-Debrid re-adds the hash with the same (or the given) files and deletes the old row;
+ * TorBox reannounces an active torrent; AllDebrid restarts a failed magnet.
+ */
+export async function reinsertItem(token: string, item: LibraryItem, fileIds?: string[], signal?: AbortSignal): Promise<void> {
+	if (item.provider === 'tb') {
+		const result = await jsonRequest<unknown>('tb', `${TB_BASE}/torrents/controltorrent`, token, { torrent_id: Number(torboxDetailPath(item.id).id), operation: 'reannounce' }, signal);
+		assertTorBox(result.body);
+		return;
+	}
+	if (item.provider === 'ad') {
+		const result = await formRequest<unknown>('ad', `${AD_BASE}/magnet/restart`, token, { id: rawId(item.id, 'ad') }, signal);
+		assertAd(result.body);
+		return;
+	}
+	if (item.provider !== 'rd') throw new ProviderApiError(item.provider, 'Premiumize, Offcloud and Debrid-Link have no reinsert.', 'unsupported');
+	if (!isBtih(item.hash)) throw new ProviderApiError('rd', 'This item has no info hash to reinsert.', 'invalid_magnet');
+	const info = async (id: string) => (await request<Record<string, unknown>>('rd', `${RD_BASE}/torrents/info/${encodeURIComponent(id)}`, { headers: authHeaders(token) }, signal)).body;
+	const oldId = rawId(item.id, 'rd');
+	const old = await info(oldId);
+	const oldSelection = rdFiles(old, false).filter((file) => file.selected).map((file) => file.id);
+	const selection = fileIds && fileIds.length > 0 ? fileIds : oldSelection;
+	const added = await formRequest<Record<string, unknown>>('rd', `${RD_BASE}/torrents/addMagnet`, token, { magnet: `magnet:?xt=urn:btih:${item.hash}` }, signal);
+	const newId = rdAddedId(added.body);
+	if (selection.length > 0) await formRequest('rd', `${RD_BASE}/torrents/selectFiles/${encodeURIComponent(newId)}`, token, { files: selection.join(',') }, signal);
+	else await selectRdDefault(token, newId, signal);
+	if (fileIds && fileIds.length > 0 && old.progress === 100) {
+		// RD caches a torrent's whole file set, not each subset: narrowing a finished one can start a fresh download.
+		const fresh = await info(newId);
+		const narrows = fileIds.length < oldSelection.length && fileIds.every((id) => oldSelection.includes(id));
+		if (fresh.progress !== 100 && narrows) {
+			await request('rd', `${RD_BASE}/torrents/delete/${encodeURIComponent(newId)}`, { method: 'DELETE', headers: authHeaders(token) }, signal);
+			throw new ProviderApiError('rd', 'Real-Debrid has not cached this selection and would download it again; your torrent was left as it was.', 'not_cached');
+		}
+	}
+	await request('rd', `${RD_BASE}/torrents/delete/${encodeURIComponent(oldId)}`, { method: 'DELETE', headers: authHeaders(token) }, signal);
 }
 
 const magnetHash = (magnet: string): string => {

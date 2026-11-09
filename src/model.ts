@@ -2,7 +2,8 @@ export const PROVIDERS = ['rd', 'ad', 'tb', 'pm', 'oc', 'dl'] as const;
 
 export type ProviderId = (typeof PROVIDERS)[number];
 export type LibraryStatus = 'waiting' | 'downloading' | 'finished' | 'error';
-export type SortMode = 'newest' | 'title' | 'size';
+export type SortMode = 'newest' | 'oldest' | 'title' | 'size' | 'progress';
+export type MediaType = 'movie' | 'tv' | 'other';
 
 export interface ProviderMeta {
 	id: ProviderId;
@@ -85,6 +86,13 @@ export interface LibraryItem {
 	/** A waiting RD item can require an explicit file selection. */
 	needsFileSelection?: boolean;
 	kind?: 'torrent' | 'web' | 'usenet' | 'transfer' | 'folder' | 'file' | 'cloud';
+	seeders?: number;
+	/** Bytes per second while downloading. */
+	speed?: number;
+	/** RD reinserts any row, TorBox reannounces active torrents, AllDebrid restarts failed magnets. */
+	reinsertable?: boolean;
+	/** The provider no longer serves it: RD finished with no links, AllDebrid status 11. */
+	uncached?: boolean;
 }
 
 export interface ProviderFailure {

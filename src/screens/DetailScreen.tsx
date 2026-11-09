@@ -11,20 +11,21 @@ import {
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useApp } from '../AppContext';
-import { formatBytes } from '../core';
+import { formatBytes, isVideoName } from '../core';
+import { hashlistUrl } from '../share';
 import type { LibraryFile, LibraryItem } from '../model';
 import { PROVIDER_META, statusLabel } from '../model';
 import { isSafeExternalUrl, magnetForHash } from '../validation';
 import type { RootStackParamList } from '../navigation';
 import { useAppTheme } from '../theme';
-import { EmptyState, ErrorBanner, ProviderBadge, Screen, styles } from '../ui';
+import { EmptyState, ErrorBanner, FilterButton, ProviderBadge, Screen, styles } from '../ui';
 import { confirmNativeAction } from '../confirmAction';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Detail'>;
 
-export function DetailScreen({ route }: Props) {
+export function DetailScreen({ route, navigation }: Props) {
 	const theme = useAppTheme();
-	const { snapshot, detail, openFile, remove, selectFiles } = useApp();
+	const { snapshot, detail, openFile, remove, selectFiles, reinsert } = useApp();
 	const original = snapshot.items.find((entry) => entry.id === route.params.itemId);
 	const connectionKey = original ? `${original.provider}:${original.id}` : '';
 	const connectionKeyRef = useRef(connectionKey);
@@ -109,6 +110,48 @@ export function DetailScreen({ route }: Props) {
 		});
 	};
 
+	const confirmReinsert = () => {
+		if (!item) return;
+		const what = item.provider === 'rd' ? 'Re-adds it to Real-Debrid with the same files and removes this copy.' : item.provider === 'tb' ? 'Asks TorBox to reannounce this torrent.' : 'Asks AllDebrid to restart this magnet.';
+		confirmNativeAction('Reinsert?', what, () => {
+			setError('');
+			setAction('reinsert');
+			void reinsert(item)
+				.then(() => { if (mountedRef.current && item.provider === 'rd') navigation.goBack(); })
+				.catch((caught) => mountedRef.current && setError(caught instanceof Error ? caught.message : 'Could not reinsert this item.'))
+				.finally(() => mountedRef.current && setAction(''));
+		}, 'Reinsert');
+	};
+
+	const shareHashlist = () => {
+		if (!item?.hash) {
+			Alert.alert('Hash list unavailable', 'This item has no info hash.');
+			return;
+		}
+		void Share.share({ message: hashlistUrl(item.title, [item]) });
+	};
+
+	/** Resolves every file's download link on demand and hands them to the share sheet. */
+	const shareAllLinks = async () => {
+		if (!item) return;
+		setError('');
+		const links: string[] = [];
+		const failures: string[] = [];
+		for (const [index, file] of item.files.entries()) {
+			setAction(`links:${index + 1}/${item.files.length}`);
+			try {
+				const url = await openFile(item.provider, item, file.id);
+				if (isSafeExternalUrl(url)) links.push(url);
+			} catch (caught) {
+				failures.push(`${file.name}: ${caught instanceof Error ? caught.message : 'no link'}`);
+			}
+			if (!mountedRef.current) return;
+		}
+		setAction('');
+		if (failures.length) setError(failures.slice(0, 5).join('\n'));
+		if (links.length) void Share.share({ message: links.join('\n') });
+	};
+
 	const toggleSelected = (file: LibraryFile) => {
 		setSelectedIds((current) => current.includes(file.id) ? current.filter((id) => id !== file.id) : [...current, file.id]);
 	};
@@ -118,6 +161,13 @@ export function DetailScreen({ route }: Props) {
 		setError('');
 		setAction('select');
 		try {
+			if (!item.needsFileSelection) {
+				// A torrent past file selection takes a new selection only by being re-added (DMM web's Save).
+				await reinsert(item, selectedIds);
+				// The old row is gone; the re-added copy is a new item in the library.
+				if (mountedRef.current) navigation.goBack();
+				return;
+			}
 			await selectFiles(item, item.files.filter((file) => selectedIds.includes(file.id)));
 			// Real-Debrid moves on from waiting_files_selection once files are chosen; show that, not the old row.
 			const refreshed = await detail(item.provider, item.id);
@@ -129,6 +179,9 @@ export function DetailScreen({ route }: Props) {
 		}
 	};
 
+	const canSelect = item?.provider === 'rd';
+	const selectionChanged = item ? [...selectedIds].sort().join(',') !== item.files.filter((file) => file.selected).map((file) => file.id).sort().join(',') : false;
+
 	if (!item) return <Screen edges={['bottom']}><EmptyState title="Item removed" detail="Return to the library to see the latest provider state." /></Screen>;
 	if (loading && !item.filesLoaded) return <Screen edges={['bottom']}><View style={styles.empty}><ActivityIndicator color={theme.accent} /><Text style={[styles.emptyDetail, { color: theme.muted }]}>Loading provider details…</Text></View></Screen>;
 
@@ -139,23 +192,32 @@ export function DetailScreen({ route }: Props) {
 				<Text style={[styles.detailTitle, { color: theme.text }]}>{item.title}</Text>
 				<Text style={[styles.detailMeta, { color: theme.muted }]}>{statusLabel(item.status)} · {Math.round(item.progress)}% · {formatBytes(item.size)}</Text>
 				<Text style={[styles.detailMeta, { color: theme.muted }]}>{item.serviceStatus}</Text>
-				<View style={[styles.row, { marginTop: 16 }]}>
+				<View style={[styles.row, { marginTop: 16, flexWrap: 'wrap' }]}>
 					<Pressable accessibilityRole="button" accessibilityLabel="Share item magnet" onPress={shareMagnet} style={[styles.outlineButton, { borderColor: theme.accent }]}><Text style={[styles.outlineButtonText, { color: theme.accent }]}>Share magnet</Text></Pressable>
+					<Pressable accessibilityRole="button" accessibilityLabel="Share hash list link" onPress={shareHashlist} style={[styles.outlineButton, { borderColor: theme.accent }]}><Text style={[styles.outlineButtonText, { color: theme.accent }]}>Hash list</Text></Pressable>
+					{item.files.length > 0 ? <Pressable accessibilityRole="button" accessibilityLabel="Share all file links" onPress={() => void shareAllLinks()} disabled={Boolean(action)} style={[styles.outlineButton, { borderColor: theme.accent }]}><Text style={[styles.outlineButtonText, { color: theme.accent }]}>{action.startsWith('links:') ? `Links ${action.slice(6)}…` : 'Share links'}</Text></Pressable> : null}
+					{item.reinsertable ? <Pressable accessibilityRole="button" accessibilityLabel="Reinsert item" onPress={confirmReinsert} disabled={Boolean(action)} style={[styles.outlineButton, { borderColor: theme.accent }]}><Text style={[styles.outlineButtonText, { color: theme.accent }]}>{action === 'reinsert' ? 'Reinserting…' : 'Reinsert'}</Text></Pressable> : null}
 					<Pressable accessibilityRole="button" accessibilityLabel="Remove item" onPress={confirmDelete} disabled={action === 'delete'} style={[styles.outlineButton, { borderColor: theme.danger }]}><Text style={[styles.outlineButtonText, { color: theme.danger }]}>{action === 'delete' ? 'Removing…' : 'Remove'}</Text></Pressable>
 				</View>
 				{error ? <ErrorBanner message={error} /> : null}
 				<View style={styles.detailSection}>
 					<View style={styles.rowBetween}><Text style={[styles.accountTitle, { color: theme.text }]}>Files</Text><Text style={[styles.detailMeta, { color: theme.muted }]}>{item.files.length}</Text></View>
+					{canSelect && item.files.length > 0 ? <View style={[styles.modalButtonRow, { marginTop: 8 }]}>
+						<FilterButton label="Select all" active={false} onPress={() => setSelectedIds(item.files.map((file) => file.id))} />
+						<FilterButton label="Unselect all" active={false} onPress={() => setSelectedIds([])} />
+						<FilterButton label="Only videos" active={false} onPress={() => setSelectedIds(item.files.filter((file) => isVideoName(file.name)).map((file) => file.id))} />
+						<FilterButton label="Reset" active={false} onPress={() => setSelectedIds(item.files.filter((file) => file.selected).map((file) => file.id))} />
+					</View> : null}
 					{item.files.length === 0 ? <EmptyState title="No files reported yet" detail="Refresh after the provider finishes preparing this item." /> : item.files.map((file) => {
 						const selected = selectedIds.includes(file.id);
 						return <View key={file.id} style={[styles.fileRow, { borderBottomColor: theme.border }]}>
-							{item.needsFileSelection ? <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: selected }} accessibilityLabel={`Select ${file.name}`} onPress={() => toggleSelected(file)} style={[styles.outlineButton, { borderColor: selected ? theme.accent : theme.border, backgroundColor: selected ? theme.accent : 'transparent' }]}><Text style={{ color: selected ? theme.onAccent : theme.text }}>{selected ? '✓' : '○'}</Text></Pressable> : null}
+							{canSelect ? <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: selected }} accessibilityLabel={`Select ${file.name}`} onPress={() => toggleSelected(file)} style={[styles.outlineButton, { borderColor: selected ? theme.accent : theme.border, backgroundColor: selected ? theme.accent : 'transparent' }]}><Text style={{ color: selected ? theme.onAccent : theme.text }}>{selected ? '✓' : '○'}</Text></Pressable> : null}
 							<Text numberOfLines={2} style={[styles.fileName, { color: theme.text }]}>{file.name}</Text>
 							<Text numberOfLines={1} style={[styles.fileSize, { color: theme.muted }]}>{formatBytes(file.size)}</Text>
 							<Pressable accessibilityRole="button" accessibilityLabel={`Open ${file.name}`} onPress={() => void open(file)} disabled={action === `open:${file.id}`} style={[styles.fileButton, { backgroundColor: theme.accent, opacity: action === `open:${file.id}` ? 0.55 : 1 }]}><Text style={[styles.fileButtonText, { color: theme.onAccent }]}>{action === `open:${file.id}` ? 'Opening…' : 'Open'}</Text></Pressable>
 						</View>;
 					})}
-					{item.needsFileSelection ? <Pressable accessibilityRole="button" accessibilityLabel="Select files for Real-Debrid" onPress={() => void saveSelection()} disabled={action === 'select' || selectedIds.length === 0} style={[styles.primaryButton, { backgroundColor: theme.accent, opacity: action === 'select' || selectedIds.length === 0 ? 0.55 : 1, marginTop: 14 }]}><Text style={[styles.primaryButtonText, { color: theme.onAccent }]}>{action === 'select' ? 'Selecting…' : 'Select files for Real-Debrid'}</Text></Pressable> : null}
+					{canSelect ? <Pressable accessibilityRole="button" accessibilityLabel="Select files for Real-Debrid" onPress={() => void saveSelection()} disabled={action === 'select' || selectedIds.length === 0 || (!item.needsFileSelection && !selectionChanged)} style={[styles.primaryButton, { backgroundColor: theme.accent, opacity: action === 'select' || selectedIds.length === 0 || (!item.needsFileSelection && !selectionChanged) ? 0.55 : 1, marginTop: 14 }]}><Text style={[styles.primaryButtonText, { color: theme.onAccent }]}>{action === 'select' ? 'Selecting…' : item.needsFileSelection ? 'Select files for Real-Debrid' : `Save selection (${selectedIds.length}) and reinsert`}</Text></Pressable> : null}
 				</View>
 			</ScrollView>
 		</Screen>

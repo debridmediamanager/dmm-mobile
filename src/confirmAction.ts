@@ -5,9 +5,10 @@ export function confirmNativeAction(
 	title: string,
 	message: string,
 	action: () => void,
+	confirmLabel = 'Remove',
 ): void {
 	Alert.alert(title, message, [
 		{ text: 'Cancel', style: 'cancel' },
-		{ text: 'Remove', style: 'destructive', onPress: action },
+		{ text: confirmLabel, style: 'destructive', onPress: action },
 	]);
 }

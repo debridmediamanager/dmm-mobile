@@ -144,6 +144,9 @@ const api = {
 	},
 	selectRealDebridFiles: async () => undefined,
 	renewCredential: async (_provider, credential) => credential,
+	addTorrentFile: async () => undefined,
+	addWebDownload: async () => undefined,
+	reinsertItem: async () => undefined,
 } as SessionApi;
 
 const session = new LibrarySession(storage, api);

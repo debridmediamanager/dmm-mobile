@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import { ActivityIndicator, Linking, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Linking, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 import { startDeviceLogin, supportsDeviceLogin, waitForApproval, type DeviceLogin, type StoredCredential } from './auth';
-import type { LibraryItem, ProviderId } from './model';
+import type { LibraryItem, MediaType, ProviderId } from './model';
 import { PROVIDER_META, statusLabel } from './model';
 import { formatBytes } from './core';
 import { useAppTheme } from './theme';
@@ -64,39 +64,98 @@ export function ProviderBadge({ provider }: { provider: ProviderId }) {
 	);
 }
 
+export interface CardChip {
+	label: string;
+	onPress: () => void;
+}
+
+const MEDIA_LABEL = { movie: 'Movie', tv: 'TV', other: 'Other' } as const;
+
 export function LibraryCard({
 	item,
+	mediaType,
+	selected,
+	selecting,
+	chips,
 	onPress,
+	onLongPress,
 	onShare,
 }: {
 	item: LibraryItem;
+	mediaType: MediaType;
+	selected: boolean;
+	selecting: boolean;
+	chips: CardChip[];
 	onPress: () => void;
+	onLongPress: () => void;
 	onShare: () => void;
 }) {
 	const theme = useAppTheme();
+	const live = item.status === 'downloading' && (item.seeders !== undefined || item.speed !== undefined);
 	return (
 		<Pressable
-			accessibilityRole="button"
-			accessibilityLabel={`Open ${item.title}`}
-			style={({ pressed }) => [styles.card, { backgroundColor: theme.surface, borderColor: theme.border, opacity: pressed ? 0.82 : 1 }]}
+			accessibilityRole={selecting ? 'checkbox' : 'button'}
+			accessibilityState={selecting ? { checked: selected } : undefined}
+			accessibilityLabel={selecting ? `Select ${item.title}` : `Open ${item.title}`}
+			accessibilityHint={selecting ? undefined : 'Long press to select'}
+			style={({ pressed }) => [styles.card, { backgroundColor: selected ? theme.input : theme.surface, borderColor: selected ? theme.accent : theme.border, borderWidth: selected ? 2 : 1, opacity: pressed ? 0.82 : 1 }]}
 			onPress={onPress}
+			onLongPress={onLongPress}
 		>
 			<View style={styles.rowBetween}>
-				<ProviderBadge provider={item.provider} />
+				<View style={styles.row}>
+					{selecting ? <Text style={{ color: selected ? theme.accent : theme.muted, fontSize: 18, fontWeight: '700' }}>{selected ? '✓' : '○'}</Text> : null}
+					<ProviderBadge provider={item.provider} />
+					<Text style={[styles.share, { color: theme.muted }]}>{MEDIA_LABEL[mediaType]}</Text>
+				</View>
 				<Pressable accessibilityRole="button" accessibilityLabel={`Share ${item.title} magnet`} onPress={onShare} hitSlop={10}>
 					<Text style={[styles.share, { color: theme.accent }]}>Share magnet</Text>
 				</Pressable>
 			</View>
 			<Text numberOfLines={2} style={[styles.cardTitle, { color: theme.text }]}>{item.title}</Text>
-			<Text numberOfLines={1} style={[styles.cardFilename, { color: theme.muted }]}>{item.filename}</Text>
+			{item.filename !== item.title ? <Text numberOfLines={1} style={[styles.cardFilename, { color: theme.muted }]}>{item.filename}</Text> : null}
 			<View style={styles.rowBetween}>
-				<Text style={[styles.cardMeta, { color: theme.muted }]}>{statusLabel(item.status)} · {formatBytes(item.size)}</Text>
+				<Text style={[styles.cardMeta, { color: theme.muted }]}>{statusLabel(item.status)} · {formatBytes(item.size)} · {new Date(item.added).toLocaleDateString()}</Text>
 				<Text style={[styles.cardMeta, { color: theme.muted }]}>{Math.round(item.progress)}%</Text>
 			</View>
+			{live ? <Text style={[styles.cardMeta, { color: theme.muted, marginTop: 4 }]}>{item.seeders ?? 0} seeders · {formatBytes(item.speed ?? 0).replace('Unknown size', '0 B')}/s</Text> : null}
+			{item.status !== 'finished' ? <Text numberOfLines={1} style={[styles.cardMeta, { color: theme.muted, marginTop: 4 }]}>{item.serviceStatus}</Text> : null}
 			<View style={[styles.progressTrack, { backgroundColor: theme.border }]}>
 				<View style={[styles.progressFill, { width: `${Math.max(0, Math.min(100, item.progress))}%`, backgroundColor: theme.accent }]} />
 			</View>
+			{chips.length > 0 ? <View style={[styles.modalButtonRow, { marginTop: 10 }]}>{chips.map((chip) => <FilterButton key={chip.label} label={chip.label} active={false} onPress={chip.onPress} />)}</View> : null}
 		</Pressable>
+	);
+}
+
+export interface SheetAction {
+	label: string;
+	onPress: () => void;
+	destructive?: boolean;
+}
+
+/** A bottom sheet of actions; Android alerts hold three buttons at most. */
+export function ActionSheet({ title, detail, actions, onClose }: { title: string; detail?: string; actions: SheetAction[]; onClose: () => void }) {
+	const theme = useAppTheme();
+	return (
+		<Modal visible animationType="slide" transparent onRequestClose={onClose}>
+			<Pressable style={styles.modalBackdrop} onPress={onClose} accessibilityLabel="Close actions">
+				<Pressable style={[styles.modalSheet, { backgroundColor: theme.surface }]} onPress={() => undefined}>
+					<View style={styles.rowBetween}>
+						<Text style={[styles.modalTitle, { color: theme.text }]}>{title}</Text>
+						<Pressable accessibilityRole="button" accessibilityLabel="Close actions" onPress={onClose}><Text style={{ color: theme.accent, fontWeight: '700' }}>Close</Text></Pressable>
+					</View>
+					{detail ? <Text style={[styles.subheading, { color: theme.muted }]}>{detail}</Text> : null}
+					<ScrollView style={{ maxHeight: 460 }} contentContainerStyle={{ gap: 8 }}>
+						{actions.map((action) => (
+							<Pressable key={action.label} accessibilityRole="button" accessibilityLabel={action.label} onPress={() => { onClose(); action.onPress(); }} style={[styles.outlineButton, { borderColor: action.destructive ? theme.danger : theme.border, minHeight: 46 }]}>
+								<Text style={[styles.outlineButtonText, { color: action.destructive ? theme.danger : theme.text, fontSize: 15 }]}>{action.label}</Text>
+							</Pressable>
+						))}
+					</ScrollView>
+				</Pressable>
+			</Pressable>
+		</Modal>
 	);
 }
 

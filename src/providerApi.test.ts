@@ -5,9 +5,12 @@ import {
 	getLibraryDetail,
 	listLibrary,
 	ProviderApiError,
+	reinsertItem,
 	resolveFile,
 	validateCredential,
 } from './providerApi';
+import rdMovie from './test/fixtures/rdinfo_movie.json';
+import rdTv from './test/fixtures/rdinfo_tv.json';
 import type { LibraryItem } from './model';
 import rdFixture from './test/fixtures/rd-bdmv-single-selection-2026-10-12.json';
 import adFilesFixture from './test/fixtures/adfiles.json';
@@ -312,5 +315,96 @@ describe('adding a magnet', () => {
 		const typed = 'magnet:?xt=urn:btih:dd8255ecdc7ca55fb0bbf81323d87062db1f6d1c&dn=Big.Buck.Bunny';
 		await expect(addMagnet('rd', 'token', parseBtihMagnet(typed).magnet)).resolves.toBeUndefined();
 		expect(new URLSearchParams(String(fetchMock.mock.calls[0][1]?.body)).get('magnet')).toBe(typed);
+	});
+});
+
+describe('adds, reinserts and the cached-only paths', () => {
+	const HASH = rdMovie.hash;
+	type Call = { url: string; method: string; body: string };
+	const record = (respond: (url: string, method: string) => unknown) => {
+		const calls: Call[] = [];
+		vi.stubGlobal('fetch', vi.fn((url: string, init: RequestInit = {}) => {
+			const method = init.method ?? 'GET';
+			calls.push({ url, method, body: typeof init.body === 'string' ? init.body : '' });
+			return Promise.resolve(jsonResponse(respond(url, method)));
+		}));
+		return calls;
+	};
+
+	it('selects every video right after a Real-Debrid add, as DMM web does', async () => {
+		const calls = record((url) => url.endsWith('/addMagnet') ? { id: 'NEW' } : url.includes('/torrents/info/') ? {
+			status: 'waiting_files_selection',
+			files: [{ id: 1, path: '/a/movie.mkv', bytes: 1, selected: 0 }, { id: 2, path: '/a/readme.nfo', bytes: 1, selected: 0 }, { id: 3, path: '/a/extra.mp4', bytes: 1, selected: 0 }],
+		} : {});
+		await addMagnet('rd', 'token', `magnet:?xt=urn:btih:${HASH}`);
+		const select = calls.find((call) => call.url.includes('/selectFiles/NEW'));
+		expect(new URLSearchParams(select?.body).get('files')).toBe('1,3');
+	});
+
+	it('sends Debrid-Link a bare hash, so it adds only what is cached', async () => {
+		const calls = record(() => ({ success: true, value: { id: 'x' } }));
+		await addMagnet('dl', 'token', HASH.toUpperCase());
+		expect(new URLSearchParams(calls[0].body).get('url')).toBe(HASH);
+		await addMagnet('rd', 'token', 'magnet:?xt=urn:btih:' + HASH).catch(() => undefined);
+	});
+
+	it('asks TorBox for cached-only adds and removes an uncached AllDebrid upload again', async () => {
+		const tb = record(() => ({ success: true, data: { torrent_id: 1 } }));
+		await addMagnet('tb', 'token', HASH, undefined, { cachedOnly: true });
+		expect(new URLSearchParams(tb[0].body).get('add_only_if_cached')).toBe('true');
+
+		const ad = record((url) => url.endsWith('/magnet/upload') ? { status: 'success', data: { magnets: [{ id: 77, hash: HASH, ready: false }] } } : { status: 'success', data: {} });
+		await expect(addMagnet('ad', 'token', HASH, undefined, { cachedOnly: true })).rejects.toMatchObject({ code: 'not_cached' });
+		expect(ad[1].url).toMatch(/\/magnet\/delete$/);
+		expect(new URLSearchParams(ad[1].body).get('id')).toBe('77');
+	});
+
+	it('reinserts on Real-Debrid with the old file selection, then deletes the old torrent', async () => {
+		const calls = record((url, method) => {
+			if (url.endsWith('/addMagnet')) return { id: 'NEW' };
+			if (url.includes('/torrents/info/')) return rdMovie;
+			if (method === 'DELETE') return null;
+			return {};
+		});
+		await reinsertItem('token', { ..._testing.normalizeRd(rdMovie), id: `rd:${rdMovie.id}` });
+		expect(new URLSearchParams(calls.find((call) => call.url.includes('/selectFiles/NEW'))?.body).get('files')).toBe('1');
+		expect(calls.at(-1)).toMatchObject({ method: 'DELETE' });
+		expect(calls.at(-1)?.url).toContain(`/torrents/delete/${rdMovie.id}`);
+	});
+
+	it('keeps a cached Real-Debrid torrent when a narrower selection would download again', async () => {
+		const old = { ...rdTv, progress: 100 };
+		const selected = _testing.rdFiles(old).filter((file) => file.selected).map((file) => file.id);
+		const calls = record((url, method) => {
+			if (url.endsWith('/addMagnet')) return { id: 'NEW' };
+			if (url.includes('/torrents/info/NEW')) return { ...old, id: 'NEW', progress: 0, status: 'downloading' };
+			if (url.includes('/torrents/info/')) return old;
+			return method === 'DELETE' ? null : {};
+		});
+		expect(selected.length).toBeGreaterThan(1);
+		await expect(reinsertItem('token', _testing.normalizeRd(old), selected.slice(0, 1))).rejects.toMatchObject({ code: 'not_cached' });
+		const deletes = calls.filter((call) => call.method === 'DELETE').map((call) => call.url);
+		expect(deletes).toEqual([expect.stringContaining('/torrents/delete/NEW')]);
+	});
+
+	it('reannounces an active TorBox torrent and restarts a failed AllDebrid magnet', async () => {
+		const tb = record(() => ({ success: true, data: null }));
+		await reinsertItem('token', _testing.normalizeTorBox({ id: 5, name: 'x', active: true, download_state: 'stalled (no seeds)' }, 'torrent'));
+		expect(JSON.parse(String((vi.mocked(fetch).mock.calls[0][1] as RequestInit).body))).toEqual({ torrent_id: 5, operation: 'reannounce' });
+		expect(tb[0].url).toMatch(/controltorrent$/);
+		const ad = record(() => ({ status: 'success', data: { message: 'restarted' } }));
+		await reinsertItem('token', _testing.normalizeAd({ ...adStatusFixture, statusCode: 7 }));
+		expect(ad[0].url).toMatch(/\/magnet\/restart$/);
+		expect(new URLSearchParams(ad[0].body).get('id')).toBe(String(adStatusFixture.id));
+		await expect(reinsertItem('token', { ..._testing.normalizeAd(adStatusFixture), provider: 'pm' })).rejects.toMatchObject({ code: 'unsupported' });
+	});
+
+	it('marks which rows can be reinserted and which the provider no longer serves', () => {
+		expect(_testing.normalizeRd(rdMovie)).toMatchObject({ reinsertable: true, uncached: false });
+		expect(_testing.normalizeRd({ ...rdMovie, links: [] })).toMatchObject({ uncached: true });
+		expect(_testing.normalizeAd(adStatusFixture)).toMatchObject({ reinsertable: false, uncached: false });
+		expect(_testing.normalizeAd({ ...adStatusFixture, statusCode: 11 })).toMatchObject({ reinsertable: true, uncached: true });
+		expect(_testing.normalizeTorBox({ id: 1, active: false, download_finished: true, download_present: true }, 'torrent').reinsertable).toBe(false);
+		expect(_testing.normalizeTorBox({ id: 1, active: true }, 'web').reinsertable).toBe(false);
 	});
 });

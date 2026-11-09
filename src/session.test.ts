@@ -51,6 +51,9 @@ const api = (listLibrary: SessionApi['listLibrary']): SessionApi => ({
 	deleteLibraryItem: vi.fn(),
 	selectRealDebridFiles: vi.fn(),
 	renewCredential: vi.fn(),
+	addTorrentFile: vi.fn(),
+	addWebDownload: vi.fn(),
+	reinsertItem: vi.fn(),
 });
 
 describe('secure session lifecycle', () => {
