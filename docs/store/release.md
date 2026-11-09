@@ -5,6 +5,11 @@ and test checklist are in `review.md`. Bump `version`, `ios.buildNumber` and
 `android.versionCode` in `app.json` for every upload: the stores refuse a build
 number they have seen.
 
+`version` is also the runtime version that over-the-air updates target. After
+uploading, tag the exact commit you built as `v<version>` and publish its GitHub
+release (`../releasing.md`); the OTA workflow refuses to publish for a version
+without that tag.
+
 ## Before each submission
 
 1. `npm ci && npm run typecheck && npm test`
