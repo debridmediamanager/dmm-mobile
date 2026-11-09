@@ -106,8 +106,8 @@ Pixel 6, Android 16, release build.
 <p>
 <img src="docs/screenshots/sign-in.png" width="180" alt="Sign-in screen listing each provider">
 <img src="docs/screenshots/device-code.png" width="180" alt="Premiumize device code waiting for approval">
-<img src="docs/screenshots/library.png" width="180" alt="Library with Blender open movies on Real-Debrid">
-<img src="docs/screenshots/detail.png" width="180" alt="Tears of Steel detail with its files">
+<img src="docs/screenshots/library.png" width="180" alt="Library rows filtered to Real-Debrid, Blender open movies">
+<img src="docs/screenshots/detail.png" width="180" alt="Tears of Steel detail with file selection">
 <img src="docs/screenshots/accounts.png" width="180" alt="Accounts with Real-Debrid connected">
 </p>
 
