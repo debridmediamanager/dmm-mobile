@@ -80,7 +80,6 @@ export const LibraryRow = memo(function LibraryRow({
 	onPress,
 	onLongPress,
 	onMore,
-	onGroup,
 }: {
 	item: LibraryItem;
 	mediaType: MediaType;
@@ -92,7 +91,6 @@ export const LibraryRow = memo(function LibraryRow({
 	onPress: (item: LibraryItem) => void;
 	onLongPress: (item: LibraryItem) => void;
 	onMore: (item: LibraryItem) => void;
-	onGroup: (item: LibraryItem, group: 'hash' | 'title') => void;
 }) {
 	const theme = useAppTheme();
 	const meta = PROVIDER_META[item.provider];
@@ -116,8 +114,9 @@ export const LibraryRow = memo(function LibraryRow({
 					<Text numberOfLines={1} style={{ flexShrink: 1, color: theme.muted, fontSize: 11.5 }}>
 						{formatBytes(item.size).replace('Unknown size', '—')} · {MEDIA_LABEL[mediaType]} · {new Date(item.added).toLocaleDateString()}{state}{live}
 					</Text>
-					{hashCount > 1 ? <Pressable accessibilityRole="button" accessibilityLabel={`${hashCount} same hash`} onPress={() => onGroup(item, 'hash')} hitSlop={12}><Text style={{ color: '#f97316', fontSize: 11, fontWeight: '700' }}>{hashCount}× hash</Text></Pressable> : null}
-					{titleCount > 1 ? <Pressable accessibilityRole="button" accessibilityLabel={`${titleCount} same title`} onPress={() => onGroup(item, 'title')} hitSlop={12}><Text style={{ color: '#f59e0b', fontSize: 11, fontWeight: '700' }}>{titleCount}× title</Text></Pressable> : null}
+					{/* Plain text: a tappable marker sat where a thumb opens the row. The ⋯ menu opens these groups. */}
+					{hashCount > 1 ? <Text style={{ color: '#f97316', fontSize: 11, fontWeight: '700' }}>{hashCount}× hash</Text> : null}
+					{titleCount > 1 ? <Text style={{ color: '#f59e0b', fontSize: 11, fontWeight: '700' }}>{titleCount}× title</Text> : null}
 				</View>
 				{item.status !== 'finished' ? <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 2, backgroundColor: theme.border }}><View style={{ height: 2, width: `${Math.max(0, Math.min(100, item.progress))}%`, backgroundColor: theme.accent }} /></View> : null}
 			</View>

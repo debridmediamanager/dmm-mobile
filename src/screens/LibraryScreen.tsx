@@ -269,6 +269,8 @@ function LibraryListScreen({ navigation, transfersOnly }: { navigation: Navigati
 	const rowActions = (item: LibraryItem): SheetAction[] => [
 		{ label: 'Details and files', onPress: () => navigation.navigate('Detail', { itemId: item.id }) },
 		{ label: selected.has(item.id) ? 'Unselect' : 'Select', onPress: () => toggle(item) },
+		...(item.hash && (grouping.hashCounts.get(hashKeyOf(item)) ?? 0) > 1 ? [{ label: `Show the ${grouping.hashCounts.get(hashKeyOf(item))} with this hash`, onPress: () => groupRow(item, 'hash') }] : []),
+		...((grouping.titleCounts.get(titleKeyOf(item)) ?? 0) > 1 ? [{ label: `Show the ${grouping.titleCounts.get(titleKeyOf(item))} with this title`, onPress: () => groupRow(item, 'title') }] : []),
 		{ label: 'Share magnet', onPress: () => shareMagnet(item) },
 		{ label: 'Share hash list link', onPress: () => shareHashlist([item]) },
 		...(item.reinsertable ? [{ label: 'Reinsert', onPress: () => confirmNativeAction('Reinsert?', item.title, () => void reinsert(item).catch((error) => Alert.alert('Reinsert failed', error instanceof Error ? error.message : String(error))), 'Reinsert') }] : []),
@@ -345,7 +347,6 @@ function LibraryListScreen({ navigation, transfersOnly }: { navigation: Navigati
 							onPress={openRow}
 							onLongPress={toggle}
 							onMore={setRowMenu}
-							onGroup={groupRow}
 						/>
 					)}
 					refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void refreshAll()} tintColor={theme.accent} />}
