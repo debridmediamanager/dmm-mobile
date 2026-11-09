@@ -91,8 +91,10 @@ about 6 s, smooth scrolling, search under a second per keystroke).
   (Real-Debrid; active TorBox torrents; failed AllDebrid magnets), and choose
   Real-Debrid files, including on a finished torrent.
 
-Download links are resolved only after a user taps a file and are handed to
-the operating system. Hash lists open on DMM web's `/hashlist` page, carried
+Download links are resolved only after a user taps a file. Videos open in the
+player chosen under Accounts (VLC, MX Player, Just Player or Android's app
+picker; Infuse, VLC, VidHub, Outplayer, SenPlayer or Aether on iOS), the same
+list DMM web offers; other files go to the operating system. Hash lists open on DMM web's `/hashlist` page, carried
 in the link itself.
 
 Not in the app, because they need DMM's servers: casting to Stremio, sending
