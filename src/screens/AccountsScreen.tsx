@@ -4,13 +4,15 @@ import type { StoredCredential } from '../auth';
 import { useApp } from '../AppContext';
 import { PROVIDERS, PROVIDER_META, type ProviderId } from '../model';
 import { useAppTheme } from '../theme';
-import { CredentialInput, ErrorBanner, Screen, styles, TvLinkPanel, useLayout } from '../ui';
+import { CredentialInput, ErrorBanner, Pressable, Screen, styles, TvLinkPanel, useLayout } from '../ui';
 
 export function AccountsScreen() {
 	const theme = useAppTheme();
 	const { wide } = useLayout();
 	const { ready, startupError, snapshot, connect, disconnect, retryStartup, linkState } = useApp();
 	const signedIn = PROVIDERS.some((provider) => snapshot.connected[provider]);
+	// A TV can also take a key typed with the remote: an API key, or the demo key reviewers use.
+	const [keyEntry, setKeyEntry] = useState(false);
 	return (
 		<Screen>
 			<KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
@@ -21,8 +23,13 @@ export function AccountsScreen() {
 					{startupError ? <ErrorBanner message={`Secure account storage: ${startupError}`} actionLabel="Retry secure account load" onAction={() => void retryStartup()} busy={!ready} /> : null}
 					{snapshot.failures.length > 0 ? <ErrorBanner message={snapshot.failures.map((failure) => `${PROVIDER_META[failure.provider].label}: ${failure.message}`).join('\n')} /> : null}
 					{Platform.isTV ? <TvLinkPanel onLinked={linkState} signedIn={signedIn} /> : null}
-					{/* On a TV the phone does the signing in; only connected providers are listed, to disconnect. */}
-					{PROVIDERS.filter((provider) => !Platform.isTV || snapshot.connected[provider]).map((provider) => <AccountRow key={provider} provider={provider} connected={snapshot.connected[provider]} label={snapshot.labels[provider]} error={snapshot.failures.find((failure) => failure.provider === provider)?.message} onConnect={(credential) => connect(provider, credential)} onDisconnect={() => new Promise<void>((resolve) => Alert.alert(`Disconnect ${PROVIDER_META[provider].label}?`, 'The saved credential and this provider’s in-memory library rows will be deleted.', [{ text: 'Cancel', style: 'cancel', onPress: () => resolve() }, { text: 'Disconnect', style: 'destructive', onPress: () => { void disconnect(provider).catch((caught) => Alert.alert('Disconnect failed', caught instanceof Error ? caught.message : 'Could not disconnect this provider.')).finally(resolve); } }]))} busy={snapshot.loading[provider]} />)}
+					{Platform.isTV ? (
+						<Pressable accessibilityRole="button" accessibilityState={{ expanded: keyEntry }} onPress={() => setKeyEntry((open) => !open)} style={[styles.outlineButton, { borderColor: theme.accent, alignSelf: 'flex-start', marginTop: 8 }]}>
+							<Text style={[styles.outlineButtonText, { color: theme.accent }]}>{keyEntry ? 'Hide API keys' : 'Enter an API key instead'}</Text>
+						</Pressable>
+					) : null}
+					{/* On a TV the phone does the signing in; connected providers are listed to disconnect, all of them when typing a key. */}
+					{PROVIDERS.filter((provider) => !Platform.isTV || keyEntry || snapshot.connected[provider]).map((provider) => <AccountRow key={provider} provider={provider} connected={snapshot.connected[provider]} label={snapshot.labels[provider]} error={snapshot.failures.find((failure) => failure.provider === provider)?.message} onConnect={(credential) => connect(provider, credential)} onDisconnect={() => new Promise<void>((resolve) => Alert.alert(`Disconnect ${PROVIDER_META[provider].label}?`, 'The saved credential and this provider’s in-memory library rows will be deleted.', [{ text: 'Cancel', style: 'cancel', onPress: () => resolve() }, { text: 'Disconnect', style: 'destructive', onPress: () => { void disconnect(provider).catch((caught) => Alert.alert('Disconnect failed', caught instanceof Error ? caught.message : 'Could not disconnect this provider.')).finally(resolve); } }]))} busy={snapshot.loading[provider]} />)}
 				</ScrollView>
 			</KeyboardAvoidingView>
 		</Screen>

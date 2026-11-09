@@ -1,6 +1,7 @@
 import type { StoredCredential } from './auth';
 import type { ProviderId } from './model';
 import { PROVIDERS } from './model';
+import { isDemoToken } from './demo';
 import { SETTINGS, type AppSettings, type SettingName } from './settings';
 
 /**
@@ -32,8 +33,13 @@ const PROVIDER_KEYS: Record<ProviderId, string[]> = {
 const isDeviceLogin = (credential: StoredCredential): boolean =>
 	Boolean(credential.clientId || credential.refresh || credential.expiresAt);
 
+/** The demo key is no login: it stays on the device, out of DMM's store and the browser handoff. */
+const withoutDemo = (credentials: Credentials): Credentials =>
+	Object.fromEntries(Object.entries(credentials).filter(([, credential]) => !isDemoToken(credential?.token))) as Credentials;
+
 /** The logins DMM can verify, one per provider, as DMM web's syncIdentities builds them. */
-export function identitiesFor(credentials: Credentials): SyncIdentity[] {
+export function identitiesFor(all: Credentials): SyncIdentity[] {
+	const credentials = withoutDemo(all);
 	const identities: SyncIdentity[] = [];
 	for (const provider of PROVIDERS) {
 		const credential = credentials[provider];
@@ -49,7 +55,8 @@ const json = (value: string | number) => JSON.stringify(value);
 const expiring = (value: string, expiresAt?: number) => (expiresAt ? JSON.stringify({ value, expiry: expiresAt }) : JSON.stringify(value));
 
 /** The app's logins and settings under DMM web's keys and in its formats. */
-export function stateFromApp(credentials: Credentials, settings: AppSettings): BrowserState {
+export function stateFromApp(all: Credentials, settings: AppSettings): BrowserState {
+	const credentials = withoutDemo(all);
 	const state: BrowserState = {};
 	const rd = credentials.rd;
 	if (rd?.clientId && rd.clientSecret && rd.refresh) {

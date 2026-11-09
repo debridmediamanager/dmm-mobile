@@ -25,6 +25,7 @@ import type { CredentialStorage } from './storage';
 import type { AddEntry } from './share';
 import { browserStateApi, credentialsFromState, identitiesFor, mergeState, settingsFromState, stateFromApp, type BrowserState, type BrowserStateApi } from './sync';
 import { loadSettings, saveSetting, type SettingName } from './settings';
+import { withDemo } from './demo';
 import { runBulk, type BulkResult } from './core';
 
 export type { BulkResult };
@@ -59,7 +60,8 @@ export interface SessionSnapshot {
 
 const LATE_LISTING_MS = 4000;
 
-const defaultApi: SessionApi = {
+// The demo key (src/demo.ts) is answered locally; every other credential reaches its provider.
+const defaultApi: SessionApi = withDemo({
 	validateCredential,
 	listLibrary,
 	getLibraryDetail,
@@ -72,7 +74,7 @@ const defaultApi: SessionApi = {
 	addWebDownload,
 	reinsertItem,
 	findRealDebridUncached,
-};
+});
 
 const emptySnapshot = (): SessionSnapshot => ({
 	connected: { rd: false, ad: false, tb: false, pm: false, oc: false, dl: false },
