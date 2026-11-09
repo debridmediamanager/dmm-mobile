@@ -1,0 +1,11 @@
+name = "dmm-mobile-ota"
+main = "worker.ts"
+compatibility_date = "2026-11-01"
+# workers.dev, not a debridmediamanager.com hostname: that zone's Bot Fight Mode challenges app requests
+# and cannot be skipped per host on the free plan. The URL is built into every app, so never rename this.
+workers_dev = true
+preview_urls = false
+
+[[kv_namespaces]]
+binding = "OTA"
+id = "08e06b1d45be471294a21aa779c2edc4"

@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Alert, Platform, ScrollView, Text, View } from 'react-native';
+import * as Updates from 'expo-updates';
 import { useApp } from '../AppContext';
 import { PROVIDERS, PROVIDER_META, type ProviderId } from '../model';
 import { playersForPlatform } from '../player';
 import { loadSettings, onSettingsChange, saveSetting, type AppSettings, type SettingName } from '../settings';
 import { useAppTheme } from '../theme';
-import { ActionSheet, DropdownChip, Screen, styles, type SheetAction, useLayout } from '../ui';
+import { ActionSheet, DropdownChip, FilterButton, Screen, styles, type SheetAction, useLayout } from '../ui';
 
 /** The DMM web Settings that apply to the app, under the same keys so they follow you across devices. */
 export function SettingsScreen() {
@@ -19,6 +20,8 @@ export function SettingsScreen() {
 		load();
 		return onSettingsChange(load);
 	}, []);
+	const updates = Updates.useUpdates();
+	const [checking, setChecking] = useState(false);
 	const save = (name: SettingName, value: string) => void saveSetting(name, value).catch((caught) => Alert.alert('Could not save the setting', caught instanceof Error ? caught.message : String(caught)));
 
 	const players = playersForPlatform();
@@ -31,6 +34,22 @@ export function SettingsScreen() {
 		player: players.map((option) => ({ label: option.label, checked: option.id === player.id, onPress: () => save('player', option.id) })),
 		addProvider: connected.map((id) => ({ label: PROVIDER_META[id].label, checked: id === addProvider, onPress: () => save('addProvider', id) })),
 	};
+
+	// The app also checks on every start and applies a downloaded update on the next one; this is for a TV left running.
+	const updateApp = async () => {
+		if (updates.isUpdatePending) return void Updates.reloadAsync();
+		setChecking(true);
+		try {
+			if ((await Updates.checkForUpdateAsync()).isAvailable) await Updates.fetchUpdateAsync();
+			else Alert.alert('DMM Mobile is up to date');
+		} catch (caught) {
+			Alert.alert('Could not check for updates', caught instanceof Error ? caught.message : String(caught));
+		} finally {
+			setChecking(false);
+		}
+	};
+	const running = updates.currentlyRunning;
+	const versionDetail = !Updates.isEnabled ? 'Updates are off in this build.' : running.isEmbeddedLaunch || !running.createdAt ? 'As installed.' : `Updated ${running.createdAt.toLocaleString()}.`;
 
 	const row = (title: string, detail: string, control: React.ReactNode) => (
 		<View style={[styles.accountCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
@@ -49,6 +68,7 @@ export function SettingsScreen() {
 				{row('Open videos with', Platform.isTV ? 'Used when you open a video file. The same list as DMM web.' : 'Used when you open a video file. Subtitles and other files open in the browser. The same list as DMM web.', <DropdownChip label={player.label} active={player.id !== 'browser'} onPress={() => setPicking('player')} />)}
 				{row('Add to', 'The provider the Add screen and magnet links from other apps start on.', <DropdownChip label={addProvider ? PROVIDER_META[addProvider].label : 'First connected'} active={Boolean(addProvider)} onPress={() => setPicking('addProvider')} />)}
 				{row('Remembered across devices', 'Always on in the app. Sign in to any one provider here or on DMM web with "Remember my logins and settings across devices", and your other logins and these settings come back. Anyone who can sign in to one of those accounts gets all of them, so do not use a shared debrid account.', <Text style={{ color: theme.accent, fontWeight: '700' }}>On</Text>)}
+				{row(`Version ${Updates.runtimeVersion ?? ''}`.trim(), updates.isUpdatePending ? `${versionDetail} An update is ready.` : versionDetail, Updates.isEnabled ? <FilterButton label={updates.isUpdatePending ? 'Restart' : checking ? 'Checking…' : 'Check'} active={updates.isUpdatePending} onPress={() => void (checking ? undefined : updateApp())} /> : null)}
 			</ScrollView>
 			{picking ? <ActionSheet title={picking === 'player' ? 'Open videos with' : 'Add to'} actions={options[picking]} onClose={() => setPicking(null)} /> : null}
 		</Screen>

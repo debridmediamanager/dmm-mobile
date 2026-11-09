@@ -105,6 +105,19 @@
           }
         }
       ]
-    ]
+    ],
+    "updates": {
+      "url": "https://dmm-mobile-ota.bensarmiento.workers.dev/manifest",
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0,
+      "codeSigningCertificate": "./certs/certificate.pem",
+      "codeSigningMetadata": {
+        "keyid": "main",
+        "alg": "rsa-v1_5-sha256"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    }
   }
 }

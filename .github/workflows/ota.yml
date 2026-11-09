@@ -1,0 +1,74 @@
+name: Publish OTA update
+
+# Run from the Actions tab on the branch or tag to ship (docs/releasing.md). It sends the JavaScript and
+# assets of that commit to every installed build of the same version, and records it as a GitHub release.
+on:
+  workflow_dispatch:
+
+concurrency: ota
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+
+      - name: Runtime version
+        id: runtime
+        run: echo "version=$(npx expo-updates runtimeversion:resolve --platform android | jq -r .runtimeVersion)" >> "$GITHUB_OUTPUT"
+
+      # An update only reaches builds of its version, and must not need native code those builds lack.
+      - name: Native code matches the store build v${{ steps.runtime.outputs.version }}
+        env:
+          VERSION: ${{ steps.runtime.outputs.version }}
+        run: |
+          git rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null || { echo "::error::No tag v$VERSION: no build of version $VERSION has been released, so no phone can take this update."; exit 1; }
+          git worktree add -q ../store "v$VERSION"
+          (cd ../store && npm ci --silent)
+          for platform in android ios; do
+            store=$(cd ../store && npx expo-updates fingerprint:generate --platform $platform | jq -r .hash)
+            here=$(npx expo-updates fingerprint:generate --platform $platform | jq -r .hash)
+            echo "$platform: v$VERSION $store, this commit $here"
+            [ "$store" = "$here" ] || { echo "::error::Native code or app config changed since v$VERSION ($platform). Ship this as a new store version, not an OTA update."; exit 1; }
+          done
+
+      - name: Export and sign
+        env:
+          OTA_SIGNING_KEY: ${{ secrets.OTA_SIGNING_KEY }}
+        run: |
+          npx expo export --platform android --platform ios --output-dir dist
+          npx expo config --type public --json > dist/expoConfig.json
+          node ota/publish.mjs build dist ota-out "${{ steps.runtime.outputs.version }}"
+
+      - name: Draft release
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.runtime.outputs.version }}
+        run: |
+          tag="ota-$VERSION-$GITHUB_RUN_NUMBER"
+          previous=$(git tag --list "ota-$VERSION-*" --sort=-creatordate | head -1)
+          { echo "Over-the-air update for DMM Mobile $VERSION builds, from $GITHUB_SHA."; echo; git log --format='- %s' "${previous:-v$VERSION}..HEAD"; } > notes.md
+          gh release create "$tag" --draft --prerelease --target "$GITHUB_SHA" --title "OTA $VERSION #$GITHUB_RUN_NUMBER" --notes-file notes.md \
+            ota-out/manifest-*.json ota-out/signature-*.txt ota-out/assets/*
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Go live
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_OTA_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          node ota/publish.mjs upload ota-out
+          gh release edit "${{ steps.release.outputs.tag }}" --draft=false
