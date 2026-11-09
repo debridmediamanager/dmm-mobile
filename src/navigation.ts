@@ -6,6 +6,5 @@ export type RootStackParamList = {
 
 export type MainTabParamList = {
 	Library: undefined;
-	Transfers: undefined;
 	Accounts: undefined;
 };

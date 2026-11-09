@@ -299,11 +299,6 @@ export async function runBulk<T>(
 	return result;
 }
 
-export const transferItems = (items: readonly LibraryItem[]): LibraryItem[] =>
-	items.filter(
-		(item) => item.status === 'waiting' || item.status === 'downloading' || item.status === 'error'
-	);
-
 export const formatBytes = (bytes: number): string => {
 	if (!Number.isFinite(bytes) || bytes <= 0) return 'Unknown size';
 	const units = ['B', 'KB', 'MB', 'GB', 'TB'];

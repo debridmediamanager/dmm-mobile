@@ -32,7 +32,6 @@ import {
 	mediaTypeOf,
 	sameHashMergeGroups,
 	titleKeyOf,
-	transferItems,
 	type DuplicateRule,
 	type LibraryQuery,
 	type LibraryView,
@@ -89,14 +88,6 @@ const magnetFromUrl = (url: string | null | undefined): string | null => {
 };
 
 export function LibraryScreen({ navigation }: { navigation: Navigation }) {
-	return <LibraryListScreen navigation={navigation} transfersOnly={false} />;
-}
-
-export function TransfersScreen({ navigation }: { navigation: Navigation }) {
-	return <LibraryListScreen navigation={navigation} transfersOnly />;
-}
-
-function LibraryListScreen({ navigation, transfersOnly }: { navigation: Navigation; transfersOnly: boolean }) {
 	const theme = useAppTheme();
 	const { ready, startupError, snapshot, refreshAll, retryStartup, bulk, remove, reinsert, checkRdUncached } = useApp();
 	const [query, setQuery] = useState<LibraryQuery>(EMPTY_QUERY);
@@ -107,7 +98,7 @@ function LibraryListScreen({ navigation, transfersOnly }: { navigation: Navigati
 	const [picker, setPicker] = useState<'sort' | 'provider' | 'media' | 'view' | null>(null);
 	const [rowMenu, setRowMenu] = useState<LibraryItem | null>(null);
 	const [progress, setProgress] = useState('');
-	const baseItems = useMemo(() => (transfersOnly ? transferItems(snapshot.items) : snapshot.items), [snapshot.items, transfersOnly]);
+	const baseItems = snapshot.items;
 	const grouping = useMemo(() => groupLibrary(baseItems), [baseItems]);
 	const sorted = useMemo(() => sortLibrary(baseItems, query.sort), [baseItems, query.sort]);
 	// The search field renders each keystroke at once; the list follows when React has time.
@@ -122,7 +113,6 @@ function LibraryListScreen({ navigation, transfersOnly }: { navigation: Navigati
 	const targetLabel = selectedItems.length > 0 ? `${selectedItems.length} selected` : `${items.length} shown`;
 
 	useEffect(() => {
-		if (transfersOnly) return;
 		const open = (url: string | null | undefined) => {
 			const magnet = magnetFromUrl(url);
 			if (magnet) setAdding({ text: magnet });
@@ -130,7 +120,7 @@ function LibraryListScreen({ navigation, transfersOnly }: { navigation: Navigati
 		void Linking.getInitialURL().then(open);
 		const subscription = Linking.addEventListener('url', (event) => open(event.url));
 		return () => subscription.remove();
-	}, [transfersOnly]);
+	}, []);
 
 	// Real-Debrid's list cannot tell cached rows from uncached ones; look them up when that view is opened.
 	const checkingRd = useRef(false);
@@ -249,7 +239,7 @@ function LibraryListScreen({ navigation, transfersOnly }: { navigation: Navigati
 		{ label: `Reinsert ${targetLabel}`, onPress: () => confirmBulk('reinsert', targets) },
 		{ label: `Share hash list of ${targetLabel}`, onPress: () => shareHashlist(targets) },
 		{ label: `Back up ${targetLabel}`, onPress: () => backup(targets) },
-		...(!transfersOnly ? [{ label: 'Restore a backup', onPress: () => setRestoring(true) }] : []),
+		{ label: 'Restore a backup', onPress: () => setRestoring(true) },
 		...(query.view === 'sametitle' || query.titleKey
 			? (['smaller', 'bigger', 'older', 'newer'] as DuplicateRule[]).map((rule) => ({ label: `Delete ${rule} duplicates`, onPress: () => deleteDuplicates(rule), destructive: true }))
 			: []),
@@ -284,13 +274,13 @@ function LibraryListScreen({ navigation, transfersOnly }: { navigation: Navigati
 			<View style={{ paddingHorizontal: 12, paddingTop: 6, gap: 6 }}>
 				<View style={styles.rowBetween}>
 					<View style={{ flex: 1 }}>
-						<Text style={{ color: theme.text, fontSize: 20, fontWeight: '700' }}>{transfersOnly ? 'Transfers' : 'Library'}</Text>
+						<Text style={{ color: theme.text, fontSize: 20, fontWeight: '700' }}>Library</Text>
 						<Text numberOfLines={1} style={{ color: progress ? theme.accent : theme.muted, fontSize: 12 }}>
 							{progress || `${items.length === baseItems.length ? `${baseItems.length} item${baseItems.length === 1 ? '' : 's'}` : `${items.length} of ${baseItems.length} shown`} · ${formatBytes(grouping.totalBytes)}${snapshot.fetchedAt ? ` · ${formatAgo(snapshot.fetchedAt)}` : ''}${selected.size ? ` · ${selected.size} selected` : ''}`}
 						</Text>
 					</View>
-					<Pressable accessibilityRole="button" accessibilityLabel={`Refresh ${transfersOnly ? 'transfers' : 'library'}`} onPress={() => void refreshAll()} disabled={refreshing} style={[styles.outlineButton, { minHeight: 34, borderColor: snapshot.failures.length ? theme.danger : theme.accent, opacity: refreshing ? 0.55 : 1 }]}><Text style={[styles.outlineButtonText, { color: snapshot.failures.length ? theme.danger : theme.accent }]}>{refreshing ? 'Refreshing…' : 'Refresh'}</Text></Pressable>
-					{!transfersOnly ? <Pressable accessibilityRole="button" accessibilityLabel="Add to library" onPress={() => setAdding({ text: '' })} style={[styles.primaryButton, { minHeight: 34, backgroundColor: theme.accent }]}><Text style={[styles.primaryButtonText, { color: theme.onAccent }]}>Add</Text></Pressable> : null}
+					<Pressable accessibilityRole="button" accessibilityLabel={"Refresh library"} onPress={() => void refreshAll()} disabled={refreshing} style={[styles.outlineButton, { minHeight: 34, borderColor: snapshot.failures.length ? theme.danger : theme.accent, opacity: refreshing ? 0.55 : 1 }]}><Text style={[styles.outlineButtonText, { color: snapshot.failures.length ? theme.danger : theme.accent }]}>{refreshing ? 'Refreshing…' : 'Refresh'}</Text></Pressable>
+					<Pressable accessibilityRole="button" accessibilityLabel="Add to library" onPress={() => setAdding({ text: '' })} style={[styles.primaryButton, { minHeight: 34, backgroundColor: theme.accent }]}><Text style={[styles.primaryButtonText, { color: theme.onAccent }]}>Add</Text></Pressable>
 				</View>
 				<TextInput
 					accessibilityLabel="Search library"
@@ -321,10 +311,10 @@ function LibraryListScreen({ navigation, transfersOnly }: { navigation: Navigati
 			{!ready ? <EmptyState title="Unlocking secure accounts…" detail="Provider credentials are read from the device secure store." /> : items.length === 0 ? (
 				<View>
 					<EmptyState
-						title={refreshing ? 'Loading library…' : snapshot.items.length === 0 ? (connectedProviders.length === 0 ? 'Connect a provider to start' : transfersOnly ? 'No active transfers' : 'Your library is empty') : 'No matching items'}
+						title={refreshing ? 'Loading library…' : snapshot.items.length === 0 ? (connectedProviders.length === 0 ? 'Connect a provider to start' : 'Your library is empty') : 'No matching items'}
 						detail={snapshot.items.length === 0 && connectedProviders.length === 0 ? 'Open Accounts to validate a provider API key.' : undefined}
 					/>
-					<Pressable accessibilityRole="button" accessibilityLabel={`Retry ${transfersOnly ? 'transfers' : 'library'}`} onPress={() => void refreshAll()} disabled={refreshing} style={[styles.primaryButton, { alignSelf: 'center', backgroundColor: theme.accent, opacity: refreshing ? 0.55 : 1 }]}><Text style={[styles.primaryButtonText, { color: theme.onAccent }]}>{refreshing ? 'Refreshing…' : 'Refresh library'}</Text></Pressable>
+					<Pressable accessibilityRole="button" accessibilityLabel={"Retry library"} onPress={() => void refreshAll()} disabled={refreshing} style={[styles.primaryButton, { alignSelf: 'center', backgroundColor: theme.accent, opacity: refreshing ? 0.55 : 1 }]}><Text style={[styles.primaryButtonText, { color: theme.onAccent }]}>{refreshing ? 'Refreshing…' : 'Refresh library'}</Text></Pressable>
 				</View>
 			) : (
 				<FlatList

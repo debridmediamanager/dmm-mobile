@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { duplicatesToDelete, EMPTY_QUERY, filterAndSortLibrary, groupLibrary, mediaTypeOf, sameHashMergeGroups, titleKeyOf, transferItems, type LibraryQuery } from './core';
+import { duplicatesToDelete, EMPTY_QUERY, filterAndSortLibrary, groupLibrary, mediaTypeOf, sameHashMergeGroups, titleKeyOf, type LibraryQuery } from './core';
 import type { LibraryItem } from './model';
 import { _testing } from './providerApi';
 import { isSafeExternalUrl, magnetForHash, parseBtihMagnet } from './validation';
@@ -156,10 +156,7 @@ describe('magnet and library boundaries', () => {
 		expect(sameHashMergeGroups(rows).map((group) => group.map((row) => row.id))).toEqual([['rd:1', 'rd:2']]);
 	});
 
-	it('transfers is a view of actual non-finished statuses', () => {
-		const rows = [item({ id: 'rd:1' }), item({ id: 'rd:2', status: 'waiting' }), item({ id: 'rd:3', status: 'downloading' }), item({ id: 'rd:4', status: 'error' })];
-		expect(transferItems(rows).map((row) => row.id)).toEqual(['rd:2', 'rd:3', 'rd:4']);
-	});
+
 });
 
 describe('provider normalization', () => {

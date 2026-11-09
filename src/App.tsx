@@ -7,7 +7,7 @@ import { AppProvider, useApp } from './AppContext';
 import type { MainTabParamList, RootStackParamList } from './navigation';
 import { AccountsScreen } from './screens/AccountsScreen';
 import { DetailScreen } from './screens/DetailScreen';
-import { LibraryScreen, TransfersScreen } from './screens/LibraryScreen';
+import { LibraryScreen } from './screens/LibraryScreen';
 import { useAppTheme } from './theme';
 import type { LibrarySession } from './session';
 import { PROVIDERS } from './model';
@@ -29,7 +29,6 @@ function MainTabs() {
 			}}
 		>
 			<Tabs.Screen name="Library" component={LibraryScreen} options={{ tabBarLabel: 'Library' }} />
-			<Tabs.Screen name="Transfers" component={TransfersScreen} options={{ tabBarLabel: 'Transfers' }} />
 			<Tabs.Screen name="Accounts" component={AccountsScreen} options={{ tabBarLabel: 'Accounts' }} />
 		</Tabs.Navigator>
 	);
