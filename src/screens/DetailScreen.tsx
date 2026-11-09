@@ -119,7 +119,9 @@ export function DetailScreen({ route }: Props) {
 		setAction('select');
 		try {
 			await selectFiles(item, item.files.filter((file) => selectedIds.includes(file.id)));
-			setItem((current) => current ? { ...current, needsFileSelection: false } : current);
+			// Real-Debrid moves on from waiting_files_selection once files are chosen; show that, not the old row.
+			const refreshed = await detail(item.provider, item.id);
+			if (mountedRef.current) setItem(refreshed);
 		} catch (caught) {
 			setError(caught instanceof Error ? caught.message : 'Could not select files.');
 		} finally {
