@@ -3,7 +3,7 @@
     "name": "DMM Mobile",
     "slug": "dmm-library",
     "version": "0.1.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "userInterfaceStyle": "automatic",
     "scheme": [
       "dmm-library",
@@ -79,6 +79,30 @@
           "fonts": [
             "./node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/MaterialCommunityIcons.ttf"
           ]
+        }
+      ],
+      [
+        "@react-native-tvos/config-tv",
+        {
+          "androidTVBanner": "./assets/tv/android-banner.png",
+          "appleTVImages": {
+            "iconSmallLayers": {
+              "back": "./assets/tv/icon-small-back.png",
+              "front": "./assets/tv/icon-small-front.png"
+            },
+            "iconSmall2xLayers": {
+              "back": "./assets/tv/icon-small@2x-back.png",
+              "front": "./assets/tv/icon-small@2x-front.png"
+            },
+            "iconLayers": {
+              "back": "./assets/tv/icon-back.png",
+              "front": "./assets/tv/icon-front.png"
+            },
+            "topShelf": "./assets/tv/top-shelf.png",
+            "topShelf2x": "./assets/tv/top-shelf@2x.png",
+            "topShelfWide": "./assets/tv/top-shelf-wide.png",
+            "topShelfWide2x": "./assets/tv/top-shelf-wide@2x.png"
+          }
         }
       ]
     ]
