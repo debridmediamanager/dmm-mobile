@@ -111,6 +111,15 @@ picker; Infuse, VLC, VidHub, Outplayer, SenPlayer or Aether on iOS), the same
 list DMM web offers; other files go to the operating system. Hash lists open on DMM web's `/hashlist` page, carried
 in the link itself.
 
+## Search
+
+DMM web's quick search on its own tab: the six best movie and show matches,
+then up to three anime. A row opens that title's page on DMM in the phone's
+browser, already signed in with the app's logins: the app hands them to DMM
+behind a one-time code that lives two minutes, carried in the link's `#`
+fragment, which never reaches a server. A browser that is already signed in to
+DMM keeps its own login. Pasting an IMDb id opens that title directly.
+
 ## Remembered across devices
 
 Always on. The app keeps your logins and settings in DMM's "remember my logins
@@ -133,15 +142,16 @@ middle. On a TV everything is reached with the remote: the focused control is
 outlined, Select opens a text field's keyboard (Android TV otherwise keeps the
 remote inside a focused field), and the dark theme is always on. Apple TV draws
 the Android TV layout at twice the size, so both look the same. What a TV has
-no way to do is left out: sharing, file pickers and opening links in a browser.
+no way to do is left out: sharing, file pickers, opening links in a browser,
+and so the Search tab.
 On Apple TV videos go to a player app chosen in Settings (Infuse, VLC and the
 rest of DMM web's list).
 
 ## Screenshots
 
 Release builds, full resolution (click one to open it). The libraries show Blender
-open movies (CC BY) from a screenshot fixture of the real screens; the two sign-in
-screens are the app as it ships.
+open movies (CC BY) from a screenshot fixture of the real screens; search results
+are DMM's live search; the two sign-in screens are the app as it ships.
 
 ### Phones
 
@@ -149,9 +159,11 @@ Pixel 6 (Android 16) and iPhone 17 Pro simulator (iOS 26.5).
 
 <p>
 <a href="docs/screenshots/android-phone-library.png"><img src="docs/screenshots/android-phone-library.png" width="200" alt="Library on an Android phone: one dense list across six providers with a download in progress"></a>
+<a href="docs/screenshots/android-phone-search.png"><img src="docs/screenshots/android-phone-search.png" width="200" alt="Search on an Android phone: movie and show matches with posters, then anime"></a>
 <a href="docs/screenshots/android-phone-detail.png"><img src="docs/screenshots/android-phone-detail.png" width="200" alt="Tears of Steel detail with its files and subtitles"></a>
 <a href="docs/screenshots/android-phone-menu.png"><img src="docs/screenshots/android-phone-menu.png" width="200" alt="A row's menu: details, select, share, delete"></a>
 <a href="docs/screenshots/iphone-library.png"><img src="docs/screenshots/iphone-library.png" width="200" alt="Library on an iPhone"></a>
+<a href="docs/screenshots/iphone-search.png"><img src="docs/screenshots/iphone-search.png" width="200" alt="Search on an iPhone"></a>
 <a href="docs/screenshots/iphone-sign-in.png"><img src="docs/screenshots/iphone-sign-in.png" width="200" alt="Sign-in on an iPhone, one card per provider"></a>
 </p>
 
@@ -162,13 +174,16 @@ The tabs become a rail on the left.
 
 <p>
 <a href="docs/screenshots/android-tablet-library.png"><img src="docs/screenshots/android-tablet-library.png" width="560" alt="Library on an Android tablet in landscape with the tab rail"></a>
+<a href="docs/screenshots/android-tablet-search.png"><img src="docs/screenshots/android-tablet-search.png" width="560" alt="Search on an Android tablet"></a>
 <a href="docs/screenshots/ipad-library.png"><img src="docs/screenshots/ipad-library.png" width="300" alt="Library on an iPad"></a>
+<a href="docs/screenshots/ipad-search.png"><img src="docs/screenshots/ipad-search.png" width="300" alt="Search on an iPad"></a>
 </p>
 
 ### TVs
 
 Fire TV Cube (Fire OS 7, 1080p) and Apple TV 4K simulator (tvOS 26.5, 4K). The
 focused control is outlined; a TV signs in by scanning a QR code with a phone.
+TVs have no Search tab, since a TV has no browser to open results in.
 
 <p>
 <a href="docs/screenshots/firetv-sign-in.png"><img src="docs/screenshots/firetv-sign-in.png" width="440" alt="TV sign-in: a QR code and a short code to approve on debridmediamanager.com/tv"></a>
