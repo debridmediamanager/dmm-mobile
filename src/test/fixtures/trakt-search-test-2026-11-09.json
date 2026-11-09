@@ -1,0 +1,662 @@
+[
+ {
+  "score": 578730123365189600,
+  "type": "show",
+  "show": {
+   "ids": {
+    "imdb": "tt22003362",
+    "plex": {
+     "guid": "631a7a1962c1df8d10483ed2",
+     "slug": "special-forces-worlds-toughest-test"
+    },
+    "slug": "special-forces-world-s-toughest-test",
+    "tmdb": 216562,
+    "tvdb": 424437,
+    "trakt": 200996
+   },
+   "airs": {
+    "day": "Thursday",
+    "time": "21:00",
+    "timezone": "America/New_York"
+   },
+   "year": 2023,
+   "title": "Special Forces: World's Toughest Test",
+   "votes": 209,
+   "colors": {
+    "poster": [
+     "#D9E5E7",
+     "#245169"
+    ]
+   },
+   "ending": null,
+   "genres": [
+    "reality"
+   ],
+   "images": {
+    "logo": [
+     "media.trakt.tv/shows/200996/medium/logo.webp"
+    ],
+    "thumb": [],
+    "banner": [],
+    "fanart": [
+     "media.trakt.tv/shows/200996/medium/fanart.webp"
+    ],
+    "poster": [
+     "media.trakt.tv/shows/200996/medium/poster.webp"
+    ],
+    "clearart": []
+   },
+   "rating": 6.708134174346924,
+   "status": "returning series",
+   "country": "us",
+   "network": "FOX",
+   "runtime": 40,
+   "tagline": "16 celebrities. No mercy.",
+   "trailer": "https://youtube.com/watch?v=ulZZHjvU8To",
+   "homepage": "https://www.fox.com/special-forces-worlds-toughest-test/",
+   "language": "en",
+   "overview": "Celebrities endure some of the harshest, most grueling challenges from the playbook of the actual special forces selection process; their goal is not to win votes and face eliminations \u2014 for them it is just about survival.",
+   "languages": [
+    "en"
+   ],
+   "subgenres": [],
+   "last_aired": "2026-11-06T02:00:00.000Z",
+   "social_ids": {
+    "twitter": null,
+    "facebook": null,
+    "instagram": null,
+    "wikipedia": "Special_Forces:_World's_Toughest_Test"
+   },
+   "updated_at": "2026-11-02T16:06:02.000Z",
+   "first_aired": "2023-01-05T02:00:00.000Z",
+   "certification": null,
+   "comment_count": 3,
+   "total_runtime": 1845,
+   "aired_episodes": 44,
+   "original_title": "Special Forces: World's Toughest Test",
+   "available_translations": [
+    "cs",
+    "en",
+    "fi",
+    "hu",
+    "lt",
+    "nl",
+    "sv",
+    "zh"
+   ]
+  }
+ },
+ {
+  "score": 578730123365189600,
+  "type": "show",
+  "show": {
+   "ids": {
+    "imdb": "tt0437700",
+    "plex": {
+     "guid": "5d9c086f4eefaa001f5dd757",
+     "slug": "americas-test-kitchen"
+    },
+    "slug": "america-s-test-kitchen",
+    "tmdb": 4591,
+    "tvdb": 80297,
+    "trakt": 4567
+   },
+   "airs": {
+    "day": "Saturday",
+    "time": "14:00",
+    "timezone": "America/New_York"
+   },
+   "year": 2001,
+   "title": "America's Test Kitchen",
+   "votes": 99,
+   "colors": {
+    "poster": [
+     "#C49A8A",
+     "#2F293B"
+    ]
+   },
+   "ending": null,
+   "genres": [
+    "documentary"
+   ],
+   "images": {
+    "logo": [
+     "media.trakt.tv/shows/4567/medium/logo.webp"
+    ],
+    "thumb": [
+     "media.trakt.tv/shows/4567/medium/thumb.webp"
+    ],
+    "banner": [
+     "media.trakt.tv/shows/4567/medium/banner.webp"
+    ],
+    "fanart": [
+     "media.trakt.tv/shows/4567/medium/fanart.webp"
+    ],
+    "poster": [
+     "media.trakt.tv/shows/4567/medium/poster.webp"
+    ],
+    "clearart": [
+     "media.trakt.tv/shows/4567/medium/clearart.webp"
+    ]
+   },
+   "rating": 7.7272725105285645,
+   "status": "returning series",
+   "country": "us",
+   "network": "PBS",
+   "runtime": 25,
+   "tagline": "Recipes that work.",
+   "trailer": null,
+   "homepage": "https://www.americastestkitchen.com/",
+   "language": "en",
+   "overview": "Equipment reviews, taste tests, and recipes from the test kitchen to the home cook. A team of test cooks that viewers have come to love and trust deconstruct recipes and reveal the test kitchen\u2019s secrets to foolproof cooking at home.",
+   "languages": [
+    "en"
+   ],
+   "subgenres": [],
+   "last_aired": "2026-11-07T19:00:00.000Z",
+   "social_ids": {
+    "twitter": null,
+    "facebook": "americastestkitchen",
+    "instagram": null,
+    "wikipedia": "America's_Test_Kitchen"
+   },
+   "updated_at": "2026-11-01T16:01:46.000Z",
+   "first_aired": "2001-08-04T18:00:00.000Z",
+   "certification": "TV-G",
+   "comment_count": 2,
+   "total_runtime": 16715,
+   "aired_episodes": 672,
+   "original_title": "America's Test Kitchen From Cook's Illustrated",
+   "available_translations": [
+    "en",
+    "zh"
+   ]
+  }
+ },
+ {
+  "score": 578730123365189600,
+  "type": "show",
+  "show": {
+   "ids": {
+    "imdb": "tt1655610",
+    "plex": {
+     "guid": "5d9c07f102391c001f57d029",
+     "slug": "baka-and-test-summon-the-beasts"
+    },
+    "slug": "baka-and-test-summon-the-beasts",
+    "tmdb": 56343,
+    "tvdb": 132961,
+    "trakt": 55989
+   },
+   "airs": {
+    "day": "Friday",
+    "time": "02:15",
+    "timezone": "Asia/Tokyo"
+   },
+   "year": 2010,
+   "title": "Baka and Test: Summon the Beasts",
+   "votes": 314,
+   "colors": {
+    "poster": [
+     "#E2DCD3",
+     "#6E7773"
+    ]
+   },
+   "ending": "open",
+   "genres": [
+    "comedy",
+    "fantasy",
+    "science-fiction",
+    "anime",
+    "romance"
+   ],
+   "images": {
+    "logo": [
+     "media.trakt.tv/shows/55989/medium/logo.webp"
+    ],
+    "thumb": [
+     "media.trakt.tv/shows/55989/medium/thumb.webp"
+    ],
+    "banner": [
+     "media.trakt.tv/shows/55989/medium/banner.webp"
+    ],
+    "fanart": [
+     "media.trakt.tv/shows/55989/medium/fanart.webp"
+    ],
+    "poster": [
+     "media.trakt.tv/shows/55989/medium/poster.webp"
+    ],
+    "clearart": [
+     "media.trakt.tv/shows/55989/medium/clearart.webp"
+    ]
+   },
+   "rating": 7.31845760345459,
+   "status": "canceled",
+   "country": "jp",
+   "network": "TV Tokyo",
+   "runtime": 24,
+   "tagline": "",
+   "trailer": "https://youtube.com/watch?v=fQB71qZAO0c",
+   "homepage": "https://www.funimation.com/shows/baka-and-test-summon-the-beasts/home",
+   "language": "ja",
+   "overview": "Advanced placement into a school of higher grade proof-reading is determined by the results of the Promotion Test strictly for class type. Ranging from A class with the best facilities anyone can offer all the way down to F Class which is composed of low dining tables, rotten tatami mats and other worn out facilities. Students can change classes by competing using the Examination Summons Battle system or ESB. Students summon characters with their equivalent test mark scores and use them to compete with other classes.",
+   "languages": [
+    "ja"
+   ],
+   "subgenres": [
+    "magic",
+    "parody",
+    "slice-of-life",
+    "school-life",
+    "shounen",
+    "absurd"
+   ],
+   "last_aired": "2011-09-29T17:15:00.000Z",
+   "social_ids": {
+    "twitter": null,
+    "facebook": null,
+    "instagram": null,
+    "wikipedia": null
+   },
+   "updated_at": "2026-10-21T15:38:50.000Z",
+   "first_aired": "2010-01-06T17:15:00.000Z",
+   "certification": "TV-14",
+   "comment_count": 1,
+   "total_runtime": 624,
+   "aired_episodes": 26,
+   "original_title": "\u30d0\u30ab\u3068\u30c6\u30b9\u30c8\u3068\u53ec\u559a\u7363",
+   "available_translations": [
+    "de",
+    "en",
+    "es",
+    "fr",
+    "he",
+    "it",
+    "ja",
+    "ko",
+    "nl",
+    "pl",
+    "pt",
+    "ru",
+    "th",
+    "uk",
+    "vi",
+    "zh"
+   ]
+  }
+ },
+ {
+  "score": 578730123365189600,
+  "type": "show",
+  "show": {
+   "ids": {
+    "imdb": "tt5236254",
+    "plex": {
+     "guid": "5d9c08b808fddd001f2a0369",
+     "slug": "anti-magic-academy-the-35th-test-platoon"
+    },
+    "slug": "anti-magic-academy-the-35th-test-platoon",
+    "tmdb": 70296,
+    "tvdb": 299511,
+    "trakt": 101248
+   },
+   "airs": {
+    "day": "Thursday",
+    "time": "00:00",
+    "timezone": "Asia/Tokyo"
+   },
+   "year": 2015,
+   "title": "Anti-Magic Academy: The 35th Test Platoon",
+   "votes": 161,
+   "colors": {
+    "poster": [
+     "#95B4B3",
+     "#1A3230"
+    ]
+   },
+   "ending": null,
+   "genres": [
+    "action",
+    "anime",
+    "adventure",
+    "romance"
+   ],
+   "images": {
+    "logo": [
+     "media.trakt.tv/shows/101248/medium/logo.webp"
+    ],
+    "thumb": [
+     "media.trakt.tv/shows/101248/medium/thumb.webp"
+    ],
+    "banner": [
+     "media.trakt.tv/shows/101248/medium/banner.webp"
+    ],
+    "fanart": [
+     "media.trakt.tv/shows/101248/medium/fanart.webp"
+    ],
+    "poster": [
+     "media.trakt.tv/shows/101248/medium/poster.webp"
+    ],
+    "clearart": [
+     "media.trakt.tv/shows/101248/medium/clearart.webp"
+    ]
+   },
+   "rating": 6.459597587585449,
+   "status": "ended",
+   "country": "jp",
+   "network": "TOKYO MX",
+   "runtime": 23,
+   "tagline": "",
+   "trailer": null,
+   "homepage": "https://35shoutai.jp/",
+   "language": "ja",
+   "overview": "Set in a world where witches run havoc, the military decides to shift from using sword to utilizing guns to neutralize magical threats. The Anti-Magic Academy is an institution that specializes in training witch hunters. Takeru Kusunagi, who can\u2019t use guns and continues to fight with a sword, is relegated to the 35th Test Platoon, a motley group who can\u2019t cooperate. One day, Ouka Ohtori, an elite pistol master who was forced into demotion, joins the platoon. Will they be able to gather their strengths and work together?",
+   "languages": [
+    "ja"
+   ],
+   "subgenres": [
+    "magic",
+    "military",
+    "witch",
+    "ecchi",
+    "harem"
+   ],
+   "last_aired": "2015-12-22T15:00:00.000Z",
+   "social_ids": {
+    "twitter": null,
+    "facebook": null,
+    "instagram": null,
+    "wikipedia": null
+   },
+   "updated_at": "2026-10-13T15:22:24.000Z",
+   "first_aired": "2015-10-07T15:00:00.000Z",
+   "certification": "TV-MA",
+   "comment_count": 1,
+   "total_runtime": 276,
+   "aired_episodes": 12,
+   "original_title": "\u5bfe\u9b54\u5c0e\u5b66\u571235\u8a66\u9a13\u5c0f\u968a",
+   "available_translations": [
+    "de",
+    "en",
+    "es",
+    "fr",
+    "he",
+    "it",
+    "ja",
+    "ko",
+    "pl",
+    "pt",
+    "ru",
+    "uk",
+    "vi",
+    "zh"
+   ]
+  }
+ },
+ {
+  "score": 578730123365189600,
+  "type": "movie",
+  "movie": {
+   "ids": {
+    "imdb": "tt4244162",
+    "plex": {
+     "guid": "5d776c49ad5437001f7b98f0",
+     "slug": "beta-test"
+    },
+    "slug": "beta-test-2016",
+    "tmdb": 401123,
+    "trakt": 255235
+   },
+   "year": 2016,
+   "title": "Beta Test",
+   "votes": 455,
+   "colors": {
+    "poster": [
+     "#7191C4",
+     "#172352"
+    ]
+   },
+   "genres": [
+    "thriller",
+    "action",
+    "science-fiction"
+   ],
+   "images": {
+    "logo": [
+     "media.trakt.tv/movies/255235/medium/logo.webp"
+    ],
+    "thumb": [
+     "media.trakt.tv/movies/255235/medium/thumb.webp"
+    ],
+    "banner": [
+     "media.trakt.tv/movies/255235/medium/banner.webp"
+    ],
+    "fanart": [
+     "media.trakt.tv/movies/255235/medium/fanart.webp"
+    ],
+    "poster": [
+     "media.trakt.tv/movies/255235/medium/poster.webp"
+    ],
+    "clearart": [
+     "media.trakt.tv/movies/255235/medium/clearart.webp"
+    ]
+   },
+   "rating": 5.505478858947754,
+   "status": "released",
+   "country": "us",
+   "runtime": 88,
+   "tagline": "The Game is Real",
+   "trailer": "https://youtube.com/watch?v=8pxujcICULQ",
+   "homepage": "https://www.mirrorimagesltd.com/betatest",
+   "language": "en",
+   "overview": "While testing the latest first person shooter from global game developer, Sentinel, video game champion Max Troy discovers the events happening within the game are being reflected in the real world. He soon determines that the game's protagonist is real-life Orson Creed, an ex-Sentinel employee who is being remotely controlled by the corporation for reasons unknown. As virtual and real worlds collide, Max and Creed must join forces to unravel the conspiracy before the game's sinister events escalate and overwhelm the city.",
+   "released": "2016-07-22",
+   "languages": [
+    "en"
+   ],
+   "subgenres": [
+    "political-thriller"
+   ],
+   "social_ids": {
+    "twitter": null,
+    "facebook": null,
+    "instagram": null,
+    "wikipedia": "Beta_Test_(film)"
+   },
+   "updated_at": "2026-11-02T08:08:03.000Z",
+   "after_credits": false,
+   "certification": "NR",
+   "comment_count": 5,
+   "during_credits": false,
+   "original_title": "Beta Test",
+   "available_translations": [
+    "ar",
+    "bg",
+    "cs",
+    "da",
+    "de",
+    "el",
+    "en",
+    "es",
+    "fi",
+    "fr",
+    "he",
+    "hu",
+    "ja",
+    "ko",
+    "nl",
+    "pl",
+    "pt",
+    "ru",
+    "sl",
+    "sv",
+    "tr",
+    "uk",
+    "zh"
+   ]
+  }
+ },
+ {
+  "score": 578730123365189600,
+  "type": "show",
+  "show": {
+   "ids": {
+    "imdb": "tt11347692",
+    "plex": {
+     "guid": "5df46a38237002001dce338d",
+     "slug": "the-test-1"
+    },
+    "slug": "the-test-2020",
+    "tmdb": 95837,
+    "tvdb": 372848,
+    "trakt": 155570
+   },
+   "airs": {
+    "day": "Thursday",
+    "time": "18:00",
+    "timezone": "Australia/Lord_Howe"
+   },
+   "year": 2020,
+   "title": "The Test",
+   "votes": 98,
+   "colors": {
+    "poster": [
+     "#B5AA94",
+     "#1E2121"
+    ]
+   },
+   "ending": null,
+   "genres": [
+    "documentary",
+    "drama"
+   ],
+   "images": {
+    "logo": [],
+    "thumb": [
+     "media.trakt.tv/shows/155570/medium/thumb.webp"
+    ],
+    "banner": [],
+    "fanart": [
+     "media.trakt.tv/shows/155570/medium/fanart.webp"
+    ],
+    "poster": [
+     "media.trakt.tv/shows/155570/medium/poster.webp"
+    ],
+    "clearart": []
+   },
+   "rating": 7.8163299560546875,
+   "status": "returning series",
+   "country": "au",
+   "network": "Prime Video",
+   "runtime": 43,
+   "tagline": "",
+   "trailer": "https://youtube.com/watch?v=ykfy5LaEGdo",
+   "homepage": "https://www.primevideo.com/detail/0HG4RDTNBLYI6CEF2HNSHA9O67",
+   "language": "en",
+   "overview": "A docuseries following the Australian Men\u2019s Cricket Team, offering a behind-the-scenes look at how one of the world\u2019s best cricket teams fell from grace and was forced to reclaim their title and integrity.",
+   "languages": [
+    "en"
+   ],
+   "subgenres": [
+    "sports-documentary"
+   ],
+   "last_aired": "2024-05-24T07:30:00.000Z",
+   "social_ids": {
+    "twitter": "thetest_amazon",
+    "facebook": "thetestamazon",
+    "instagram": "thetest_amazon",
+    "wikipedia": "The_Test_(Australian_TV_series)"
+   },
+   "updated_at": "2026-11-01T15:25:07.000Z",
+   "first_aired": "2020-03-12T07:00:00.000Z",
+   "certification": "TV-14",
+   "comment_count": 3,
+   "total_runtime": 790,
+   "aired_episodes": 15,
+   "original_title": "The Test",
+   "available_translations": [
+    "ar",
+    "en",
+    "es",
+    "fi",
+    "fr",
+    "he",
+    "ko",
+    "nl",
+    "pl",
+    "pt",
+    "zh"
+   ]
+  }
+ },
+ {
+  "score": 578730123365189600,
+  "type": "show",
+  "show": {
+   "ids": {
+    "imdb": null,
+    "plex": {
+     "guid": "686c3376b943c16e1c98a353",
+     "slug": "little-house-on-the-prairie-2026-1"
+    },
+    "slug": "test",
+    "tmdb": 298221,
+    "tvdb": 463358,
+    "trakt": 294669
+   },
+   "airs": {
+    "day": "Wednesday",
+    "time": "20:00",
+    "timezone": "America/New_York"
+   },
+   "year": 2025,
+   "title": "Test",
+   "votes": 35,
+   "colors": {
+    "poster": []
+   },
+   "ending": null,
+   "genres": [],
+   "images": {
+    "logo": [],
+    "thumb": [],
+    "banner": [],
+    "fanart": [],
+    "poster": [],
+    "clearart": []
+   },
+   "rating": 6,
+   "status": "returning series",
+   "country": "us",
+   "network": "5",
+   "runtime": 40,
+   "tagline": "",
+   "trailer": null,
+   "homepage": null,
+   "language": "en",
+   "overview": "Set on the 17,000 acres of the Doan\u2019s Black Leg Ranch and filmed over the course of the summer, the series will explore their fascinating rural lifestyle and rugged American traditions of this Prairie family.",
+   "languages": [
+    "en"
+   ],
+   "subgenres": [],
+   "last_aired": "2025-05-15T00:00:00.000Z",
+   "social_ids": {
+    "twitter": null,
+    "facebook": null,
+    "instagram": null,
+    "wikipedia": null
+   },
+   "updated_at": "2026-07-17T15:24:06.000Z",
+   "first_aired": "2025-05-15T00:00:00.000Z",
+   "certification": null,
+   "comment_count": 0,
+   "total_runtime": 40,
+   "aired_episodes": 1,
+   "original_title": "Test",
+   "available_translations": [
+    "en",
+    "pt"
+   ]
+  }
+ }
+]

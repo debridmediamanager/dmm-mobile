@@ -325,6 +325,11 @@ export class LibrarySession {
 		}, delayMs);
 	}
 
+	/** The app's logins and settings in DMM web's format, for a DMM page opened in the browser. */
+	async browserState(): Promise<BrowserState> {
+		return stateFromApp(this.credentials, await loadSettings());
+	}
+
 	private async push(): Promise<void> {
 		const identities = identitiesFor(this.credentials);
 		if (!this.sync || identities.length === 0) return;

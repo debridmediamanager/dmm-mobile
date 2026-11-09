@@ -27,6 +27,8 @@ interface AppContextValue {
 	retryStartup(): Promise<void>;
 	/** Connects the logins a phone handed this TV through DMM's /tv pairing; returns the providers now connected. */
 	linkState(state: BrowserState): Promise<ProviderId[]>;
+	/** What a DMM page opened in the browser is signed in with (Search). */
+	browserState(): Promise<BrowserState>;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -100,6 +102,7 @@ export function AppProvider({ children, session: injectedSession }: { children: 
 		session.schedulePush();
 		return linked;
 	}), [run, session]);
+	const browserState = useCallback(() => session.browserState(), [session]);
 	const bulk = useCallback((action: 'delete' | 'reinsert', items: readonly LibraryItem[], onProgress?: (finished: number, total: number) => void) => run(() => session.bulk(action, items, onProgress)), [run, session]);
 
 	const value = useMemo<AppContextValue>(
@@ -122,8 +125,9 @@ export function AppProvider({ children, session: injectedSession }: { children: 
 			checkRdUncached,
 			retryStartup: bootstrap,
 			linkState,
+			browserState,
 		}),
-		[add, addFile, addMany, bulk, checkRdUncached, linkState, reinsert, bootstrap, connect, detail, disconnect, openFile, ready, refreshAll, remove, selectFiles, snapshot, startupError]
+		[add, addFile, addMany, browserState, bulk, checkRdUncached, linkState, reinsert, bootstrap, connect, detail, disconnect, openFile, ready, refreshAll, remove, selectFiles, snapshot, startupError]
 	);
 
 	return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

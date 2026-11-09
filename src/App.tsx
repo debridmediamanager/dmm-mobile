@@ -8,6 +8,7 @@ import type { MainTabParamList, RootStackParamList } from './navigation';
 import { AccountsScreen } from './screens/AccountsScreen';
 import { DetailScreen } from './screens/DetailScreen';
 import { LibraryScreen } from './screens/LibraryScreen';
+import { SearchScreen } from './screens/SearchScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { useAppTheme } from './theme';
 import { Platform } from 'react-native';
@@ -19,6 +20,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tabs = createBottomTabNavigator<MainTabParamList>();
 const TAB_ICONS: Record<keyof MainTabParamList, [IconName, IconName]> = {
 	Library: ['bookshelf', 'bookshelf'],
+	Search: ['magnify', 'magnify'],
 	Accounts: ['account-key', 'account-key-outline'],
 	Settings: ['cog', 'cog-outline'],
 };
@@ -44,6 +46,8 @@ function MainTabs() {
 			})}
 		>
 			<Tabs.Screen name="Library" component={LibraryScreen} options={{ tabBarLabel: 'Library' }} />
+			{/* Its results open in the browser, and a TV has none. */}
+			{Platform.isTV ? null : <Tabs.Screen name="Search" component={SearchScreen} options={{ tabBarLabel: 'Search' }} />}
 			<Tabs.Screen name="Accounts" component={AccountsScreen} options={{ tabBarLabel: 'Accounts' }} />
 			<Tabs.Screen name="Settings" component={SettingsScreen} options={{ tabBarLabel: 'Settings' }} />
 		</Tabs.Navigator>
