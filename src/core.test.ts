@@ -112,6 +112,18 @@ describe('magnet and library boundaries', () => {
 		expect(view('selected', new Set(['rd:gone']))).toEqual(['rd:gone']);
 	});
 
+	it('keys a TV title by show, season and episode as DMM web does, so episodes are not one title', () => {
+		// Names from the shared TorBox library on the Pixel 6, 2026-11-09.
+		const rows = [
+			item({ id: 'tb:1', provider: 'tb', filename: 'Gilmore Girls S03E09 A Deep Fried Korean Thanksgiving 1080p BluRay Remux FLAC2 0 H 264-NTb' }),
+			item({ id: 'tb:2', provider: 'tb', filename: 'Gilmore Girls S03E02 Haunted Leg 1080p BluRay Remux FLAC2 0 H 264-NTb' }),
+			item({ id: 'tb:3', provider: 'tb', filename: 'Gilmore.Girls.S03E02.720p.WEB.h264-OTHER' }),
+			item({ id: 'tb:4', provider: 'tb', filename: 'Gilmore Girls Season 3 Complete 1080p' }),
+			item({ id: 'tb:5', provider: 'tb', filename: 'Gilmore.Girls.S03.1080p.BluRay' }),
+		];
+		expect(filterAndSortLibrary(rows, { ...EMPTY_QUERY, view: 'sametitle' }).map((row) => row.id).sort()).toEqual(['tb:2', 'tb:3', 'tb:4', 'tb:5']);
+	});
+
 	it('picks duplicates to delete by size or date and keeps one per title', () => {
 		const rows = [
 			item({ id: 'rd:small', filename: 'Sintel.2010.720p.mkv', size: 1, added: '2026-01-03T00:00:00Z' }),

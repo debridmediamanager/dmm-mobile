@@ -55,7 +55,19 @@ export function parsedTitle(filename: string): string {
 	return normalizeTitle(cut > 0 ? spaced.slice(0, cut) : spaced) || normalizeTitle(filename);
 }
 
-export const titleKeyOf = (item: LibraryItem): string => `${mediaTypeOf(item)}:${parsedTitle(item.filename)}`;
+/** What DMM web adds to a title: a film's year, a show's season and episode ("Title ➡️ S03E09"). */
+function titleSuffix(filename: string, mediaType: MediaType): string {
+	if (mediaType === 'movie') return filename.match(/\b(19|20)\d{2}\b/)?.[0] ?? '';
+	const episode = filename.match(/\bs(\d{1,2})[\s.]?e(\d{1,3})/i);
+	if (episode) return `s${Number(episode[1])}e${Number(episode[2])}`;
+	const season = filename.match(/\bs(\d{1,2})\b/i) ?? filename.match(/\bseason[\s.]?(\d{1,2})/i);
+	return season ? `s${Number(season[1])}` : '';
+}
+
+export const titleKeyOf = (item: LibraryItem): string => {
+	const mediaType = mediaTypeOf(item);
+	return `${mediaType}:${parsedTitle(item.filename)}:${titleSuffix(item.filename, mediaType)}`;
+};
 
 /** Same-hash identity is per provider: one copy each on RD and PM is not a duplicate. */
 export const hashKeyOf = (item: Pick<LibraryItem, 'provider' | 'hash'>): string => `${item.provider}:${item.hash}`;
