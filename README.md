@@ -65,11 +65,38 @@ before clearing that provider's library rows.
 
 ## Library
 
-One list across every connected provider, with search, provider and status
-filters, sorting, pull to refresh, adding a magnet, and a detail screen with the
-files. Download links are resolved only after a user taps a file and are handed
-to the operating system; credential-bearing links are never shared. Magnets can
-be shared through the native share sheet.
+The library page of DMM web, on the phone. One dense list across every
+connected provider, one row per item, built for libraries of thousands
+(measured with 7,205 items on a Pixel 6: a full refresh of six providers in
+about 6 s, smooth scrolling, search under a second per keystroke).
+
+- **Search** like DMM web: every word must match the name (as a pattern), an
+  id, a provider prefix such as `rd:`, an info hash or a provider status.
+- **Filters**: provider, movies / TV / other, and the web's views (in
+  progress, slow, failed, uncached, names Real-Debrid blocks, same hash, same
+  title, selected). Sort by newest, oldest, title, size or progress.
+- **Rows** show the provider, size, type, date, progress and speed, and how many
+  copies share the hash or title; tapping those opens just that group.
+- **Selection and bulk actions**: long press selects. Actions take the
+  selection, or everything shown when nothing is selected: reinsert, delete,
+  share a hash list, back up, delete duplicates (keep the bigger, smaller,
+  newer or older) and merge copies of one hash.
+- **Add** magnets, info hashes (Debrid-Link only when cached), `.torrent` files
+  and, on TorBox, web links. `magnet:` links from other apps open here, with the
+  provider used last.
+- **Backup and restore** use DMM web's `.dmm.json`, so either side restores the
+  other's; TorBox and AllDebrid can restore only what is cached.
+- **Item detail**: files, open a file in another app, share its links, reinsert
+  (Real-Debrid; active TorBox torrents; failed AllDebrid magnets), and choose
+  Real-Debrid files, including on a finished torrent.
+
+Download links are resolved only after a user taps a file and are handed to
+the operating system. Hash lists open on DMM web's `/hashlist` page, carried
+in the link itself.
+
+Not in the app, because they need DMM's servers: casting to Stremio, sending
+to Real-Debrid through DMM's uploader, title identification and the media
+info panel.
 
 ## Screenshots
 
