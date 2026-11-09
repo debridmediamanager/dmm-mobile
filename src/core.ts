@@ -27,8 +27,17 @@ export const EMPTY_QUERY: LibraryQuery = {
 const VIDEO = /\.(mkv|mp4|avi|m4v|mov|wmv|ts|m2ts|webm|mpg|mpeg|flv|vob|iso)$/i;
 export const isVideoName = (name: string): boolean => VIDEO.test(name);
 
-/** DMM web's getTypeByNameAndFileCount, then 'other' when the known files hold no video. */
+const mediaTypes = new WeakMap<object, MediaType>();
+const titleKeys = new WeakMap<object, string>();
+
+/** DMM web's getTypeByNameAndFileCount, then 'other' when the known files hold no video. Cached per row. */
 export function mediaTypeOf(item: Pick<LibraryItem, 'filename' | 'files'>): MediaType {
+	let type = mediaTypes.get(item);
+	if (!type) mediaTypes.set(item, (type = guessMediaType(item)));
+	return type;
+}
+
+function guessMediaType(item: Pick<LibraryItem, 'filename' | 'files'>): MediaType {
 	if (item.files.length > 0 && !item.files.some((file) => isVideoName(file.name))) return 'other';
 	const name = item.filename;
 	return /(season|episode)s?.?\d/i.test(name) ||
@@ -65,8 +74,12 @@ function titleSuffix(filename: string, mediaType: MediaType): string {
 }
 
 export const titleKeyOf = (item: LibraryItem): string => {
-	const mediaType = mediaTypeOf(item);
-	return `${mediaType}:${parsedTitle(item.filename)}:${titleSuffix(item.filename, mediaType)}`;
+	let key = titleKeys.get(item);
+	if (key === undefined) {
+		const mediaType = mediaTypeOf(item);
+		titleKeys.set(item, (key = `${mediaType}:${parsedTitle(item.filename)}:${titleSuffix(item.filename, mediaType)}`));
+	}
+	return key;
 };
 
 /** Same-hash identity is per provider: one copy each on RD and PM is not a duplicate. */
@@ -118,21 +131,27 @@ export function isSlow(item: LibraryItem, now = Date.now()): boolean {
 const isInProgress = (item: LibraryItem): boolean => item.status === 'downloading' || item.status === 'waiting';
 
 /** DMM web's quickSearchLibrary: every space-separated word must match the filename (as a regex), id, hash or provider status. */
-export function matchesSearch(item: LibraryItem, query: string): boolean {
-	const providerId = item.id.slice(item.id.indexOf(':') + 1).toLowerCase();
-	return query
-		.split(' ')
-		.filter(Boolean)
-		.every((word) => {
-			const q = word.toLowerCase();
-			if (`${item.provider}:` === q || item.provider === q || providerId === q || item.hash === q || item.serviceStatus.toLowerCase() === q) return true;
-			try {
-				return new RegExp(q, 'i').test(item.filename) || new RegExp(q, 'i').test(item.title);
-			} catch {
-				return false;
-			}
-		});
+export function searchMatcher(query: string): (item: LibraryItem) => boolean {
+	const words = query.split(' ').filter(Boolean).map((word) => {
+		const q = word.toLowerCase();
+		let pattern: RegExp | null = null;
+		try {
+			pattern = new RegExp(q, 'i');
+		} catch {
+			pattern = null;
+		}
+		return { q, pattern };
+	});
+	return (item) => {
+		const providerId = item.id.slice(item.id.indexOf(':') + 1).toLowerCase();
+		return words.every(({ q, pattern }) =>
+			`${item.provider}:` === q || item.provider === q || providerId === q || item.hash === q || item.serviceStatus.toLowerCase() === q ||
+			(pattern !== null && (pattern.test(item.filename) || pattern.test(item.title)))
+		);
+	};
 }
+
+export const matchesSearch = (item: LibraryItem, query: string): boolean => searchMatcher(query)(item);
 
 export function filterAndSortLibrary(
 	items: readonly LibraryItem[],
@@ -141,6 +160,7 @@ export function filterAndSortLibrary(
 	now = Date.now()
 ): LibraryItem[] {
 	const search = query.search.trim();
+	const matches = search ? searchMatcher(search) : null;
 	const filtered = items.filter((item) => {
 		if (query.provider !== 'all' && item.provider !== query.provider) return false;
 		if (query.media !== 'all' && mediaTypeOf(item) !== query.media) return false;
@@ -172,7 +192,7 @@ export function filterAndSortLibrary(
 				if (!query.selected?.has(item.id)) return false;
 				break;
 		}
-		return !search || matchesSearch(item, search);
+		return !matches || matches(item);
 	});
 
 	return filtered.sort((a, b) => {

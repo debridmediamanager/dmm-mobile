@@ -124,6 +124,14 @@ describe('magnet and library boundaries', () => {
 		expect(filterAndSortLibrary(rows, { ...EMPTY_QUERY, view: 'sametitle' }).map((row) => row.id).sort()).toEqual(['tb:2', 'tb:3', 'tb:4', 'tb:5']);
 	});
 
+	it('filters, groups and searches 5,000 rows quickly enough to run on every keystroke', () => {
+		const rows = Array.from({ length: 5000 }, (_, n) => item({ id: `tb:${n}`, provider: 'tb', filename: `Show.${n % 300}.S0${n % 9}E${n % 20}.1080p.WEB.mkv`, hash: n.toString(16).padStart(40, '0'), size: n, added: new Date(n * 1000).toISOString() }));
+		const started = performance.now();
+		const grouping = groupLibrary(rows);
+		for (const search of ['s', 'sh', 'show', 'show 1', 'show 1 1080p']) filterAndSortLibrary(rows, { ...EMPTY_QUERY, search, view: 'sametitle', sort: 'title' }, grouping);
+		expect(performance.now() - started).toBeLessThan(1500);
+	});
+
 	it('picks duplicates to delete by size or date and keeps one per title', () => {
 		const rows = [
 			item({ id: 'rd:small', filename: 'Sintel.2010.720p.mkv', size: 1, added: '2026-01-03T00:00:00Z' }),

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
 	ActivityIndicator,
 	Alert,
@@ -44,7 +44,7 @@ import { magnetForHash } from '../validation';
 import type { RootStackParamList } from '../navigation';
 import { useAppTheme } from '../theme';
 import { confirmNativeAction } from '../confirmAction';
-import { ActionSheet, EmptyState, ErrorBanner, FilterButton, LibraryCard, Screen, styles, type SheetAction } from '../ui';
+import { ActionSheet, DropdownChip, EmptyState, ErrorBanner, FilterButton, LibraryRow, ROW_HEIGHT, Screen, styles, type SheetAction } from '../ui';
 
 type Navigation = NativeStackNavigationProp<RootStackParamList, 'Main'>;
 
@@ -103,6 +103,8 @@ function LibraryListScreen({ navigation, transfersOnly }: { navigation: Navigati
 	const [adding, setAdding] = useState<{ text: string } | null>(null);
 	const [restoring, setRestoring] = useState(false);
 	const [sheet, setSheet] = useState(false);
+	const [picker, setPicker] = useState<'sort' | 'provider' | 'media' | 'view' | null>(null);
+	const [rowMenu, setRowMenu] = useState<LibraryItem | null>(null);
 	const [progress, setProgress] = useState('');
 	const baseItems = useMemo(() => (transfersOnly ? transferItems(snapshot.items) : snapshot.items), [snapshot.items, transfersOnly]);
 	const grouping = useMemo(() => groupLibrary(baseItems), [baseItems]);
@@ -135,13 +137,20 @@ function LibraryListScreen({ navigation, transfersOnly }: { navigation: Navigati
 		});
 	}, [snapshot.items]);
 
-	const toggle = (item: LibraryItem) =>
+	const toggle = useCallback((item: LibraryItem) =>
 		setSelected((current) => {
 			const next = new Set(current);
 			if (next.has(item.id)) next.delete(item.id);
 			else next.add(item.id);
 			return next;
-		});
+		}), []);
+	// Row callbacks stay stable so memoized rows re-render only when their own props change.
+	const selectingRef = useRef(false);
+	selectingRef.current = selected.size > 0;
+	const openRow = useCallback((item: LibraryItem) => (selectingRef.current ? toggle(item) : navigation.navigate('Detail', { itemId: item.id })), [navigation, toggle]);
+	const groupRow = useCallback((item: LibraryItem, group: 'hash' | 'title') =>
+		setQuery((current) => ({ ...current, ...(group === 'hash' ? { hashKey: hashKeyOf(item), titleKey: undefined } : { titleKey: titleKeyOf(item), hashKey: undefined }) })), []);
+	const { remove, reinsert } = useApp();
 
 	const runBulk = (verb: string, action: 'delete' | 'reinsert', rows: readonly LibraryItem[]) => {
 		setProgress(`${verb} 0/${rows.length}…`);
@@ -233,19 +242,36 @@ function LibraryListScreen({ navigation, transfersOnly }: { navigation: Navigati
 
 	const filtersActive = query.titleKey || query.hashKey;
 	const visibleViews = views.filter((view) => view.value !== 'rdblocked' || snapshot.connected.rd);
+	const check = (on: boolean, label: string) => `${on ? '✓ ' : ''}${label}`;
+	const pickerSheets: Record<NonNullable<typeof picker>, { title: string; actions: SheetAction[] }> = {
+		sort: { title: 'Sort', actions: sortModes.map((value) => ({ label: check(query.sort === value, value[0].toUpperCase() + value.slice(1)), onPress: () => set({ sort: value }) })) },
+		provider: { title: 'Provider', actions: [{ label: check(query.provider === 'all', 'All providers'), onPress: () => set({ provider: 'all' }) }, ...connectedProviders.map((id) => ({ label: check(query.provider === id, `${PROVIDER_META[id].label} (${baseItems.filter((item) => item.provider === id).length})`), onPress: () => set({ provider: id }) }))] },
+		media: { title: 'Type', actions: medias.map((media) => ({ label: check(query.media === media.value, media.label), onPress: () => set({ media: media.value }) })) },
+		view: { title: 'Show', actions: visibleViews.map((view) => ({ label: check(query.view === view.value, view.value === 'selected' ? `Selected (${selected.size})` : view.label), onPress: () => set({ view: view.value }) })) },
+	};
+	const rowActions = (item: LibraryItem): SheetAction[] => [
+		{ label: 'Details and files', onPress: () => navigation.navigate('Detail', { itemId: item.id }) },
+		{ label: selected.has(item.id) ? 'Unselect' : 'Select', onPress: () => toggle(item) },
+		{ label: 'Share magnet', onPress: () => shareMagnet(item) },
+		{ label: 'Share hash list link', onPress: () => shareHashlist([item]) },
+		...(item.reinsertable ? [{ label: 'Reinsert', onPress: () => confirmNativeAction('Reinsert?', item.title, () => void reinsert(item).catch((error) => Alert.alert('Reinsert failed', error instanceof Error ? error.message : String(error))), 'Reinsert') }] : []),
+		{ label: 'Delete', destructive: true, onPress: () => confirmNativeAction('Delete?', `Remove “${item.title}” from ${PROVIDER_META[item.provider].label}?`, () => void remove(item.provider, item.id).catch((error) => Alert.alert('Delete failed', error instanceof Error ? error.message : String(error))), 'Delete') },
+	];
+	const sortLabel = query.sort[0].toUpperCase() + query.sort.slice(1);
+	const viewLabel = visibleViews.find((view) => view.value === query.view)?.label ?? 'All';
 
 	return (
 		<Screen>
-			<View style={styles.header}>
+			<View style={{ paddingHorizontal: 12, paddingTop: 6, gap: 6 }}>
 				<View style={styles.rowBetween}>
 					<View style={{ flex: 1 }}>
-						<Text style={[styles.heading, { color: theme.text }]}>{transfersOnly ? 'Transfers' : 'Library'}</Text>
-						<Text style={[styles.subheading, { color: theme.muted }]}>
+						<Text style={{ color: theme.text, fontSize: 22, fontWeight: '700' }}>{transfersOnly ? 'Transfers' : 'Library'}</Text>
+						<Text numberOfLines={1} style={{ color: theme.muted, fontSize: 12 }}>
 							{baseItems.length} item{baseItems.length === 1 ? '' : 's'} · {formatBytes(grouping.totalBytes)}{snapshot.fetchedAt ? ` · ${formatAgo(snapshot.fetchedAt)}` : ''}
 						</Text>
 					</View>
-					<Pressable accessibilityRole="button" accessibilityLabel={`Refresh ${transfersOnly ? 'transfers' : 'library'}`} onPress={() => void refreshAll()} disabled={refreshing} style={[styles.outlineButton, { borderColor: snapshot.failures.length ? theme.danger : theme.accent, opacity: refreshing ? 0.55 : 1 }]}><Text style={[styles.outlineButtonText, { color: snapshot.failures.length ? theme.danger : theme.accent }]}>{refreshing ? 'Refreshing…' : 'Refresh'}</Text></Pressable>
-					{!transfersOnly ? <Pressable accessibilityRole="button" accessibilityLabel="Add to library" onPress={() => setAdding({ text: '' })} style={[styles.primaryButton, { backgroundColor: theme.accent }]}><Text style={[styles.primaryButtonText, { color: theme.onAccent }]}>Add</Text></Pressable> : null}
+					<Pressable accessibilityRole="button" accessibilityLabel={`Refresh ${transfersOnly ? 'transfers' : 'library'}`} onPress={() => void refreshAll()} disabled={refreshing} style={[styles.outlineButton, { minHeight: 34, borderColor: snapshot.failures.length ? theme.danger : theme.accent, opacity: refreshing ? 0.55 : 1 }]}><Text style={[styles.outlineButtonText, { color: snapshot.failures.length ? theme.danger : theme.accent }]}>{refreshing ? 'Refreshing…' : 'Refresh'}</Text></Pressable>
+					{!transfersOnly ? <Pressable accessibilityRole="button" accessibilityLabel="Add to library" onPress={() => setAdding({ text: '' })} style={[styles.primaryButton, { minHeight: 34, backgroundColor: theme.accent }]}><Text style={[styles.primaryButtonText, { color: theme.onAccent }]}>Add</Text></Pressable> : null}
 				</View>
 				<TextInput
 					accessibilityLabel="Search library"
@@ -255,26 +281,21 @@ function LibraryListScreen({ navigation, transfersOnly }: { navigation: Navigati
 					placeholderTextColor={theme.muted}
 					autoCapitalize="none"
 					autoCorrect={false}
-					style={[styles.search, { backgroundColor: theme.input, borderColor: theme.border, color: theme.text }]}
+					style={{ borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 7, fontSize: 15, backgroundColor: theme.input, borderColor: theme.border, color: theme.text }}
 				/>
 			</View>
-			<ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterBar} contentContainerStyle={[styles.filterScroll, { gap: 6 }]}>
-				<FilterButton label="All providers" active={query.provider === 'all'} onPress={() => set({ provider: 'all' })} />
-				{connectedProviders.map((id) => <FilterButton key={id} label={PROVIDER_META[id].label} active={query.provider === id} onPress={() => set({ provider: id })} />)}
-				{medias.map((media) => <FilterButton key={media.value} label={media.label} active={query.media === media.value} onPress={() => set({ media: media.value })} />)}
-			</ScrollView>
-			<ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterBar} contentContainerStyle={[styles.filterScroll, { gap: 6 }]}>
-				{visibleViews.map((view) => <FilterButton key={view.value} label={view.value === 'selected' ? `Selected (${selected.size})` : view.label} active={query.view === view.value} onPress={() => set({ view: view.value })} />)}
-			</ScrollView>
-			<ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterBar} contentContainerStyle={[styles.filterScroll, { gap: 6 }]}>
+			<ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0, flexShrink: 0 }} contentContainerStyle={{ paddingHorizontal: 12, paddingVertical: 6, gap: 6 }}>
+				<DropdownChip label={sortLabel} active={query.sort !== 'newest'} onPress={() => setPicker('sort')} />
+				<DropdownChip label={query.provider === 'all' ? 'Provider' : PROVIDER_META[query.provider].label} active={query.provider !== 'all'} onPress={() => setPicker('provider')} />
+				<DropdownChip label={medias.find((media) => media.value === query.media)?.label ?? 'Any type'} active={query.media !== 'all'} onPress={() => setPicker('media')} />
+				<DropdownChip label={query.view === 'selected' ? `Selected (${selected.size})` : viewLabel} active={query.view !== 'all'} onPress={() => setPicker('view')} />
 				{filtersActive ? <FilterButton label={`${query.titleKey ? 'One title' : 'One hash'} ✕`} active onPress={() => set({ titleKey: undefined, hashKey: undefined })} /> : null}
-				{sortModes.map((value) => <FilterButton key={value} label={`Sort: ${value}`} active={query.sort === value} onPress={() => set({ sort: value })} />)}
-				<FilterButton label="Reset" active={false} onPress={() => setQuery({ ...EMPTY_QUERY })} />
+				{JSON.stringify({ ...query, search: '' }) !== JSON.stringify({ ...EMPTY_QUERY, search: '' }) ? <FilterButton label="Reset" active={false} onPress={() => setQuery({ ...EMPTY_QUERY, search: query.search })} /> : null}
 			</ScrollView>
-			<View style={[styles.rowBetween, { paddingHorizontal: 16, paddingBottom: 4 }]}>
-				<Text style={[styles.subheading, { color: theme.muted, marginTop: 0, flex: 1 }]}>{progress || `${items.length} shown${selected.size ? ` · ${selected.size} selected` : ''}`}</Text>
-				<Pressable accessibilityRole="button" accessibilityLabel="Library actions" disabled={Boolean(progress)} onPress={() => setSheet(true)} style={[styles.outlineButton, { borderColor: theme.accent, opacity: progress ? 0.55 : 1 }]}>
-					{progress ? <ActivityIndicator color={theme.accent} /> : <Text style={[styles.outlineButtonText, { color: theme.accent }]}>Actions</Text>}
+			<View style={[styles.rowBetween, { paddingHorizontal: 12, paddingBottom: 4 }]}>
+				<Text numberOfLines={1} style={{ color: theme.muted, fontSize: 12, flex: 1 }}>{progress || `${items.length} shown${selected.size ? ` · ${selected.size} selected` : ''}`}</Text>
+				<Pressable accessibilityRole="button" accessibilityLabel="Library actions" disabled={Boolean(progress)} onPress={() => setSheet(true)} style={[styles.outlineButton, { minHeight: 30, borderColor: theme.accent, opacity: progress ? 0.55 : 1 }]}>
+					{progress ? <ActivityIndicator color={theme.accent} /> : <Text style={[styles.outlineButtonText, { color: theme.accent }]}>{selected.size ? `Actions (${selected.size})` : 'Actions'}</Text>}
 				</Pressable>
 			</View>
 			{startupError ? <ErrorBanner message={`Secure account storage: ${startupError}`} actionLabel="Retry secure account load" onAction={() => void retryStartup()} busy={!ready} /> : null}
@@ -292,31 +313,31 @@ function LibraryListScreen({ navigation, transfersOnly }: { navigation: Navigati
 					data={items}
 					keyExtractor={(item) => item.id}
 					extraData={selected}
-					renderItem={({ item }) => {
-						const hashCount = item.hash ? grouping.hashCounts.get(hashKeyOf(item)) ?? 0 : 0;
-						const titleKey = titleKeyOf(item);
-						const titleCount = grouping.titleCounts.get(titleKey) ?? 0;
-						const chips = [
-							...(hashCount > 1 && !query.hashKey ? [{ label: `${hashCount} same hash`, onPress: () => set({ hashKey: hashKeyOf(item), titleKey: undefined }) }] : []),
-							...(titleCount > 1 && !query.titleKey ? [{ label: `${titleCount} same title`, onPress: () => set({ titleKey, hashKey: undefined }) }] : []),
-						];
-						return (
-							<LibraryCard
-								item={item}
-								mediaType={mediaTypeOf(item)}
-								selected={selected.has(item.id)}
-								selecting={selected.size > 0}
-								chips={chips}
-								onPress={() => (selected.size > 0 ? toggle(item) : navigation.navigate('Detail', { itemId: item.id }))}
-								onLongPress={() => toggle(item)}
-								onShare={() => shareMagnet(item)}
-							/>
-						);
-					}}
+					getItemLayout={(_, index) => ({ length: ROW_HEIGHT, offset: ROW_HEIGHT * index, index })}
+					initialNumToRender={20}
+					maxToRenderPerBatch={30}
+					windowSize={11}
+					removeClippedSubviews
+					renderItem={({ item }) => (
+						<LibraryRow
+							item={item}
+							mediaType={mediaTypeOf(item)}
+							selected={selected.has(item.id)}
+							selecting={selected.size > 0}
+							hashCount={item.hash && !query.hashKey ? grouping.hashCounts.get(hashKeyOf(item)) ?? 0 : 0}
+							titleCount={query.titleKey ? 0 : grouping.titleCounts.get(titleKeyOf(item)) ?? 0}
+							onPress={openRow}
+							onLongPress={toggle}
+							onMore={setRowMenu}
+							onGroup={groupRow}
+						/>
+					)}
 					refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void refreshAll()} tintColor={theme.accent} />}
-					contentContainerStyle={{ paddingVertical: 6, paddingBottom: 30 }}
+					contentContainerStyle={{ paddingBottom: 24 }}
 				/>
 			)}
+			{picker ? <ActionSheet title={pickerSheets[picker].title} actions={pickerSheets[picker].actions} onClose={() => setPicker(null)} /> : null}
+			{rowMenu ? <ActionSheet title={rowMenu.title} detail={`${PROVIDER_META[rowMenu.provider].label} · ${formatBytes(rowMenu.size)}`} actions={rowActions(rowMenu)} onClose={() => setRowMenu(null)} /> : null}
 			{sheet ? <ActionSheet title="Library actions" detail={`Acts on ${targetLabel}. Long press an item to select it.`} actions={actions} onClose={() => setSheet(false)} /> : null}
 			{adding ? <AddModal initialText={adding.text} connectedProviders={connectedProviders} onClose={() => setAdding(null)} /> : null}
 			{restoring ? <RestoreModal connectedProviders={connectedProviders} onClose={() => setRestoring(false)} /> : null}
