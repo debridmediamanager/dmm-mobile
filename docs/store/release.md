@@ -52,11 +52,25 @@ cd android && ./gradlew :app:bundleRelease -PreactNativeArchitectures=arm64-v8a,
 # android/app/build/outputs/bundle/release/app-release.aab
 ```
 
+With CMake 4 (the Windows build uses 4.1.2 for its long-path ninja), set
+`CMAKE_POLICY_VERSION_MINIMUM=3.5` in the environment first: expo-updates'
+`CMakeLists.txt` still asks for a minimum below 3.5, which CMake 4 refuses.
+Check the result is signed by the upload key before uploading:
+`keytool -printcert -jarfile app-release.aab` must show SHA-256
+`1D:66:B5:7B:…:F8:A1:01`.
+
 `EXPO_TV=1` adds the Android TV launcher entry and banner; the same bundle serves
 phones, tablets and TVs. Builds run on `ssh ben@windows` (see the project memory
 for the toolchain); the Mac has no JDK.
 
 ### First release on a personal account: the 14-day closed test
+
+Status: app created and the closed test sent for review on 2026-11-10 (Play
+Console account 6907620095512694450, app 4974392213799747854, developer
+benadriansarmiento@gmail.com). Testers join the Google Group
+`dmm-mobile-beta@googlegroups.com` (anyone can join; only managers see members),
+then opt in at https://play.google.com/apps/testing/com.debridmediamanager.library
+once the review passes. Feedback in Play goes to support@debridmediamanager.com.
 
 Play lets a personal developer account created after 13 November 2023 publish to
 production only after a closed test with **at least 12 testers opted in for 14
@@ -66,10 +80,9 @@ the 14 days.
 1. Create the app in Play Console: name "DMM Mobile", app, free.
 2. Fill in every item under "Set up your app" from `listing.md` (App access from
    `review.md`).
-3. Testing → Closed testing → create a track "Beta", upload the `.aab`, add the
-   countries, and add testers as a Google Group (for example
-   `dmm-mobile-beta@googlegroups.com`) so people can join without being added one
-   by one. Send it for review.
+3. Testing → Closed testing → the default track "Closed testing - Alpha" (Play
+   refuses the name "Beta"): add all countries, testers as a Google Group, upload
+   the `.aab`, then Publishing overview → send the changes for review.
 4. Recruit at least 15 testers (a margin for drop-outs) from the DMM Discord and
    Patreon with the message below. Keep them opted in for 14 full days; upload
    fixed builds to the same track, which does not restart the clock.
@@ -84,8 +97,9 @@ DMM Mobile is coming to Google Play, and before it can, Google needs 12 people t
 test it for two weeks. If you have an Android phone, tablet or TV and a debrid
 account, you can help:
 
-1. Join the testers group: <Google Group link>
-2. Open the test link on your phone and tap "Become a tester": <opt-in link>
+1. Join the testers group: https://groups.google.com/g/dmm-mobile-beta
+2. Open the test link on your phone and tap "Become a tester":
+   https://play.google.com/apps/testing/com.debridmediamanager.library
 3. Install DMM Mobile from Google Play and sign in to your debrid service.
 4. Keep it installed for 14 days and use it now and then. Tell us what breaks in
    #dmm-mobile on Discord.

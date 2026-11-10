@@ -107,10 +107,25 @@ the user's own service credentials).
 **Government, financial, health features:** None. **Advertising ID:** Not used
 (the manifest has no AD_ID permission).
 
-**Content rating (IARC):** category "Utility, Productivity, Communication, or
-Other"; No to violence, sexuality, language, controlled substances, gambling.
-"Does the app allow users to interact or exchange content?" No. "Does it share the
-user's location?" No. "Does it allow purchases of digital goods?" No.
+**Trader status:** the account is declared a trader; the app inherits it. No
+Terms of Service URL (DMM has no terms page).
+
+**Content rating (IARC),** submitted 2026-11-10. Category "All Other App Types".
+The app streams films that are not in the download (the user's library, the demo
+films, Search's titles and posters), so it is rated like a streaming catalog:
+
+| Question | Answer |
+|---|---|
+| Ratings-relevant content in the app package | No |
+| Users interact or exchange content | No |
+| Features content not in the download | Yes |
+| Violence: can contain it / primary purpose / visual / gory / only cartoony / in text | Yes / No / Yes / No / No / Yes |
+| Sexual material or nudity | No |
+| Offensive language: can contain / focus / minor / moderate / discriminatory / sexual expletives | Yes / No / Yes / Yes / No / No |
+| Drugs: references / focus / visual / in text | Yes / No / No / Yes |
+| Age-restricted products, location sharing, digital purchases, cash rewards, browser, news/education | No |
+
+Result: ESRB Teen, PEGI Parental guidance, USK 12, ClassInd 14, IARC 12+.
 
 **Data safety:**
 
@@ -118,7 +133,8 @@ user's location?" No. "Does it allow purchases of digital goods?" No.
 |---|---|
 | Does the app collect or share any of the required user data types? | Yes |
 | Is all collected data encrypted in transit? | Yes |
-| Do you provide a way for users to request that their data is deleted? | Yes (email, or unticking "Remember my logins" on the website) |
+| Account creation | The app does not create accounts; users sign in with accounts made outside it ("out of app identification": their service subscription) |
+| Do you provide a way for users to request that their data is deleted? | Yes, https://debridmediamanager.com/privacy (email, or unticking "Remember my logins" on the website) |
 
 | Data type | Collected | Shared | Ephemeral | Required | Purpose |
 |---|---|---|---|---|---|
