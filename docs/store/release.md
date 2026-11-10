@@ -65,12 +65,12 @@ for the toolchain); the Mac has no JDK.
 
 ### First release on a personal account: the 14-day closed test
 
-Status: app created and the closed test sent for review on 2026-11-10 (Play
+Status: closed test approved and live on 2026-11-10 15:36, Android TV active (Play
 Console account 6907620095512694450, app 4974392213799747854, developer
 benadriansarmiento@gmail.com). Testers join the Google Group
 `dmm-mobile-beta@googlegroups.com` (anyone can join; only managers see members),
-then opt in at https://play.google.com/apps/testing/com.debridmediamanager.library
-once the review passes. Feedback in Play goes to support@debridmediamanager.com.
+then opt in at https://play.google.com/apps/testing/com.debridmediamanager.library.
+Feedback in Play goes to support@debridmediamanager.com.
 
 Play lets a personal developer account created after 13 November 2023 publish to
 production only after a closed test with **at least 12 testers opted in for 14
