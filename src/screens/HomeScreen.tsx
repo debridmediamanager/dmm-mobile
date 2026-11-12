@@ -10,9 +10,11 @@ import type { RootStackParamList } from '../navigation';
 import { playback } from '../playback';
 import { useAppTheme } from '../theme';
 import { episodeCode, groupTitles, mainFile, pickCopy, seasonRange } from '../titles';
-import { ActionSheet, EmptyState, ErrorBanner, Pressable, Screen, styles, useLayout, type SheetAction } from '../ui';
+import { ActionSheet, EmptyState, ErrorBanner, IconButton, Pressable, Screen, styles, useLayout, type SheetAction } from '../ui';
+import { watchlist } from '../lists';
 import { continueWatching, nextUp, releaseFinder, remoteResumes, resumable, rowRefs, titleStates, watched, watchKey, type NextUp, type RemotePlayback, type WatchRef } from '../watched';
-import { useOpenCopy, useWatch } from './hooks';
+import { useOpenCopy, useTrackerLists, useWatch } from './hooks';
+import { entryCard } from './ListsScreen';
 import { PosterCard } from './TitlesView';
 
 const GAP = 10;
@@ -31,6 +33,8 @@ interface Card {
 	label: string;
 	watched?: boolean;
 	progress?: number;
+	/** A watchlist title the library does not hold. */
+	dim?: boolean;
 	open: () => void;
 	/** Long press: its menu, if it has one. */
 	actions: SheetAction[];
@@ -38,8 +42,8 @@ interface Card {
 
 /**
  * The first tab, a board of poster rows like Stremio's: Continue Watching (files left part way),
- * Next Up (the next episode of each show being watched) and Recently Added. Only the library's
- * own titles; what was watched is kept on this device.
+ * Next Up (the next episode of each show being watched), the trackers' Watchlist and Recently Added.
+ * Only the library plays; a watchlist title it lacks opens what it is and where to find it on DMM.
  */
 export function HomeScreen() {
 	const theme = useAppTheme();
@@ -50,6 +54,7 @@ export function HomeScreen() {
 	const traktVersion = useSyncExternalStore(trakt ? trakt.subscribe : idle, trakt ? trakt.getVersion : zero);
 	const simklVersion = useSyncExternalStore(simkl ? simkl.subscribe : idle, simkl ? simkl.getVersion : zero);
 	const { watchVersion, playVersion } = useWatch();
+	const trackerLists = useTrackerLists();
 	const openCopy = useOpenCopy();
 	const [opening, setOpening] = useState('');
 	const [menu, setMenu] = useState<Card | null>(null);
@@ -195,6 +200,13 @@ export function HomeScreen() {
 			],
 		};
 	});
+	const watchCards: Card[] = watchlist(trackerLists.flatMap(({ lists }) => lists), (imdbId) => board.byId.has(imdbId)).map((entry) => ({
+		key: `watch:${entry.imdbId}`,
+		imdbId: entry.imdbId,
+		...entryCard(entry, board.byId.has(entry.imdbId)),
+		open: () => navigation.navigate('Title', { imdbId: entry.imdbId, kind: entry.kind, title: entry.title, year: entry.year }),
+		actions: [],
+	}));
 	const recentCards: Card[] = board.recent.map((group) => {
 		const state = board.states.get(group.imdbId);
 		return {
@@ -232,7 +244,7 @@ export function HomeScreen() {
 							label={card.label}
 							watched={card.watched}
 							progress={card.progress}
-							dim={Boolean(opening) && opening !== card.key}
+							dim={card.dim || (Boolean(opening) && opening !== card.key)}
 							onPress={card.open}
 							onLongPress={card.actions.length ? () => setMenu(card) : undefined}
 							onFocus={Platform.isTV ? () => (shelfTop.current[title] ?? 0) < scrolled.current && scroller.current?.scrollTo({ y: shelfTop.current[title] ?? 0 }) : undefined}
@@ -249,11 +261,15 @@ export function HomeScreen() {
 
 	return (
 		<Screen>
-			<View style={{ paddingHorizontal: 12, paddingTop: 6 }}>
-				<Text style={{ color: theme.text, fontSize: 20, fontWeight: '700' }}>Home</Text>
-				<Text numberOfLines={2} style={{ color: titles.progress ? theme.accent : theme.muted, fontSize: 12 }}>
-					{titles.progress || (continueCards.length || nextCards.length ? 'Press and hold a poster for more' : 'What you play shows up here to continue, and the next episode of each show')}
-				</Text>
+			<View style={[styles.row, { paddingHorizontal: 12, paddingTop: 6 }]}>
+				<View style={{ flex: 1 }}>
+					<Text style={{ color: theme.text, fontSize: 20, fontWeight: '700' }}>Home</Text>
+					<Text numberOfLines={2} style={{ color: titles.progress ? theme.accent : theme.muted, fontSize: 12 }}>
+						{titles.progress || (continueCards.length || nextCards.length ? 'Press and hold a poster for more' : 'What you play shows up here to continue, and the next episode of each show')}
+					</Text>
+				</View>
+				{/* Trakt's and Simkl's lists, while either is connected. */}
+				{trackerLists.length ? <IconButton icon="format-list-bulleted" label="Lists" color={theme.accent} onPress={() => navigation.navigate('Lists')} /> : null}
 			</View>
 			{startupError ? <ErrorBanner message={`Secure account storage: ${startupError}`} actionLabel="Retry secure account load" onAction={() => void retryStartup()} busy={!ready} /> : null}
 			{snapshot.failures.length > 0 ? <ErrorBanner message={snapshot.failures.map((failure) => `${PROVIDER_META[failure.provider].label}: ${failure.message}`).join('\n')} actionLabel="Retry library" onAction={() => void refreshAll()} busy={refreshing} /> : null}
@@ -267,6 +283,7 @@ export function HomeScreen() {
 				<ScrollView ref={scroller} onScroll={(event) => (scrolled.current = event.nativeEvent.contentOffset.y)} scrollEventThrottle={100} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void refreshAll()} tintColor={theme.accent} />} contentContainerStyle={{ paddingBottom: 24 }}>
 					{shelf('Continue Watching', continueCards)}
 					{shelf('Next Up', nextCards)}
+					{shelf('Watchlist', watchCards)}
 					{shelf('Recently Added', recentCards)}
 				</ScrollView>
 			)}

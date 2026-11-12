@@ -61,7 +61,7 @@ export const PosterCard = memo(function PosterCard({
 }) {
 	const theme = useAppTheme();
 	return (
-		<Pressable accessibilityRole="button" accessibilityLabel={`${label}${watched ? ', watched' : ''}`} accessibilityHint={onLongPress ? 'Long press for more' : undefined} onPress={onPress} onLongPress={onLongPress} onFocus={onFocus} style={({ pressed }) => ({ width, opacity: pressed || dim ? 0.6 : 1, borderRadius: 8 })}>
+		<Pressable accessibilityRole="button" accessibilityLabel={`${label}${watched ? ', watched' : ''}`} accessibilityHint={onLongPress ? 'Long press for more' : undefined} onPress={onPress} onLongPress={onLongPress} onFocus={onFocus} style={({ pressed, focused }) => ({ width, opacity: pressed || (dim && !focused) ? 0.6 : 1, borderRadius: 8 })}>
 			{/* The poster itself is outlined on a TV: it covers the card's own focus outline. */}
 			{({ focused }) => (
 				<>

@@ -1,11 +1,14 @@
-import { useCallback, useEffect, useSyncExternalStore } from 'react';
-import { useNavigation } from '@react-navigation/native';
+import { useCallback, useEffect, useMemo, useSyncExternalStore } from 'react';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useApp } from '../AppContext';
+import type { TrackerList } from '../lists';
 import type { LibraryFile, LibraryItem } from '../model';
 import type { RootStackParamList } from '../navigation';
 import { playback } from '../playback';
 import { openFileLink, playsBuiltIn } from '../player';
+import { groupTitles, type TitleGroup } from '../titles';
+import type { TrackerSync } from '../trackerSync';
 import { isSafeExternalUrl } from '../validation';
 import { watched } from '../watched';
 
@@ -37,4 +40,30 @@ export function useOpenCopy(): (item: LibraryItem, pick: (files: LibraryFile[]) 
 		},
 		[detail, navigation, openFile, titles]
 	);
+}
+
+const idle = () => () => undefined;
+const zero = () => 0;
+
+/** The library's films and shows by IMDb id, regrouped as DMM names releases. */
+export function useLibraryTitles(): Map<string, TitleGroup> {
+	const { snapshot, titles } = useApp();
+	const version = useSyncExternalStore(titles.subscribe, titles.getVersion);
+	// `version` is the index's change signal.
+	return useMemo(() => new Map(groupTitles(snapshot.items, (item) => titles.identification(item)).titles.map((group) => [group.imdbId, group])), [snapshot.items, titles, version]);
+}
+
+/**
+ * The lists of each connected tracker (src/lists.ts), none with the demo key alone. Their activity stamps are read
+ * whenever the screen using this comes into view, at most as often as each tracker allows (Trakt every minute,
+ * Simkl every 15); a list is downloaded only when they moved.
+ */
+export function useTrackerLists(): { tracker: TrackerSync; lists: TrackerList[] }[] {
+	const { trakt, simkl, trackers, trackersAvailable } = useApp();
+	useSyncExternalStore(trakt ? trakt.subscribe : idle, trakt ? trakt.getVersion : zero);
+	useSyncExternalStore(simkl ? simkl.subscribe : idle, simkl ? simkl.getVersion : zero);
+	useSyncExternalStore(trakt ? trakt.account.subscribe : idle, () => trakt?.account.login);
+	useSyncExternalStore(simkl ? simkl.account.subscribe : idle, () => simkl?.account.login);
+	useFocusEffect(useCallback(() => trackers.forEach((tracker) => void tracker.sync()), [trackers]));
+	return trackersAvailable ? trackers.filter((tracker) => tracker.account.login).map((tracker) => ({ tracker, lists: tracker.lists() })) : [];
 }
