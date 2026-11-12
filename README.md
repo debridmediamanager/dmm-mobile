@@ -140,7 +140,10 @@ in the link itself.
 
 libVLC 3 (through `@lunarr/vlc-player`), so the files debrid services hold play as
 they are: MKV and MP4, H.264 and HEVC (10-bit too; HDR plays but shows as SDR),
-AC3, E-AC3, DTS and TrueHD audio, and SRT, ASS and PGS subtitles. Full screen and landscape, with
+AC3, E-AC3 and DTS audio, and SRT, ASS and PGS subtitles. TrueHD plays on Android
+only: Apple's VLCKit builds have no TrueHD decoder, so on an iPhone, iPad or Apple
+TV a file's other audio track plays instead, and a file with only TrueHD is silent
+(choose another app in Settings for those). Full screen and landscape, with
 play/pause, a seek bar, 10-second skips, and pickers for the audio track and for
 subtitles, which list the tracks inside the video and then subtitle files of the
 same release. On a TV the remote's play/pause and skip keys work, left and right
