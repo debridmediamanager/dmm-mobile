@@ -9,11 +9,12 @@ import { PROVIDER_META } from '../model';
 import type { RootStackParamList } from '../navigation';
 import { playback } from '../playback';
 import { useAppTheme } from '../theme';
+import { timeLabel, dayLabel, dayStart } from '../calendar';
 import { episodeCode, groupTitles, mainFile, pickCopy, seasonRange } from '../titles';
 import { ActionSheet, EmptyState, ErrorBanner, IconButton, Pressable, Screen, styles, useLayout, type SheetAction } from '../ui';
 import { watchlist } from '../lists';
 import { continueWatching, nextUp, releaseFinder, remoteResumes, resumable, rowRefs, titleStates, watched, watchKey, type NextUp, type RemotePlayback, type WatchRef } from '../watched';
-import { useOpenCopy, useTrackerLists, useWatch } from './hooks';
+import { useCalendar, useOpenCopy, useTrackerLists, useWatch } from './hooks';
 import { entryCard } from './ListsScreen';
 import { PosterCard } from './TitlesView';
 
@@ -22,6 +23,8 @@ const idle = () => () => undefined;
 const zero = () => 0;
 /** Newest titles in Recently Added. */
 const RECENT = 20;
+/** Shows in Upcoming, each with its next episode. */
+const UPCOMING = 10;
 
 interface Card {
 	key: string;
@@ -55,6 +58,7 @@ export function HomeScreen() {
 	const simklVersion = useSyncExternalStore(simkl ? simkl.subscribe : idle, simkl ? simkl.getVersion : zero);
 	const { watchVersion, playVersion } = useWatch();
 	const trackerLists = useTrackerLists();
+	const { episodes } = useCalendar();
 	const openCopy = useOpenCopy();
 	const [opening, setOpening] = useState('');
 	const [menu, setMenu] = useState<Card | null>(null);
@@ -207,6 +211,24 @@ export function HomeScreen() {
 		open: () => navigation.navigate('Title', { imdbId: entry.imdbId, kind: entry.kind, title: entry.title, year: entry.year }),
 		actions: [],
 	}));
+	const now = Date.now();
+	const upcomingCards: Card[] = episodes
+		.filter((ep, n, all) => ep.airsAt >= now && all.findIndex((other) => other.imdbId === ep.imdbId && other.airsAt >= now) === n)
+		.slice(0, UPCOMING)
+		.map((ep) => {
+			const code = episodeCode(ep.season, ep.episode);
+			const day = dayStart(ep.airsAt);
+			const when = [day <= dayStart(now, 1) ? dayLabel(day, now) : new Date(day).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' }), timeLabel(ep)].filter(Boolean).join(' ');
+			return {
+				key: `upcoming:${ep.imdbId}`,
+				imdbId: ep.imdbId,
+				title: ep.show,
+				detail: `${code} · ${when}`,
+				label: `${ep.show} ${code}, ${when}`,
+				open: () => navigation.navigate('Title', { imdbId: ep.imdbId, kind: 'tv', title: ep.show }),
+				actions: [],
+			};
+		});
 	const recentCards: Card[] = board.recent.map((group) => {
 		const state = board.states.get(group.imdbId);
 		return {
@@ -268,6 +290,7 @@ export function HomeScreen() {
 						{titles.progress || (continueCards.length || nextCards.length ? 'Press and hold a poster for more' : 'What you play shows up here to continue, and the next episode of each show')}
 					</Text>
 				</View>
+				<IconButton icon="calendar-month" label="Calendar" color={theme.accent} onPress={() => navigation.navigate('Calendar')} />
 				{/* Trakt's and Simkl's lists, while either is connected. */}
 				{trackerLists.length ? <IconButton icon="format-list-bulleted" label="Lists" color={theme.accent} onPress={() => navigation.navigate('Lists')} /> : null}
 			</View>
@@ -283,6 +306,7 @@ export function HomeScreen() {
 				<ScrollView ref={scroller} onScroll={(event) => (scrolled.current = event.nativeEvent.contentOffset.y)} scrollEventThrottle={100} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void refreshAll()} tintColor={theme.accent} />} contentContainerStyle={{ paddingBottom: 24 }}>
 					{shelf('Continue Watching', continueCards)}
 					{shelf('Next Up', nextCards)}
+					{shelf('Upcoming', upcomingCards)}
 					{shelf('Watchlist', watchCards)}
 					{shelf('Recently Added', recentCards)}
 				</ScrollView>

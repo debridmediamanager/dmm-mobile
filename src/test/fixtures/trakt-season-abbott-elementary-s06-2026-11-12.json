@@ -1,0 +1,327 @@
+[
+ {
+  "ids": {
+   "imdb": "tt40417174",
+   "plex": {
+    "guid": "6a6816285febb36491b0a6a1"
+   },
+   "tmdb": 7603304,
+   "tvdb": 11900635,
+   "trakt": 14345842
+  },
+  "title": "Jungle Classroom",
+  "votes": 323,
+  "images": {
+   "screenshot": [
+    "media.trakt.tv/episodes/14345842/medium/screenshot.webp"
+   ]
+  },
+  "number": 1,
+  "rating": 7.956686019897461,
+  "season": 6,
+  "runtime": 22,
+  "overview": "Gregory and Ava adjust to a new dynamic; Barbara turns to Jacob for help; Janine gives her classroom a makeover; Melissa works to win her classroom back.",
+  "released": "2026-10-08",
+  "number_abs": 93,
+  "updated_at": "2026-11-12T08:25:07.000Z",
+  "first_aired": "2026-10-08T00:30:00.000Z",
+  "episode_type": "season_premiere",
+  "after_credits": false,
+  "comment_count": 13,
+  "during_credits": false,
+  "original_title": "Jungle Classroom",
+  "available_translations": [
+   "en",
+   "es",
+   "zh"
+  ],
+  "effective_release_date": "2026-10-08T00:30:00.000Z"
+ },
+ {
+  "ids": {
+   "imdb": "tt44082821",
+   "plex": {
+    "guid": "6ab7b5a5193bcc5fc0b83a48"
+   },
+   "tmdb": 7860459,
+   "tvdb": 12004120,
+   "trakt": 14521317
+  },
+  "title": "Check-Ins",
+  "votes": 285,
+  "images": {
+   "screenshot": [
+    "media.trakt.tv/episodes/14521317/medium/screenshot.webp"
+   ]
+  },
+  "number": 2,
+  "rating": 8.031582832336426,
+  "season": 6,
+  "runtime": 22,
+  "overview": "Gregory juggles the demands of his two roles; Jacob and Melissa struggle to compromise; Barbara manages a delicate situation with a student; Janine checks in with Courtney.",
+  "released": "2026-10-15",
+  "number_abs": 94,
+  "updated_at": "2026-11-12T08:25:08.000Z",
+  "first_aired": "2026-10-15T00:30:00.000Z",
+  "episode_type": "standard",
+  "after_credits": false,
+  "comment_count": 13,
+  "during_credits": false,
+  "original_title": "Check-Ins",
+  "available_translations": [
+   "en",
+   "es",
+   "zh"
+  ],
+  "effective_release_date": "2026-10-15T00:30:00.000Z"
+ },
+ {
+  "ids": {
+   "imdb": "tt47884471",
+   "plex": {
+    "guid": "6abfa521ca367c0eab1ea8a6"
+   },
+   "tmdb": 7900490,
+   "tvdb": 12004121,
+   "trakt": 14542283
+  },
+  "title": "Tryouts",
+  "votes": 283,
+  "images": {
+   "screenshot": [
+    "media.trakt.tv/episodes/14542283/medium/screenshot.webp"
+   ]
+  },
+  "number": 3,
+  "rating": 8.130741119384766,
+  "season": 6,
+  "runtime": 22,
+  "overview": "The step team tries out for a major competition; Melissa and Barbara take a special ed certification course; Janine, Gregory and Jacob welcome a new substitute.",
+  "released": "2026-10-22",
+  "number_abs": 95,
+  "updated_at": "2026-11-12T08:25:08.000Z",
+  "first_aired": "2026-10-22T00:30:00.000Z",
+  "episode_type": "standard",
+  "after_credits": false,
+  "comment_count": 11,
+  "during_credits": false,
+  "original_title": "Tryouts",
+  "available_translations": [
+   "en",
+   "es",
+   "zh"
+  ],
+  "effective_release_date": "2026-10-22T00:30:00.000Z"
+ },
+ {
+  "ids": {
+   "imdb": "tt48391371",
+   "plex": {
+    "guid": "6ac9dcc0cab43330a185c161"
+   },
+   "tmdb": 7927480,
+   "tvdb": 12004122,
+   "trakt": 14555466
+  },
+  "title": "Halloween Party",
+  "votes": 290,
+  "images": {
+   "screenshot": [
+    "media.trakt.tv/episodes/14555466/medium/screenshot.webp"
+   ]
+  },
+  "number": 4,
+  "rating": 8.286206245422363,
+  "season": 6,
+  "runtime": 22,
+  "overview": "Ava hosts an exclusive Halloween party; Janine and Jacob get suspicious of Gregory.",
+  "released": "2026-10-29",
+  "number_abs": 96,
+  "updated_at": "2026-11-12T08:25:08.000Z",
+  "first_aired": "2026-10-29T00:30:00.000Z",
+  "episode_type": "standard",
+  "after_credits": false,
+  "comment_count": 16,
+  "during_credits": false,
+  "original_title": "Halloween Party",
+  "available_translations": [
+   "en",
+   "es"
+  ],
+  "effective_release_date": "2026-10-29T00:30:00.000Z"
+ },
+ {
+  "ids": {
+   "imdb": "tt48391372",
+   "plex": {
+    "guid": "6ad03c2f8324a6b0babe105e"
+   },
+   "tmdb": 7964323,
+   "tvdb": 12036910,
+   "trakt": 14569471
+  },
+  "title": "Courtney",
+  "votes": 238,
+  "images": {
+   "screenshot": [
+    "media.trakt.tv/episodes/14569471/medium/screenshot.webp"
+   ]
+  },
+  "number": 5,
+  "rating": 7.945377826690674,
+  "season": 6,
+  "runtime": 22,
+  "overview": "Gregory and Melissa come together to address an issue with a teacher; Janine spends time with Courtney.",
+  "released": "2026-11-05",
+  "number_abs": 97,
+  "updated_at": "2026-11-12T08:25:08.000Z",
+  "first_aired": "2026-11-05T01:30:00.000Z",
+  "episode_type": "standard",
+  "after_credits": false,
+  "comment_count": 8,
+  "during_credits": false,
+  "original_title": "Courtney",
+  "available_translations": [
+   "en",
+   "es"
+  ],
+  "effective_release_date": "2026-11-05T01:30:00.000Z"
+ },
+ {
+  "ids": {
+   "imdb": "tt48391373",
+   "plex": {
+    "guid": "6ad9e6f7a78447dd255e83de"
+   },
+   "tmdb": 7964324,
+   "tvdb": 12040580,
+   "trakt": 14569472
+  },
+  "title": "Competition",
+  "votes": 48,
+  "images": {
+   "screenshot": []
+  },
+  "number": 6,
+  "rating": 7.6041669845581055,
+  "season": 6,
+  "runtime": 22,
+  "overview": "Ava recruits Janine to prepare the step team for a competition, and Melissa calls in a favor for Gregory.",
+  "released": "2026-11-12",
+  "number_abs": 98,
+  "updated_at": "2026-11-12T08:25:08.000Z",
+  "first_aired": "2026-11-12T01:30:00.000Z",
+  "episode_type": "standard",
+  "after_credits": false,
+  "comment_count": 3,
+  "during_credits": false,
+  "original_title": "Competition",
+  "available_translations": [
+   "en",
+   "es"
+  ],
+  "effective_release_date": "2026-11-12T01:30:00.000Z"
+ },
+ {
+  "ids": {
+   "imdb": "tt48391374",
+   "plex": {
+    "guid": null
+   },
+   "tmdb": 7964327,
+   "tvdb": 12058622,
+   "trakt": 14569474
+  },
+  "title": "One Hundred",
+  "votes": 0,
+  "images": {
+   "screenshot": []
+  },
+  "number": 7,
+  "rating": 0,
+  "season": 6,
+  "runtime": 23,
+  "overview": "The Abbott crew head to Disneyland.",
+  "released": "2026-12-03",
+  "number_abs": 99,
+  "updated_at": "2026-11-12T08:25:08.000Z",
+  "first_aired": "2026-12-03T01:30:00.000Z",
+  "episode_type": "standard",
+  "after_credits": false,
+  "comment_count": 0,
+  "during_credits": false,
+  "original_title": "One Hundred",
+  "available_translations": [
+   "en"
+  ],
+  "effective_release_date": "2026-12-03T01:30:00.000Z"
+ },
+ {
+  "ids": {
+   "imdb": "tt48391375",
+   "plex": {
+    "guid": null
+   },
+   "tmdb": 7964328,
+   "tvdb": 12058623,
+   "trakt": 14569475
+  },
+  "title": "Parents",
+  "votes": 0,
+  "images": {
+   "screenshot": []
+  },
+  "number": 8,
+  "rating": 0,
+  "season": 6,
+  "runtime": 23,
+  "overview": "Jacob's parents visit for the holidays, while Barbara contends with some of her students falling behind.",
+  "released": "2026-12-10",
+  "number_abs": 100,
+  "updated_at": "2026-11-12T08:25:08.000Z",
+  "first_aired": "2026-12-10T01:30:00.000Z",
+  "episode_type": "mid_season_finale",
+  "after_credits": false,
+  "comment_count": 0,
+  "during_credits": false,
+  "original_title": "Parents",
+  "available_translations": [
+   "en"
+  ],
+  "effective_release_date": "2026-12-10T01:30:00.000Z"
+ },
+ {
+  "ids": {
+   "imdb": null,
+   "plex": {
+    "guid": null
+   },
+   "tmdb": 7964326,
+   "tvdb": null,
+   "trakt": 14569473
+  },
+  "title": "TBA",
+  "votes": 0,
+  "images": {
+   "screenshot": []
+  },
+  "number": 9,
+  "rating": 0,
+  "season": 6,
+  "runtime": 23,
+  "overview": null,
+  "released": "2027-01-14",
+  "number_abs": 101,
+  "updated_at": "2026-11-12T08:25:08.000Z",
+  "first_aired": "2027-01-14T01:30:00.000Z",
+  "episode_type": "standard",
+  "after_credits": false,
+  "comment_count": 0,
+  "during_credits": false,
+  "original_title": null,
+  "available_translations": [
+   "en"
+  ],
+  "effective_release_date": "2027-01-14T01:30:00.000Z"
+ }
+]

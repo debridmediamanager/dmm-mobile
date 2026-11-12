@@ -1,0 +1,39 @@
+{
+ "title": "Tulsa King",
+ "description": "New York mafia capo Dwight \"The General\" Manfredi is released from prison after 25 years and exiled by his boss to set up shop in Tulsa, Oklahoma. Realizing that his mob family may not have his best interests in mind, Dwight slowly builds a crew.",
+ "poster": "https://image.tmdb.org/t/p/original/y13WOeZ2rz2Ezpws0RJ0I8sQpG4.jpg",
+ "backdrop": "https://image.tmdb.org/t/p/w1920_and_h800_multi_faces/mNHRGO1gFpR2CYZdANe72kcKq7G.jpg",
+ "season_count": 4,
+ "season_names": [
+  "Season 1",
+  "Season 2",
+  "Season 3",
+  "Season 4"
+ ],
+ "has_specials": true,
+ "imdb_score": "7.9",
+ "season_episode_counts": {
+  "0": 1,
+  "1": 9,
+  "2": 10,
+  "3": 10,
+  "4": 10
+ },
+ "trailer": "https://www.youtube.com/watch?v=aaQSScwZPbA",
+ "status": "Returning Series",
+ "origin_country": [
+  "US"
+ ],
+ "next_episode_to_air": {
+  "first_aired": "2026-11-13T12:00:00+00:00",
+  "episode_number": 5,
+  "season_number": 4,
+  "name": "Dinosaurs"
+ },
+ "last_episode_to_air": {
+  "first_aired": "2026-11-06T12:00:00+00:00",
+  "episode_number": 4,
+  "season_number": 4,
+  "name": "Square One"
+ }
+}

@@ -297,6 +297,11 @@ export class TrackerSync<Account extends TrackerAccount = TrackerAccount> {
 		return this.account.login ? (this.state.lists ?? []) : [];
 	}
 
+	/** One GET as the user (Trakt's calendar), queued with the rest; undefined when it fails or nobody is connected. */
+	read(path: string): Promise<any> {
+		return this.account.login ? this.run(() => this.get(path)) : Promise.resolve(undefined);
+	}
+
 	resumeFor(ref: WatchRef): RemotePlayback | undefined {
 		return this.account.login ? this.state.playback[watchKey(ref)] : undefined;
 	}

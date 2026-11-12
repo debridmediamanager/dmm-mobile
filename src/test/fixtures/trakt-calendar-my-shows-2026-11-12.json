@@ -1,0 +1,345 @@
+{
+ "status": 200,
+ "body": [
+  {
+   "show": {
+    "ids": {
+     "imdb": "tt2359704",
+     "plex": {
+      "guid": "5d9c07f04eefaa001f5d1ab7",
+      "slug": "jojos-bizarre-adventure-2012"
+     },
+     "slug": "jojo-s-bizarre-adventure",
+     "tmdb": 45790,
+     "tvdb": 262954,
+     "trakt": 45537
+    },
+    "year": 2012,
+    "title": "JoJo's Bizarre Adventure",
+    "aired_episodes": 198
+   },
+   "episode": {
+    "ids": {
+     "imdb": "tt43643745",
+     "plex": {
+      "guid": "6a498b4ecf2adef6fb4afaf9"
+     },
+     "tmdb": 7459379,
+     "tvdb": 11872179,
+     "trakt": 14281726
+    },
+    "title": "Tusk (2)",
+    "number": 8,
+    "season": 6
+   },
+   "first_aired": "2026-11-06T07:00:00.000Z",
+   "released": null
+  },
+  {
+   "show": {
+    "ids": {
+     "imdb": "tt31710249",
+     "plex": {
+      "guid": "6716e308bba5f098a17fbd5b",
+      "slug": "stick"
+     },
+     "slug": "stick",
+     "tmdb": 248830,
+     "tvdb": 455562,
+     "trakt": 230595
+    },
+    "year": 2025,
+    "title": "Stick",
+    "aired_episodes": 13
+   },
+   "episode": {
+    "ids": {
+     "imdb": "tt40554293",
+     "plex": {
+      "guid": "69c25a390840dedc49ec4c1d"
+     },
+     "tmdb": 7705042,
+     "tvdb": 11785098,
+     "trakt": 14389415
+    },
+    "title": "Chip Off the Old Butch",
+    "number": 3,
+    "season": 2
+   },
+   "first_aired": "2026-11-11T02:00:00.000Z",
+   "released": "2026-11-11"
+  },
+  {
+   "show": {
+    "ids": {
+     "imdb": "tt2359704",
+     "plex": {
+      "guid": "5d9c07f04eefaa001f5d1ab7",
+      "slug": "jojos-bizarre-adventure-2012"
+     },
+     "slug": "jojo-s-bizarre-adventure",
+     "tmdb": 45790,
+     "tvdb": 262954,
+     "trakt": 45537
+    },
+    "year": 2012,
+    "title": "JoJo's Bizarre Adventure",
+    "aired_episodes": 198
+   },
+   "episode": {
+    "ids": {
+     "imdb": "tt43643747",
+     "plex": {
+      "guid": "6a498b4dcf2adef6fb4afaef"
+     },
+     "tmdb": 7459380,
+     "tvdb": 11872180,
+     "trakt": 14281727
+    },
+    "title": "Frightening Monsters (1)",
+    "number": 9,
+    "season": 6
+   },
+   "first_aired": "2026-11-13T07:00:00.000Z",
+   "released": null
+  },
+  {
+   "show": {
+    "ids": {
+     "imdb": "tt31710249",
+     "plex": {
+      "guid": "6716e308bba5f098a17fbd5b",
+      "slug": "stick"
+     },
+     "slug": "stick",
+     "tmdb": 248830,
+     "tvdb": 455562,
+     "trakt": 230595
+    },
+    "year": 2025,
+    "title": "Stick",
+    "aired_episodes": 13
+   },
+   "episode": {
+    "ids": {
+     "imdb": "tt40572926",
+     "plex": {
+      "guid": null
+     },
+     "tmdb": 7705044,
+     "tvdb": 11785099,
+     "trakt": 14389416
+    },
+    "title": "The Boog",
+    "number": 4,
+    "season": 2
+   },
+   "first_aired": "2026-11-18T02:00:00.000Z",
+   "released": "2026-11-18"
+  },
+  {
+   "show": {
+    "ids": {
+     "imdb": "tt2359704",
+     "plex": {
+      "guid": "5d9c07f04eefaa001f5d1ab7",
+      "slug": "jojos-bizarre-adventure-2012"
+     },
+     "slug": "jojo-s-bizarre-adventure",
+     "tmdb": 45790,
+     "tvdb": 262954,
+     "trakt": 45537
+    },
+    "year": 2012,
+    "title": "JoJo's Bizarre Adventure",
+    "aired_episodes": 198
+   },
+   "episode": {
+    "ids": {
+     "imdb": "tt43643749",
+     "plex": {
+      "guid": "6a498b4dcf2adef6fb4afa7d"
+     },
+     "tmdb": 7459381,
+     "tvdb": 11872181,
+     "trakt": 14281728
+    },
+    "title": "Episode 10",
+    "number": 10,
+    "season": 6
+   },
+   "first_aired": "2026-11-20T07:00:00.000Z",
+   "released": null
+  },
+  {
+   "show": {
+    "ids": {
+     "imdb": "tt31710249",
+     "plex": {
+      "guid": "6716e308bba5f098a17fbd5b",
+      "slug": "stick"
+     },
+     "slug": "stick",
+     "tmdb": 248830,
+     "tvdb": 455562,
+     "trakt": 230595
+    },
+    "year": 2025,
+    "title": "Stick",
+    "aired_episodes": 13
+   },
+   "episode": {
+    "ids": {
+     "imdb": "tt40631743",
+     "plex": {
+      "guid": null
+     },
+     "tmdb": 7705046,
+     "tvdb": 11785100,
+     "trakt": 14389417
+    },
+    "title": "Go Time!",
+    "number": 5,
+    "season": 2
+   },
+   "first_aired": "2026-11-25T02:00:00.000Z",
+   "released": "2026-11-25"
+  },
+  {
+   "show": {
+    "ids": {
+     "imdb": "tt2359704",
+     "plex": {
+      "guid": "5d9c07f04eefaa001f5d1ab7",
+      "slug": "jojos-bizarre-adventure-2012"
+     },
+     "slug": "jojo-s-bizarre-adventure",
+     "tmdb": 45790,
+     "tvdb": 262954,
+     "trakt": 45537
+    },
+    "year": 2012,
+    "title": "JoJo's Bizarre Adventure",
+    "aired_episodes": 198
+   },
+   "episode": {
+    "ids": {
+     "imdb": "tt43643751",
+     "plex": {
+      "guid": "6a498b4ccf2adef6fb4afa2f"
+     },
+     "tmdb": 7459382,
+     "tvdb": 11872182,
+     "trakt": 14281730
+    },
+    "title": "Episode 11",
+    "number": 11,
+    "season": 6
+   },
+   "first_aired": "2026-11-27T07:00:00.000Z",
+   "released": null
+  },
+  {
+   "show": {
+    "ids": {
+     "imdb": "tt31710249",
+     "plex": {
+      "guid": "6716e308bba5f098a17fbd5b",
+      "slug": "stick"
+     },
+     "slug": "stick",
+     "tmdb": 248830,
+     "tvdb": 455562,
+     "trakt": 230595
+    },
+    "year": 2025,
+    "title": "Stick",
+    "aired_episodes": 13
+   },
+   "episode": {
+    "ids": {
+     "imdb": "tt39796038",
+     "plex": {
+      "guid": null
+     },
+     "tmdb": 7705049,
+     "tvdb": 11785101,
+     "trakt": 14389420
+    },
+    "title": "Jung and the Restless",
+    "number": 6,
+    "season": 2
+   },
+   "first_aired": "2026-12-02T02:00:00.000Z",
+   "released": "2026-12-02"
+  },
+  {
+   "show": {
+    "ids": {
+     "imdb": "tt2359704",
+     "plex": {
+      "guid": "5d9c07f04eefaa001f5d1ab7",
+      "slug": "jojos-bizarre-adventure-2012"
+     },
+     "slug": "jojo-s-bizarre-adventure",
+     "tmdb": 45790,
+     "tvdb": 262954,
+     "trakt": 45537
+    },
+    "year": 2012,
+    "title": "JoJo's Bizarre Adventure",
+    "aired_episodes": 198
+   },
+   "episode": {
+    "ids": {
+     "imdb": "tt43643752",
+     "plex": {
+      "guid": "6a498b4ccf2adef6fb4af9bd"
+     },
+     "tmdb": 7459383,
+     "tvdb": 11872183,
+     "trakt": 14281731
+    },
+    "title": "Episode 12",
+    "number": 12,
+    "season": 6
+   },
+   "first_aired": "2026-12-04T07:00:00.000Z",
+   "released": null
+  },
+  {
+   "show": {
+    "ids": {
+     "imdb": "tt31710249",
+     "plex": {
+      "guid": "6716e308bba5f098a17fbd5b",
+      "slug": "stick"
+     },
+     "slug": "stick",
+     "tmdb": 248830,
+     "tvdb": 455562,
+     "trakt": 230595
+    },
+    "year": 2025,
+    "title": "Stick",
+    "aired_episodes": 13
+   },
+   "episode": {
+    "ids": {
+     "imdb": "tt40631755",
+     "plex": {
+      "guid": null
+     },
+     "tmdb": 7705051,
+     "tvdb": 11785102,
+     "trakt": 14389421
+    },
+    "title": "Bogey Nights",
+    "number": 7,
+    "season": 2
+   },
+   "first_aired": "2026-12-09T02:00:00.000Z",
+   "released": "2026-12-09"
+  }
+ ]
+}

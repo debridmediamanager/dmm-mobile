@@ -26,7 +26,7 @@ function useRefresh(trackers: TrackerSync[]): [boolean, () => void] {
 
 const count = (n: number) => `${n.toLocaleString()} ${n === 1 ? 'title' : 'titles'}`;
 /** A TV has no header: the page names itself. */
-const TvHeading = ({ title }: { title: string }) => {
+export const TvHeading = ({ title }: { title: string }) => {
 	const theme = useAppTheme();
 	return Platform.isTV ? <Text style={{ color: theme.text, fontSize: 20, fontWeight: '700', paddingHorizontal: PADDING, paddingTop: 6, paddingBottom: 6 }}>{title}</Text> : null;
 };

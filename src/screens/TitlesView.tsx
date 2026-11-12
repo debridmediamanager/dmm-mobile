@@ -19,7 +19,7 @@ const TEXT_HEIGHT = 38;
 type Row = { key: string; cards: TitleGroup[] } | { key: string; header: string } | { key: string; item: LibraryItem };
 
 /** A poster from DMM's CDN, then metahub, then the title in words; a check once watched, a bar while part watched. */
-const Poster = memo(function Poster({ imdbId, title, width, focused, watched, progress }: { imdbId?: string; title: string; width: number; focused?: boolean; watched?: boolean; progress?: number }) {
+export const Poster = memo(function Poster({ imdbId, title, width, focused, watched, progress }: { imdbId?: string; title: string; width: number; focused?: boolean; watched?: boolean; progress?: number }) {
 	const theme = useAppTheme();
 	const [source, setSource] = useState(0);
 	const urls = imdbId ? posterUrls(imdbId) : [];

@@ -6,6 +6,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AppProvider, useApp } from './AppContext';
 import type { MainTabParamList, RootStackParamList } from './navigation';
 import { AccountsScreen } from './screens/AccountsScreen';
+import { CalendarScreen } from './screens/CalendarScreen';
 import { DetailScreen } from './screens/DetailScreen';
 import { HomeScreen } from './screens/HomeScreen';
 import { TitleScreen } from './screens/TitleScreen';
@@ -98,6 +99,7 @@ export function AppNavigation() {
 						<Stack.Screen name="Title" component={TitleScreen} options={{ title: '', headerShown: !Platform.isTV }} />
 						<Stack.Screen name="Lists" component={ListsScreen} options={{ title: 'Lists', headerShown: !Platform.isTV }} />
 						<Stack.Screen name="List" component={ListScreen} options={{ title: '', headerShown: !Platform.isTV }} />
+						<Stack.Screen name="Calendar" component={CalendarScreen} options={{ title: 'Calendar', headerShown: !Platform.isTV }} />
 						{/* Full screen, landscape on phones and tablets (TVs are), the remote's Back or Menu leaves. */}
 						<Stack.Screen name="Player" component={PlayerScreen} options={{ headerShown: false, orientation: 'landscape', statusBarHidden: true, navigationBarHidden: true, autoHideHomeIndicator: true, contentStyle: { backgroundColor: '#000' } }} />
 					</>

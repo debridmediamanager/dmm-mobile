@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useMemo, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useApp } from '../AppContext';
+import { calendar, yourShows, type CalendarEpisode } from '../calendar';
 import type { TrackerList } from '../lists';
 import type { LibraryFile, LibraryItem } from '../model';
 import type { RootStackParamList } from '../navigation';
@@ -66,4 +67,33 @@ export function useTrackerLists(): { tracker: TrackerSync; lists: TrackerList[] 
 	useSyncExternalStore(simkl ? simkl.account.subscribe : idle, () => simkl?.account.login);
 	useFocusEffect(useCallback(() => trackers.forEach((tracker) => void tracker.sync()), [trackers]));
 	return trackersAvailable ? trackers.filter((tracker) => tracker.account.login).map((tracker) => ({ tracker, lists: tracker.lists() })) : [];
+}
+
+/**
+ * Your shows' episodes from 7 days back to 30 ahead (src/calendar.ts). Whatever is due is read again whenever the
+ * screen using this comes into view (`refresh` reads now: pull to refresh). Trakt's calendar only with a real
+ * provider login, never with the demo key alone.
+ */
+export function useCalendar(): { episodes: CalendarEpisode[]; refresh(): Promise<void> } {
+	const { trakt, trackersAvailable } = useApp();
+	const library = useLibraryTitles();
+	const trackerLists = useTrackerLists();
+	const version = useSyncExternalStore(calendar.subscribe, calendar.getVersion);
+	const shows = yourShows(library.values(), trackerLists);
+	const latest = useRef(shows);
+	latest.current = shows;
+	const key = shows.map((show) => show.imdbId).join(',');
+	const traktOn = Boolean(trackersAvailable && trakt?.account.login);
+	const read = useCallback(
+		async (force: boolean) => {
+			// Whether Trakt is connected is known once its login is read: until then its shows would look like nobody's.
+			await trakt?.account.load();
+			await calendar.refresh(latest.current, trackersAvailable && trakt?.account.login ? trakt : null, force);
+		},
+		[trakt, trackersAvailable]
+	);
+	useFocusEffect(useCallback(() => void read(false).catch(() => undefined), [read, key, traktOn]));
+	// `version` and `key` are the store's and the list's change signals.
+	const episodes = useMemo(() => calendar.episodes(latest.current, traktOn), [version, key, traktOn]);
+	return { episodes, refresh: useCallback(() => read(true).catch(() => undefined), [read]) };
 }

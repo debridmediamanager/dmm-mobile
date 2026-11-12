@@ -1,0 +1,496 @@
+[
+ {
+  "ids": {
+   "imdb": "tt36956517",
+   "plex": {
+    "guid": "68166d3ee17f98f99b012794"
+   },
+   "tmdb": 6773515,
+   "tvdb": 11104777,
+   "trakt": 13175059
+  },
+  "title": "STEEL BALL RUN",
+  "votes": 298,
+  "images": {
+   "screenshot": [
+    "media.trakt.tv/episodes/13175059/medium/screenshot.webp"
+   ]
+  },
+  "number": 1,
+  "rating": 9.07717227935791,
+  "season": 6,
+  "runtime": 49,
+  "overview": "After a fateful encounter with outlaw Gyro Zeppeli, former racing prodigy Johnny Joestar enters the Steel Ball Run, the first horse race across America.",
+  "released": null,
+  "number_abs": 191,
+  "updated_at": "2026-11-11T12:21:27.000Z",
+  "first_aired": "2026-03-19T07:00:00.000Z",
+  "episode_type": "mid_season_finale",
+  "after_credits": false,
+  "comment_count": 6,
+  "during_credits": false,
+  "original_title": "\u30b9\u30c6\u30a3\u30fc\u30eb\u30fb\u30dc\u30fc\u30eb\u30fb\u30e9\u30f3",
+  "available_translations": [
+   "cs",
+   "de",
+   "en",
+   "es",
+   "fr",
+   "he",
+   "it",
+   "ja",
+   "ko",
+   "pl",
+   "pt",
+   "ro",
+   "ru",
+   "uk",
+   "zh"
+  ],
+  "effective_release_date": "2026-03-19T07:00:00.000Z"
+ },
+ {
+  "ids": {
+   "imdb": "tt43060303",
+   "plex": {
+    "guid": "69c9217f74a8b8df93f13b41"
+   },
+   "tmdb": 7087828,
+   "tvdb": 11871657,
+   "trakt": 14081453
+  },
+  "title": "The Sheriff's Request to Mountain Tim",
+  "votes": 277,
+  "images": {
+   "screenshot": [
+    "media.trakt.tv/episodes/14081453/medium/screenshot.webp"
+   ]
+  },
+  "number": 2,
+  "rating": 8.527076721191406,
+  "season": 6,
+  "runtime": 25,
+  "overview": "After a shocking end to the 1st STAGE, abnormal murders unfold. Legendary cowboy Mountain Tim steps in to investigate as the tense 2nd STAGE begins.",
+  "released": null,
+  "number_abs": 192,
+  "updated_at": "2026-11-11T12:21:27.000Z",
+  "first_aired": "2026-09-25T07:00:00.000Z",
+  "episode_type": "standard",
+  "after_credits": false,
+  "comment_count": 8,
+  "during_credits": false,
+  "original_title": "\u30de\u30a6\u30f3\u30c6\u30f3\u30fb\u30c6\u30a3\u30e0\u3078\u306e\u4f9d\u983c",
+  "available_translations": [
+   "de",
+   "en",
+   "es",
+   "fr",
+   "he",
+   "it",
+   "ja",
+   "ko",
+   "pl",
+   "pt",
+   "ro",
+   "uk",
+   "zh"
+  ],
+  "effective_release_date": "2026-09-25T07:00:00.000Z"
+ },
+ {
+  "ids": {
+   "imdb": "tt43643734",
+   "plex": {
+    "guid": "6a498b52cf2adef6fb4afb28"
+   },
+   "tmdb": 7459374,
+   "tvdb": 11872174,
+   "trakt": 14281721
+  },
+  "title": "The Desert-Born Outlaws",
+  "votes": 228,
+  "images": {
+   "screenshot": [
+    "media.trakt.tv/episodes/14281721/medium/screenshot.webp"
+   ]
+  },
+  "number": 3,
+  "rating": 8.386004447937012,
+  "season": 6,
+  "runtime": 25,
+  "overview": "At camp, Johnny catches a glimpse of Gyro's past. Then the Boomboom Family strikes with an otherworldly power. The duo escape \u2014 or so they think.",
+  "released": null,
+  "number_abs": 193,
+  "updated_at": "2026-11-07T15:06:11.000Z",
+  "first_aired": "2026-10-02T07:00:00.000Z",
+  "episode_type": "standard",
+  "after_credits": false,
+  "comment_count": 2,
+  "during_credits": false,
+  "original_title": "\u7802\u6f20\u3067\u751f\u307e\u308c\u305f\u306a\u3089\u305a\u8005",
+  "available_translations": [
+   "de",
+   "en",
+   "es",
+   "fr",
+   "he",
+   "it",
+   "ja",
+   "pl",
+   "pt",
+   "uk",
+   "zh"
+  ],
+  "effective_release_date": "2026-10-02T07:00:00.000Z"
+ },
+ {
+  "ids": {
+   "imdb": "tt43643736",
+   "plex": {
+    "guid": "6a498b52cf2adef6fb4afb20"
+   },
+   "tmdb": 7459375,
+   "tvdb": 11872175,
+   "trakt": 14281722
+  },
+  "title": "The Devil's Palm",
+  "votes": 220,
+  "images": {
+   "screenshot": [
+    "media.trakt.tv/episodes/14281722/medium/screenshot.webp"
+   ]
+  },
+  "number": 4,
+  "rating": 8.749971389770508,
+  "season": 6,
+  "runtime": 25,
+  "overview": "Caught in the Boombooms' trap, a magnetic force threatens to tear Johnny, Gyro and Mountain Tim apart. They learn about \"Stands\" and Johnny's body reacts.",
+  "released": null,
+  "number_abs": 194,
+  "updated_at": "2026-11-07T15:06:12.000Z",
+  "first_aired": "2026-10-09T07:00:00.000Z",
+  "episode_type": "standard",
+  "after_credits": false,
+  "comment_count": 6,
+  "during_credits": false,
+  "original_title": "\u60aa\u9b54\u306e\u624b\u306e\u3072\u3089",
+  "available_translations": [
+   "de",
+   "en",
+   "es",
+   "fr",
+   "he",
+   "it",
+   "ja",
+   "pl",
+   "pt",
+   "uk",
+   "zh"
+  ],
+  "effective_release_date": "2026-10-09T07:00:00.000Z"
+ },
+ {
+  "ids": {
+   "imdb": "tt43643737",
+   "plex": {
+    "guid": "6a498b51cf2adef6fb4afb17"
+   },
+   "tmdb": 7459376,
+   "tvdb": 11872176,
+   "trakt": 14281723
+  },
+  "title": "The Terrorist from a Faraway Country",
+  "votes": 207,
+  "images": {
+   "screenshot": [
+    "media.trakt.tv/episodes/14281723/medium/screenshot.webp"
+   ]
+  },
+  "number": 5,
+  "rating": 8.454123497009277,
+  "season": 6,
+  "runtime": 25,
+  "overview": "At a checkpoint, Oye \u2014 a man who knows Gyro's past \u2014 confronts the duo. His power to turn anything he touches into a bomb leaves them with nowhere to run.",
+  "released": null,
+  "number_abs": 195,
+  "updated_at": "2026-11-07T15:06:12.000Z",
+  "first_aired": "2026-10-16T07:00:00.000Z",
+  "episode_type": "standard",
+  "after_credits": false,
+  "comment_count": 4,
+  "during_credits": false,
+  "original_title": "\u9060\u3044\u56fd\u304b\u3089\u6765\u305f\u30c6\u30ed\u30ea\u30b9\u30c8",
+  "available_translations": [
+   "de",
+   "en",
+   "es",
+   "fr",
+   "it",
+   "ja",
+   "pl",
+   "pt",
+   "uk",
+   "zh"
+  ],
+  "effective_release_date": "2026-10-16T07:00:00.000Z"
+ },
+ {
+  "ids": {
+   "imdb": "tt43643741",
+   "plex": {
+    "guid": "6a498b50cf2adef6fb4afb0d"
+   },
+   "tmdb": 7459377,
+   "tvdb": 11872177,
+   "trakt": 14281724
+  },
+  "title": "Gyro Zeppeli\u2019s Destiny",
+  "votes": 210,
+  "images": {
+   "screenshot": [
+    "media.trakt.tv/episodes/14281724/medium/screenshot.webp"
+   ]
+  },
+  "number": 6,
+  "rating": 8.723783493041992,
+  "season": 6,
+  "runtime": 25,
+  "overview": "Wounded and weary, the duo finds the Zombie Horse. As Gyro patches himself up, memories surface \u2014 revealing a family legacy steeped in duty and sacrifice.",
+  "released": null,
+  "number_abs": 196,
+  "updated_at": "2026-11-07T15:06:13.000Z",
+  "first_aired": "2026-10-23T07:00:00.000Z",
+  "episode_type": "standard",
+  "after_credits": false,
+  "comment_count": 7,
+  "during_credits": false,
+  "original_title": "\u30b8\u30e3\u30a4\u30ed\u30fb\u30c4\u30a7\u30da\u30ea\u306e\u5bbf\u547d",
+  "available_translations": [
+   "de",
+   "en",
+   "es",
+   "fr",
+   "it",
+   "ja",
+   "pl",
+   "pt",
+   "uk",
+   "zh"
+  ],
+  "effective_release_date": "2026-10-23T07:00:00.000Z"
+ },
+ {
+  "ids": {
+   "imdb": "tt43643744",
+   "plex": {
+    "guid": "6a498b50cf2adef6fb4afb03"
+   },
+   "tmdb": 7459378,
+   "tvdb": 11872178,
+   "trakt": 14281725
+  },
+  "title": "Tusk (1)",
+  "votes": 183,
+  "images": {
+   "screenshot": [
+    "media.trakt.tv/episodes/14281725/medium/screenshot.webp"
+   ]
+  },
+  "number": 7,
+  "rating": 8.508197784423828,
+  "season": 6,
+  "runtime": 25,
+  "overview": "Near Monument Valley, Gyro vanishes into thin air. Alone and under attack, Johnny suspects the mummified arm in his possession has made them both targets.",
+  "released": null,
+  "number_abs": 197,
+  "updated_at": "2026-11-07T15:06:13.000Z",
+  "first_aired": "2026-10-30T07:00:00.000Z",
+  "episode_type": "standard",
+  "after_credits": false,
+  "comment_count": 8,
+  "during_credits": false,
+  "original_title": "\u7259(\u30bf\u30b9\u30af) \u305d\u306e\u2460",
+  "available_translations": [
+   "en",
+   "es",
+   "fr",
+   "it",
+   "ja",
+   "pl",
+   "pt",
+   "uk",
+   "zh"
+  ],
+  "effective_release_date": "2026-10-30T07:00:00.000Z"
+ },
+ {
+  "ids": {
+   "imdb": "tt43643745",
+   "plex": {
+    "guid": "6a498b4ecf2adef6fb4afaf9"
+   },
+   "tmdb": 7459379,
+   "tvdb": 11872179,
+   "trakt": 14281726
+  },
+  "title": "Tusk (2)",
+  "votes": 164,
+  "images": {
+   "screenshot": [
+    "media.trakt.tv/episodes/14281726/medium/screenshot.webp"
+   ]
+  },
+  "number": 8,
+  "rating": 8.853656768798828,
+  "season": 6,
+  "runtime": 25,
+  "overview": "Johnny awakens a new power and reaches a shocking revelation about the race. Finding hope in the Corpse, he counterattacks to rescue Gyro and protect it.",
+  "released": null,
+  "number_abs": 198,
+  "updated_at": "2026-11-10T08:21:10.000Z",
+  "first_aired": "2026-11-06T07:00:00.000Z",
+  "episode_type": "standard",
+  "after_credits": false,
+  "comment_count": 3,
+  "during_credits": false,
+  "original_title": "\u7259(\u30bf\u30b9\u30af) \u305d\u306e\u2461",
+  "available_translations": [
+   "en",
+   "es",
+   "it",
+   "ja",
+   "pl",
+   "uk",
+   "zh"
+  ],
+  "effective_release_date": "2026-11-06T07:00:00.000Z"
+ },
+ {
+  "ids": {
+   "imdb": "tt43643747",
+   "plex": {
+    "guid": "6a498b4dcf2adef6fb4afaef"
+   },
+   "tmdb": 7459380,
+   "tvdb": 11872180,
+   "trakt": 14281727
+  },
+  "title": "Frightening Monsters (1)",
+  "votes": 1,
+  "images": {
+   "screenshot": []
+  },
+  "number": 9,
+  "rating": 3,
+  "season": 6,
+  "runtime": 24,
+  "overview": null,
+  "released": null,
+  "number_abs": 199,
+  "updated_at": "2026-11-12T07:18:45.000Z",
+  "first_aired": "2026-11-13T07:00:00.000Z",
+  "episode_type": "standard",
+  "after_credits": false,
+  "comment_count": 0,
+  "during_credits": false,
+  "original_title": null,
+  "available_translations": [],
+  "effective_release_date": "2026-11-13T07:00:00.000Z"
+ },
+ {
+  "ids": {
+   "imdb": "tt43643749",
+   "plex": {
+    "guid": "6a498b4dcf2adef6fb4afa7d"
+   },
+   "tmdb": 7459381,
+   "tvdb": 11872181,
+   "trakt": 14281728
+  },
+  "title": "Episode 10",
+  "votes": 1,
+  "images": {
+   "screenshot": []
+  },
+  "number": 10,
+  "rating": 3,
+  "season": 6,
+  "runtime": 24,
+  "overview": null,
+  "released": null,
+  "number_abs": 200,
+  "updated_at": "2026-11-07T15:06:16.000Z",
+  "first_aired": "2026-11-20T07:00:00.000Z",
+  "episode_type": "standard",
+  "after_credits": false,
+  "comment_count": 0,
+  "during_credits": false,
+  "original_title": null,
+  "available_translations": [],
+  "effective_release_date": "2026-11-20T07:00:00.000Z"
+ },
+ {
+  "ids": {
+   "imdb": "tt43643751",
+   "plex": {
+    "guid": "6a498b4ccf2adef6fb4afa2f"
+   },
+   "tmdb": 7459382,
+   "tvdb": 11872182,
+   "trakt": 14281730
+  },
+  "title": "Episode 11",
+  "votes": 1,
+  "images": {
+   "screenshot": []
+  },
+  "number": 11,
+  "rating": 3,
+  "season": 6,
+  "runtime": 24,
+  "overview": null,
+  "released": null,
+  "number_abs": 201,
+  "updated_at": "2026-11-07T15:06:16.000Z",
+  "first_aired": "2026-11-27T07:00:00.000Z",
+  "episode_type": "standard",
+  "after_credits": false,
+  "comment_count": 0,
+  "during_credits": false,
+  "original_title": null,
+  "available_translations": [],
+  "effective_release_date": "2026-11-27T07:00:00.000Z"
+ },
+ {
+  "ids": {
+   "imdb": "tt43643752",
+   "plex": {
+    "guid": "6a498b4ccf2adef6fb4af9bd"
+   },
+   "tmdb": 7459383,
+   "tvdb": 11872183,
+   "trakt": 14281731
+  },
+  "title": "Episode 12",
+  "votes": 1,
+  "images": {
+   "screenshot": []
+  },
+  "number": 12,
+  "rating": 3,
+  "season": 6,
+  "runtime": 24,
+  "overview": null,
+  "released": null,
+  "number_abs": 202,
+  "updated_at": "2026-11-11T09:24:48.000Z",
+  "first_aired": "2026-12-04T07:00:00.000Z",
+  "episode_type": "mid_season_finale",
+  "after_credits": false,
+  "comment_count": 0,
+  "during_credits": false,
+  "original_title": null,
+  "available_translations": [],
+  "effective_release_date": "2026-12-04T07:00:00.000Z"
+ }
+]

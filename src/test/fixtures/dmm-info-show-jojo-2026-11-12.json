@@ -1,0 +1,43 @@
+{
+ "title": "JoJo's Bizarre Adventure",
+ "description": "Follow the intergenerational feud between the Joestar Family and various forces of evil, the most prominent of which is Dio Brando and his followers.",
+ "poster": "https://image.tmdb.org/t/p/original/ogAWwbh3frWtiTyyXrZaVFtqCgp.jpg",
+ "backdrop": "https://image.tmdb.org/t/p/w1920_and_h800_multi_faces/l2gc2dPRUPe3bAfYCRTjc6uAMmB.jpg",
+ "season_count": 6,
+ "season_names": [
+  "Phantom Blood & Battle Tendency",
+  "Stardust Crusaders",
+  "Diamond Is Unbreakable",
+  "Golden Wind",
+  "STONE OCEAN",
+  "STEEL BALL RUN"
+ ],
+ "has_specials": true,
+ "imdb_score": "8.6",
+ "season_episode_counts": {
+  "0": 23,
+  "1": 26,
+  "2": 48,
+  "3": 39,
+  "4": 39,
+  "5": 38,
+  "6": 12
+ },
+ "trailer": "https://www.youtube.com/watch?v=fOvrr5izejw",
+ "status": "Returning Series",
+ "origin_country": [
+  "JP"
+ ],
+ "next_episode_to_air": {
+  "first_aired": "2026-11-13T07:00:00.000Z",
+  "episode_number": 9,
+  "season_number": 6,
+  "name": "Frightening Monsters (1)"
+ },
+ "last_episode_to_air": {
+  "first_aired": "2026-11-06T07:00:00.000Z",
+  "episode_number": 8,
+  "season_number": 6,
+  "name": "Tusk (2)"
+ }
+}

@@ -1,0 +1,43 @@
+{
+ "title": "Abbott Elementary",
+ "description": "In this workplace comedy, a group of dedicated, passionate teachers \u2014 and a slightly tone-deaf principal \u2014 are brought together in a Philadelphia public school where, despite the odds stacked against them, they are determined to help their students succeed in life. Though these incredible public servants may be outnumbered and underfunded, they love what they do \u2014 even if they don\u2019t love the school district\u2019s less-than-stellar attitude toward educating children.",
+ "poster": "https://image.tmdb.org/t/p/original/zk2aNVIHoapdWKOcaYp7PhX9SxD.jpg",
+ "backdrop": "https://image.tmdb.org/t/p/w1920_and_h800_multi_faces/s3owzvmihtDrunVxB2DyGjn9iJt.jpg",
+ "season_count": 6,
+ "season_names": [
+  "Season 1",
+  "Season 2",
+  "Season 3",
+  "Season 4",
+  "Season 5",
+  "Season 6"
+ ],
+ "has_specials": true,
+ "imdb_score": "8.2",
+ "season_episode_counts": {
+  "0": 2,
+  "1": 13,
+  "2": 22,
+  "3": 14,
+  "4": 22,
+  "5": 22,
+  "6": 22
+ },
+ "trailer": "https://www.youtube.com/watch?v=l4lP8roLz3I",
+ "status": "Returning Series",
+ "origin_country": [
+  "US"
+ ],
+ "next_episode_to_air": {
+  "first_aired": "2026-12-03T01:30:00+00:00",
+  "episode_number": 7,
+  "season_number": 6,
+  "name": "One Hundred"
+ },
+ "last_episode_to_air": {
+  "first_aired": "2026-11-12T01:30:00+00:00",
+  "episode_number": 6,
+  "season_number": 6,
+  "name": "Competition"
+ }
+}
