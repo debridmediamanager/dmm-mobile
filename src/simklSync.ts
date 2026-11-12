@@ -1,3 +1,4 @@
+import { simklLists } from './lists';
 import type { TraktReply, TrackerApi } from './trackerSync';
 import { watchKey, type WatchedEntry } from './watched';
 
@@ -52,6 +53,9 @@ export function simklTook(reply: TraktReply): (entry: WatchedEntry) => boolean {
 	return (entry) => !missing.has(watchKey(entry)) && !(entry.season !== undefined && missing.has(`${entry.imdbId}:*`));
 }
 
+/** Not `all`: it also moves on ratings, lists and resume points, and each move costs a whole-history read. */
+const statusStamp = (data: any) => JSON.stringify(TYPES.map((type) => BUCKETS.map((bucket) => data?.[type]?.[bucket] ?? null)));
+
 export const SIMKL: TrackerApi = {
 	id: 'simkl',
 	name: 'Simkl',
@@ -64,12 +68,14 @@ export const SIMKL: TrackerApi = {
 	},
 	activities: '/sync/activities',
 	stamps: (data) => ({
-		// Not `all`: it also moves on ratings, lists and resume points, and each move costs a whole-history read.
-		watched: JSON.stringify(TYPES.map((type) => BUCKETS.map((bucket) => data?.[type]?.[bucket] ?? null))),
+		watched: statusStamp(data),
 		paused: TYPES.map((type) => data?.[type]?.playback).join('|'),
 	}),
 	// ponytail: the whole history on every change, as DMM's Kodi addon reads it; Simkl prefers date_from deltas
 	// (an anime cour then covers only its own seasons). Worth it if large libraries make this slow.
 	history: async (get) => watchedFromSimkl(await get(SIMKL_HISTORY)),
 	took: simklTook,
+	// Its statuses (Plan to Watch, Watching...) are its lists: the same stamps and the same answer as the history.
+	// ponytail: Simkl's custom lists are left out: their items are PRO/VIP only (a free account gets 200 premium_only).
+	lists: { stamp: statusStamp, read: async (get) => simklLists(await get(SIMKL_HISTORY)) },
 };

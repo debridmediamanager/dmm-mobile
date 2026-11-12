@@ -1,0 +1,45 @@
+{
+	"captured": "2026-11-12, Trakt test account (dmm-mobile): GET /users/me/likes/lists, a public list liked. User names, slugs and avatars replaced.",
+	"status": 200,
+	"body": [
+		{
+			"liked_at": "2026-11-12T19:53:17.000Z",
+			"type": "list",
+			"list": {
+				"name": "Citadel Movies",
+				"description": "",
+				"privacy": "public",
+				"share_link": "",
+				"type": "personal",
+				"display_numbers": false,
+				"allow_comments": true,
+				"sort_by": "rank",
+				"sort_how": "asc",
+				"created_at": "2026-08-21T17:59:11.000Z",
+				"updated_at": "2026-08-26T01:36:14.000Z",
+				"item_count": 6,
+				"comment_count": 0,
+				"likes": 1,
+				"ids": {
+					"slug": "citadel-movies",
+					"trakt": 36987891
+				},
+				"images": {
+					"posters": []
+				},
+				"user": {
+					"ids": {
+						"slug": "list-owner",
+						"trakt": 1
+					},
+					"username": "list-owner",
+					"private": false,
+					"name": "List Owner",
+					"vip": false,
+					"vip_ep": false
+				}
+			}
+		}
+	],
+	"pageCount": 1
+}

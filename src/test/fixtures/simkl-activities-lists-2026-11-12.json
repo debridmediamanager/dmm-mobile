@@ -1,0 +1,50 @@
+{
+	"captured": "2026-11-12, Simkl test account (dmm-mobile): GET /sync/activities after the same.",
+	"status": 200,
+	"body": {
+		"all": "2026-11-12T19:53:41Z",
+		"settings": {
+			"all": null
+		},
+		"tv_shows": {
+			"all": "2026-11-12T19:53:41Z",
+			"rated_at": null,
+			"playback": "2026-11-12T18:34:50Z",
+			"plantowatch": "2026-11-12T19:53:41Z",
+			"watching": "2026-11-12T19:31:39Z",
+			"completed": "2026-11-12T19:30:51Z",
+			"hold": null,
+			"dropped": null,
+			"removed_from_list": null
+		},
+		"anime": {
+			"all": "2026-11-12T19:53:39Z",
+			"rated_at": null,
+			"playback": "2026-11-12T18:04:25Z",
+			"plantowatch": "2026-11-12T19:53:39Z",
+			"watching": "2026-11-12T18:02:27Z",
+			"completed": "2026-11-12T18:03:29Z",
+			"hold": null,
+			"dropped": null,
+			"removed_from_list": null
+		},
+		"movies": {
+			"all": "2026-11-12T19:53:41Z",
+			"rated_at": null,
+			"playback": "2026-11-12T18:01:25Z",
+			"plantowatch": "2026-11-12T19:53:41Z",
+			"completed": "2026-11-12T18:36:55Z",
+			"dropped": null,
+			"removed_from_list": "2026-11-12T18:02:27Z"
+		},
+		"custom_lists": {
+			"lists": {
+				"all": null,
+				"regular": null,
+				"favorites": null,
+				"recommendations": null,
+				"auto": null
+			}
+		}
+	}
+}

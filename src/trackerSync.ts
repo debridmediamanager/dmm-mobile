@@ -1,3 +1,4 @@
+import { traktEntries, type TrackerList } from './lists';
 import type { ProviderId } from './model';
 import { documentStore, FINISHED } from './playback';
 import type { CacheStore } from './titleIndex';
@@ -119,6 +120,9 @@ export function playbackFromTrakt(items: readonly any[]): Record<string, RemoteP
 
 const retryable = (status: number) => status === 429 || status >= 500;
 
+/** Reads a path once per sync (`paged`: all of Trakt's pages); a second read of the same path takes the first answer. */
+export type TrackerGet = (path: string, paged?: boolean) => Promise<any>;
+
 /** What the sync needs from a tracker's own API, beyond the shapes Trakt and Simkl share. */
 export interface TrackerApi {
 	id: Tracker;
@@ -131,10 +135,15 @@ export interface TrackerApi {
 	activities: string;
 	/** Tokens that change whenever the watched history or the resume points may have. */
 	stamps(data: any): { watched: string; paused: string };
-	/** The whole watched history, by watchKey; `get` reads a path (`paged`: all of Trakt's pages). */
-	history(get: (path: string, paged?: boolean) => Promise<any>): Promise<Map<string, WatchedEntry>>;
+	/** The whole watched history, by watchKey. */
+	history(get: TrackerGet): Promise<Map<string, WatchedEntry>>;
 	/** Of a history batch it answered, which ones it holds now. */
 	took(reply: TraktReply, batch: readonly WatchedEntry[]): (entry: WatchedEntry) => boolean;
+	/**
+	 * The user's lists: read the first time, when `stamp` moved, and, for lists that change without the user
+	 * (Trakt's liked lists, kept by their owners), after `everyMs` or on a forced sync (pull to refresh).
+	 */
+	lists?: { stamp(data: any): string; everyMs?: number; read(get: TrackerGet, previous: readonly TrackerList[]): Promise<TrackerList[]> };
 }
 
 export const TRAKT: TrackerApi = {
@@ -156,6 +165,24 @@ export const TRAKT: TrackerApi = {
 	took: (reply, batch) => {
 		const taken = ['added', 'updated'].reduce((sum, field) => sum + (Number(reply.data?.[field]?.movies) || 0) + (Number(reply.data?.[field]?.episodes) || 0), 0);
 		return () => taken >= batch.length;
+	},
+	lists: {
+		stamp: (data) => `${data?.watchlist?.updated_at}|${data?.lists?.updated_at}|${data?.lists?.liked_at}`,
+		everyMs: 3600_000,
+		read: async (get, previous) => {
+			const lists: TrackerList[] = [{ id: 'watchlist', name: 'Watchlist', kind: 'watchlist', items: traktEntries(await get('/sync/watchlist/movies,shows/added/desc', true)) }];
+			const own = ((await get('/users/me/lists', true)) as any[]).map((list) => ({ list, kind: 'own' as const }));
+			const liked = ((await get('/users/me/likes/lists', true)) as any[]).map((row) => ({ list: row?.list, kind: 'liked' as const }));
+			for (const { list, kind } of [...own, ...liked]) {
+				const id = String(list?.ids?.trakt ?? '');
+				if (!id) continue;
+				const before = previous.find((other) => other.id === id);
+				// Items are read again only when the list changed; one that cannot be read (deleted, made private) keeps what was read before.
+				const items = before && before.updatedAt === list.updated_at ? before.items : await get(`/lists/${id}/items/movie,show`, true).then(traktEntries, () => before?.items);
+				if (items) lists.push({ id, name: String(list.name ?? ''), kind, items, updatedAt: list.updated_at, ...(kind === 'liked' && list.user?.username ? { owner: String(list.user.username) } : {}) });
+			}
+			return lists;
+		},
 	},
 };
 
@@ -179,6 +206,10 @@ interface SyncState {
 	unsent: Record<string, { ref: WatchRef; progress: number }>;
 	/** Resume points removed here (Continue Watching's Remove) that Trakt still has. */
 	drops: number[];
+	/** The user's lists, the activity stamp and the time they were read at. */
+	lists?: TrackerList[];
+	listStamp?: string;
+	listsAt?: number;
 }
 
 const empty = (): SyncState => ({ playback: {}, unsent: {}, drops: [] });
@@ -259,6 +290,11 @@ export class TrackerSync<Account extends TrackerAccount = TrackerAccount> {
 	/** The tracker's resume points, any device's; none while no account is connected. */
 	playback(): RemotePlayback[] {
 		return this.account.login ? Object.values(this.state.playback) : [];
+	}
+
+	/** The tracker's lists (src/lists.ts); none while no account is connected. */
+	lists(): TrackerList[] {
+		return this.account.login ? (this.state.lists ?? []) : [];
 	}
 
 	resumeFor(ref: WatchRef): RemotePlayback | undefined {
@@ -408,7 +444,7 @@ export class TrackerSync<Account extends TrackerAccount = TrackerAccount> {
 	}
 
 	/**
-	 * Sends what the tracker missed, then reads the watched history and resume points again when its
+	 * Sends what the tracker missed, then reads the watched history, resume points and lists again when its
 	 * activity stamps say they changed. At most once per checkEveryMs unless `force`.
 	 */
 	sync(force = false): Promise<void> {
@@ -419,10 +455,16 @@ export class TrackerSync<Account extends TrackerAccount = TrackerAccount> {
 			const activity = await this.call('GET', this.api.activities);
 			if (activity.status !== 200) return this.refusedWith(activity);
 			const { watched, paused } = this.api.stamps(activity.data ?? {});
+			// Simkl's lists come in its history's answer: one request for both.
+			const answers = new Map<string, Promise<any>>();
+			const read: TrackerGet = (path, paged) => {
+				if (!answers.has(path)) answers.set(path, paged ? this.pages(path) : this.get(path));
+				return answers.get(path)!;
+			};
 			try {
 				if (!this.state.joined || watched !== this.state.watched) {
 					const first = !this.state.joined;
-					await this.marks.merge(await this.api.history((path, paged) => (paged ? this.pages(path) : this.get(path))), this.api.id, first);
+					await this.marks.merge(await this.api.history(read), this.api.id, first);
 					Object.assign(this.state, { joined: true, watched });
 					// What only this device had goes to the tracker now.
 					if (first) await this.flush();
@@ -432,6 +474,10 @@ export class TrackerSync<Account extends TrackerAccount = TrackerAccount> {
 					if (reply.status !== 200 || !Array.isArray(reply.data)) return this.refusedWith(reply);
 					Object.assign(this.state, { playback: playbackFromTrakt(reply.data), paused });
 				}
+				const lists = this.api.lists;
+				const stamp = lists?.stamp(activity.data ?? {});
+				const due = lists && (!this.state.lists || stamp !== this.state.listStamp || (lists.everyMs !== undefined && (force || this.now() - (this.state.listsAt ?? 0) >= lists.everyMs)));
+				if (due) Object.assign(this.state, { lists: await lists.read(read, this.state.lists ?? []), listStamp: stamp, listsAt: this.now() });
 				this.error = '';
 			} finally {
 				await this.persist();

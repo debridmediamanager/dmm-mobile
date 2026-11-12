@@ -1,0 +1,139 @@
+{
+	"captured": "2026-11-12, Trakt test account (dmm-mobile): GET /lists/<liked list>/items/movie,show. User names, slugs and avatars replaced.",
+	"status": 200,
+	"body": [
+		{
+			"type": "movie",
+			"movie": {
+				"ids": {
+					"imdb": "tt1254207",
+					"plex": {
+						"guid": "5d7768352e80df001ebde4c9",
+						"slug": "big-buck-bunny"
+					},
+					"slug": "big-buck-bunny-2008",
+					"tmdb": 10378,
+					"trakt": 5573
+				},
+				"year": 2008,
+				"title": "Big Buck Bunny"
+			},
+			"rank": 2,
+			"id": 1536041620,
+			"listed_at": "2026-08-21T19:19:42.000Z",
+			"notes": null,
+			"my_rating": null
+		},
+		{
+			"type": "movie",
+			"movie": {
+				"ids": {
+					"imdb": "tt0269188",
+					"plex": {
+						"guid": null,
+						"slug": null
+					},
+					"slug": "elephant-dreams",
+					"tmdb": 1473339,
+					"trakt": 1207281
+				},
+				"year": null,
+				"title": "Elephant Dreams"
+			},
+			"rank": 2,
+			"id": 1536067674,
+			"listed_at": "2026-08-21T21:02:52.000Z",
+			"notes": null,
+			"my_rating": null
+		},
+		{
+			"type": "movie",
+			"movie": {
+				"ids": {
+					"imdb": "tt32890033",
+					"plex": {
+						"guid": "6693e558bb02d52ce0523254",
+						"slug": "mega-minions"
+					},
+					"slug": "minions-monsters-2026",
+					"tmdb": 1315772,
+					"trakt": 1075712
+				},
+				"year": 2026,
+				"title": "Minions & Monsters"
+			},
+			"rank": 3,
+			"id": 1536068814,
+			"listed_at": "2026-08-21T21:07:57.000Z",
+			"notes": null,
+			"my_rating": null
+		},
+		{
+			"type": "movie",
+			"movie": {
+				"ids": {
+					"imdb": "tt32333324",
+					"plex": {
+						"guid": "664081d9987087a6b1b31b63",
+						"slug": "batman-knightfall-part-1-knightfall"
+					},
+					"slug": "batman-knightfall-part-1-knightfall-2026",
+					"tmdb": 1560520,
+					"trakt": 1281643
+				},
+				"year": 2026,
+				"title": "Batman: Knightfall Part 1: Knightfall"
+			},
+			"rank": 4,
+			"id": 1536142371,
+			"listed_at": "2026-08-22T02:16:10.000Z",
+			"notes": null,
+			"my_rating": null
+		},
+		{
+			"type": "movie",
+			"movie": {
+				"ids": {
+					"imdb": "tt1727587",
+					"plex": {
+						"guid": "5d77688123d5a3001f4ed3df",
+						"slug": "sintel"
+					},
+					"slug": "sintel-2010",
+					"tmdb": 45745,
+					"trakt": 31258
+				},
+				"year": 2010,
+				"title": "Sintel"
+			},
+			"rank": 5,
+			"id": 1538019292,
+			"listed_at": "2026-08-26T01:07:51.000Z",
+			"notes": null,
+			"my_rating": null
+		},
+		{
+			"type": "movie",
+			"movie": {
+				"ids": {
+					"imdb": "tt32338669",
+					"plex": {
+						"guid": "66405eced4e4bace15d4a05a",
+						"slug": "mutiny-2026"
+					},
+					"slug": "mutiny-2026",
+					"tmdb": 1288445,
+					"trakt": 1048396
+				},
+				"year": 2026,
+				"title": "Mutiny"
+			},
+			"rank": 6,
+			"id": 1538023572,
+			"listed_at": "2026-08-26T01:36:14.000Z",
+			"notes": null,
+			"my_rating": null
+		}
+	],
+	"pageCount": 1
+}

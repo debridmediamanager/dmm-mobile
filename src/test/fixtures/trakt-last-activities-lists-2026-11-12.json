@@ -1,0 +1,77 @@
+{
+	"captured": "2026-11-12, Trakt test account (dmm-mobile): GET /sync/last_activities after the watchlist, a new list and a like. User names, slugs and avatars replaced.",
+	"status": 200,
+	"body": {
+		"all": "2026-11-12T19:53:17.000Z",
+		"movies": {
+			"watched_at": "2026-11-12T14:47:26.000Z",
+			"collected_at": "2026-11-12T14:38:42.000Z",
+			"rated_at": "2026-11-12T14:38:42.000Z",
+			"watchlisted_at": "2026-11-12T19:52:55.000Z",
+			"favorited_at": "2026-11-12T14:38:42.000Z",
+			"commented_at": "2026-11-12T14:38:42.000Z",
+			"paused_at": "2026-11-12T14:47:15.000Z",
+			"hidden_at": "2026-11-12T14:38:42.000Z",
+			"recommendations_at": "2026-11-12T14:38:42.000Z"
+		},
+		"episodes": {
+			"watched_at": "2026-11-12T18:36:30.000Z",
+			"collected_at": "2026-11-12T14:38:42.000Z",
+			"rated_at": "2026-11-12T14:38:42.000Z",
+			"watchlisted_at": "2026-11-12T14:38:42.000Z",
+			"commented_at": "2026-11-12T14:38:42.000Z",
+			"paused_at": "2026-11-12T15:08:35.000Z"
+		},
+		"shows": {
+			"rated_at": "2026-11-12T14:38:42.000Z",
+			"watchlisted_at": "2026-11-12T19:52:55.000Z",
+			"favorited_at": "2026-11-12T14:38:42.000Z",
+			"commented_at": "2026-11-12T14:38:42.000Z",
+			"hidden_at": "2026-11-12T14:38:42.000Z",
+			"dropped_at": "2026-11-12T14:38:42.000Z",
+			"recommendations_at": "2026-11-12T14:38:42.000Z"
+		},
+		"seasons": {
+			"rated_at": "2026-11-12T14:38:42.000Z",
+			"watchlisted_at": "2026-11-12T14:38:42.000Z",
+			"commented_at": "2026-11-12T14:38:42.000Z",
+			"hidden_at": "2026-11-12T14:38:42.000Z"
+		},
+		"comments": {
+			"liked_at": "2026-11-12T14:38:42.000Z",
+			"reacted_at": "2026-11-12T14:38:42.000Z",
+			"blocked_at": "2026-11-12T14:38:42.000Z"
+		},
+		"lists": {
+			"liked_at": "2026-11-12T19:53:17.000Z",
+			"reacted_at": "2026-11-12T14:38:42.000Z",
+			"updated_at": "2026-11-12T19:53:00.000Z",
+			"commented_at": "2026-11-12T14:38:42.000Z"
+		},
+		"watchlist": {
+			"updated_at": "2026-11-12T19:52:55.000Z"
+		},
+		"favorites": {
+			"updated_at": "2026-11-12T14:38:42.000Z"
+		},
+		"collaborations": {
+			"updated_at": "2026-11-12T14:38:42.000Z"
+		},
+		"account": {
+			"settings_at": "2026-11-12T14:38:48.000Z",
+			"followed_at": "2026-11-12T14:38:42.000Z",
+			"following_at": "2026-11-12T14:38:42.000Z",
+			"pending_at": "2026-11-12T14:38:42.000Z",
+			"requested_at": "2026-11-12T14:38:42.000Z"
+		},
+		"saved_filters": {
+			"updated_at": "2026-11-12T14:38:42.000Z"
+		},
+		"notes": {
+			"updated_at": "2026-11-12T14:38:42.000Z"
+		},
+		"recommendations": {
+			"updated_at": "2026-11-12T14:38:42.000Z"
+		}
+	}
+}

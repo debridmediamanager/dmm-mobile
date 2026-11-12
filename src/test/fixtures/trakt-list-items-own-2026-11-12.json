@@ -1,0 +1,97 @@
+{
+	"captured": "2026-11-12, Trakt test account (dmm-mobile): GET /lists/<own private list>/items/movie,show. User names, slugs and avatars replaced.",
+	"status": 200,
+	"body": [
+		{
+			"type": "movie",
+			"movie": {
+				"ids": {
+					"imdb": "tt1727587",
+					"plex": {
+						"guid": "5d77688123d5a3001f4ed3df",
+						"slug": "sintel"
+					},
+					"slug": "sintel-2010",
+					"tmdb": 45745,
+					"trakt": 31258
+				},
+				"year": 2010,
+				"title": "Sintel"
+			},
+			"rank": 1,
+			"id": 1561053439,
+			"listed_at": "2026-11-12T19:53:00.000Z",
+			"notes": null,
+			"my_rating": null
+		},
+		{
+			"type": "movie",
+			"movie": {
+				"ids": {
+					"imdb": "tt7713068",
+					"plex": {
+						"guid": "5d776d9f594b2b001e70db2b",
+						"slug": "birds-of-prey-2020"
+					},
+					"slug": "birds-of-prey-and-the-fantabulous-emancipation-of-one-harley-quinn-2020",
+					"tmdb": 495764,
+					"trakt": 342639
+				},
+				"year": 2020,
+				"title": "Birds of Prey (and the Fantabulous Emancipation of One Harley Quinn)"
+			},
+			"rank": 2,
+			"id": 1561053440,
+			"listed_at": "2026-11-12T19:53:00.000Z",
+			"notes": null,
+			"my_rating": null
+		},
+		{
+			"type": "movie",
+			"movie": {
+				"ids": {
+					"imdb": "tt0133093",
+					"plex": {
+						"guid": "5d776827880197001ec90904",
+						"slug": "the-matrix"
+					},
+					"slug": "the-matrix-1999",
+					"tmdb": 603,
+					"trakt": 481
+				},
+				"year": 1999,
+				"title": "The Matrix"
+			},
+			"rank": 3,
+			"id": 1561053441,
+			"listed_at": "2026-11-12T19:53:00.000Z",
+			"notes": null,
+			"my_rating": null
+		},
+		{
+			"type": "show",
+			"show": {
+				"ids": {
+					"imdb": "tt11280740",
+					"plex": {
+						"guid": "5e1622d34f2292003e91314a",
+						"slug": "severance"
+					},
+					"slug": "severance",
+					"tmdb": 95396,
+					"tvdb": 371980,
+					"trakt": 154997
+				},
+				"year": 2022,
+				"title": "Severance",
+				"aired_episodes": 19
+			},
+			"rank": 4,
+			"id": 1561053442,
+			"listed_at": "2026-11-12T19:53:00.000Z",
+			"notes": null,
+			"my_rating": null
+		}
+	],
+	"pageCount": 1
+}

@@ -1,0 +1,99 @@
+{
+	"captured": "2026-11-12, Trakt test account (dmm-mobile): GET /sync/watchlist/movies,shows/added/desc. User names, slugs and avatars replaced.",
+	"status": 200,
+	"body": [
+		{
+			"type": "movie",
+			"movie": {
+				"ids": {
+					"imdb": "tt1254207",
+					"plex": {
+						"guid": "5d7768352e80df001ebde4c9",
+						"slug": "big-buck-bunny"
+					},
+					"slug": "big-buck-bunny-2008",
+					"tmdb": 10378,
+					"trakt": 5573
+				},
+				"year": 2008,
+				"title": "Big Buck Bunny"
+			},
+			"rank": 3,
+			"id": 1561053434,
+			"listed_at": "2026-11-12T19:52:55.000Z",
+			"notes": null,
+			"my_rating": null
+		},
+		{
+			"type": "show",
+			"show": {
+				"ids": {
+					"imdb": "tt0098769",
+					"plex": {
+						"guid": "5d9c08607b5c2e001e65a2b2",
+						"slug": "the-civil-war"
+					},
+					"slug": "the-civil-war",
+					"tmdb": 9693,
+					"tvdb": 78973,
+					"trakt": 9645
+				},
+				"year": 1990,
+				"title": "The Civil War",
+				"aired_episodes": 9
+			},
+			"rank": 4,
+			"id": 1561053435,
+			"listed_at": "2026-11-12T19:52:55.000Z",
+			"notes": null,
+			"my_rating": null
+		},
+		{
+			"type": "movie",
+			"movie": {
+				"ids": {
+					"imdb": "tt0111161",
+					"plex": {
+						"guid": "5d7768248a7581001f12bc77",
+						"slug": "the-shawshank-redemption"
+					},
+					"slug": "the-shawshank-redemption-1994",
+					"tmdb": 278,
+					"trakt": 234
+				},
+				"year": 1994,
+				"title": "The Shawshank Redemption"
+			},
+			"rank": 1,
+			"id": 1561053428,
+			"listed_at": "2026-11-12T19:52:52.000Z",
+			"notes": null,
+			"my_rating": null
+		},
+		{
+			"type": "show",
+			"show": {
+				"ids": {
+					"imdb": "tt0903747",
+					"plex": {
+						"guid": "5d9c083402391c001f583d09",
+						"slug": "breaking-bad"
+					},
+					"slug": "breaking-bad",
+					"tmdb": 1396,
+					"tvdb": 81189,
+					"trakt": 1388
+				},
+				"year": 2008,
+				"title": "Breaking Bad",
+				"aired_episodes": 62
+			},
+			"rank": 2,
+			"id": 1561053429,
+			"listed_at": "2026-11-12T19:52:52.000Z",
+			"notes": null,
+			"my_rating": null
+		}
+	],
+	"pageCount": 1
+}

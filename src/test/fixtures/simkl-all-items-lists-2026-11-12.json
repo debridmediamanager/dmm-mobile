@@ -1,0 +1,587 @@
+{
+	"captured": "2026-11-12, Simkl test account (dmm-mobile): GET /sync/all-items?extended=full_anime_seasons&include_all_episodes=yes&episode_watched_at=yes after six titles went to Plan to Watch.",
+	"status": 200,
+	"body": {
+		"shows": [
+			{
+				"added_to_watchlist_at": "2026-11-12T18:02:13Z",
+				"last_watched_at": "2026-11-12T18:06:58Z",
+				"user_rated_at": null,
+				"user_rating": null,
+				"status": "watching",
+				"last_watched": "S02E12",
+				"next_to_watch": "S03E01",
+				"watched_episodes_count": 12,
+				"total_episodes_count": 102,
+				"not_aired_episodes_count": 0,
+				"show": {
+					"title": "Weeds",
+					"poster": "32/322667ed1df7f87",
+					"year": 2005,
+					"runtime": 25,
+					"ids": {
+						"simkl": 4385,
+						"slug": "weeds",
+						"imdb": "tt0439100",
+						"tmdb": "186",
+						"tvdb": "74845",
+						"tvdbslug": "weeds",
+						"traktslug": "weeds"
+					}
+				},
+				"seasons": [
+					{
+						"number": 2,
+						"episodes": [
+							{
+								"number": 1,
+								"watched_at": "2026-11-12T18:06:58Z"
+							},
+							{
+								"number": 2,
+								"watched_at": "2026-11-12T18:06:58Z"
+							},
+							{
+								"number": 3,
+								"watched_at": "2026-11-12T18:06:58Z"
+							},
+							{
+								"number": 4,
+								"watched_at": "2026-11-12T18:06:58Z"
+							},
+							{
+								"number": 5,
+								"watched_at": "2026-11-12T18:06:58Z"
+							},
+							{
+								"number": 6,
+								"watched_at": "2026-11-12T18:06:58Z"
+							},
+							{
+								"number": 7,
+								"watched_at": "2026-11-12T18:06:58Z"
+							},
+							{
+								"number": 8,
+								"watched_at": "2026-11-12T18:06:58Z"
+							},
+							{
+								"number": 9,
+								"watched_at": "2026-11-12T18:06:58Z"
+							},
+							{
+								"number": 10,
+								"watched_at": "2026-11-12T18:06:58Z"
+							},
+							{
+								"number": 11,
+								"watched_at": "2026-11-12T18:06:58Z"
+							},
+							{
+								"number": 12,
+								"watched_at": "2026-11-12T18:06:58Z"
+							}
+						]
+					}
+				]
+			},
+			{
+				"added_to_watchlist_at": "2026-11-12T19:30:51Z",
+				"last_watched_at": null,
+				"user_rated_at": null,
+				"user_rating": null,
+				"status": "watching",
+				"last_watched": null,
+				"next_to_watch": "S01E01",
+				"watched_episodes_count": 0,
+				"total_episodes_count": 105,
+				"not_aired_episodes_count": 0,
+				"show": {
+					"title": "Sightings",
+					"poster": "17/17422765dde3a4edf1",
+					"year": 1992,
+					"runtime": 45,
+					"ids": {
+						"simkl": 5830,
+						"slug": "sightings",
+						"imdb": "tt0103549",
+						"tmdb": "315",
+						"tvdb": "76228",
+						"tvdbslug": "sightings",
+						"traktslug": "sightings"
+					}
+				}
+			},
+			{
+				"added_to_watchlist_at": "2026-11-12T19:29:43Z",
+				"last_watched_at": null,
+				"user_rated_at": null,
+				"user_rating": null,
+				"status": "watching",
+				"last_watched": null,
+				"next_to_watch": "S01E01",
+				"watched_episodes_count": 0,
+				"total_episodes_count": 43,
+				"not_aired_episodes_count": 0,
+				"show": {
+					"title": "Southern Stars",
+					"poster": "40/40388e481d4d312",
+					"year": 1992,
+					"runtime": 60,
+					"ids": {
+						"simkl": 8547,
+						"slug": "southern-stars",
+						"imdb": "tt0103558",
+						"tmdb": "63051",
+						"tvdb": "257871",
+						"tvdbslug": "257871-show",
+						"traktslug": "southern-stars"
+					}
+				}
+			},
+			{
+				"added_to_watchlist_at": "2026-11-12T18:34:50Z",
+				"last_watched_at": "2026-11-12T18:36:27Z",
+				"user_rated_at": null,
+				"user_rating": null,
+				"status": "completed",
+				"last_watched": "S01E09",
+				"next_to_watch": null,
+				"watched_episodes_count": 9,
+				"total_episodes_count": 9,
+				"not_aired_episodes_count": 0,
+				"show": {
+					"title": "The Civil War",
+					"poster": "41/412726f2ca519fd",
+					"year": 1990,
+					"runtime": 70,
+					"ids": {
+						"simkl": 8736,
+						"slug": "the-civil-war",
+						"imdb": "tt0098769",
+						"tmdb": "9693",
+						"tvdb": "78973",
+						"tvdbslug": "the-civil-war",
+						"traktslug": "the-civil-war"
+					}
+				},
+				"seasons": [
+					{
+						"number": 1,
+						"episodes": [
+							{
+								"number": 1,
+								"watched_at": "2026-11-12T18:36:27Z"
+							},
+							{
+								"number": 2,
+								"watched_at": "2026-11-12T18:36:27Z"
+							},
+							{
+								"number": 3,
+								"watched_at": "2026-11-12T18:36:27Z"
+							},
+							{
+								"number": 4,
+								"watched_at": "2026-11-12T18:36:27Z"
+							},
+							{
+								"number": 5,
+								"watched_at": "2026-11-12T18:36:27Z"
+							},
+							{
+								"number": 6,
+								"watched_at": "2026-11-12T18:36:27Z"
+							},
+							{
+								"number": 7,
+								"watched_at": "2026-11-12T18:36:27Z"
+							},
+							{
+								"number": 8,
+								"watched_at": "2026-11-12T18:36:27Z"
+							},
+							{
+								"number": 9,
+								"watched_at": "2026-11-12T18:36:27Z"
+							}
+						]
+					}
+				]
+			},
+			{
+				"added_to_watchlist_at": "2026-11-12T19:53:41Z",
+				"last_watched_at": null,
+				"user_rated_at": null,
+				"user_rating": null,
+				"status": "plantowatch",
+				"last_watched": null,
+				"next_to_watch": "S01E01",
+				"watched_episodes_count": 0,
+				"total_episodes_count": 62,
+				"not_aired_episodes_count": 0,
+				"show": {
+					"title": "Breaking Bad",
+					"poster": "97/978264e8bbc2303",
+					"year": 2008,
+					"runtime": 47,
+					"ids": {
+						"simkl": 11121,
+						"slug": "breaking-bad",
+						"imdb": "tt0903747",
+						"tmdb": "1396",
+						"tvdb": "81189",
+						"tvdbslug": "breaking-bad",
+						"traktslug": "breaking-bad"
+					}
+				}
+			},
+			{
+				"added_to_watchlist_at": "2026-11-12T18:06:56Z",
+				"last_watched_at": "2026-11-12T18:06:56Z",
+				"user_rated_at": null,
+				"user_rating": null,
+				"status": "completed",
+				"last_watched": null,
+				"next_to_watch": "S01E01",
+				"watched_episodes_count": 5,
+				"total_episodes_count": 5,
+				"not_aired_episodes_count": 0,
+				"show": {
+					"title": "Chernobyl",
+					"poster": "82/8256180eed3f66168",
+					"year": 2019,
+					"runtime": 65,
+					"ids": {
+						"simkl": 1057374,
+						"slug": "chernobyl",
+						"imdb": "tt7366338",
+						"tmdb": "87108",
+						"tvdb": "360893",
+						"tvdbslug": "chernobyl",
+						"traktslug": "chernobyl"
+					}
+				},
+				"seasons": [
+					{
+						"number": 1,
+						"episodes": [
+							{
+								"number": 1,
+								"watched_at": "2026-11-12T18:06:56Z"
+							},
+							{
+								"number": 2,
+								"watched_at": "2026-11-12T18:06:56Z"
+							},
+							{
+								"number": 3,
+								"watched_at": "2026-11-12T18:06:56Z"
+							},
+							{
+								"number": 4,
+								"watched_at": "2026-11-12T18:06:56Z"
+							},
+							{
+								"number": 5,
+								"watched_at": "2026-11-12T18:06:56Z"
+							}
+						]
+					}
+				]
+			},
+			{
+				"added_to_watchlist_at": "2026-11-12T19:53:39Z",
+				"last_watched_at": null,
+				"user_rated_at": null,
+				"user_rating": null,
+				"status": "plantowatch",
+				"last_watched": null,
+				"next_to_watch": "S01E01",
+				"watched_episodes_count": 0,
+				"total_episodes_count": 19,
+				"not_aired_episodes_count": 0,
+				"show": {
+					"title": "Severance",
+					"poster": "12/12301659c2620e9486",
+					"year": 2022,
+					"runtime": 47,
+					"ids": {
+						"simkl": 1203662,
+						"slug": "severance",
+						"imdb": "tt11280740",
+						"tmdb": "95396",
+						"tvdb": "371980",
+						"tvdbslug": "severance",
+						"traktslug": "severance"
+					}
+				}
+			}
+		],
+		"movies": [
+			{
+				"added_to_watchlist_at": "2026-11-12T19:53:39Z",
+				"last_watched_at": null,
+				"user_rated_at": null,
+				"user_rating": null,
+				"status": "plantowatch",
+				"watched_episodes_count": 0,
+				"total_episodes_count": 0,
+				"not_aired_episodes_count": 0,
+				"movie": {
+					"title": "The Shawshank Redemption",
+					"poster": "14/14865407c6ce11f124",
+					"year": 1994,
+					"runtime": 142,
+					"ids": {
+						"simkl": 53506,
+						"slug": "the-shawshank-redemption",
+						"imdb": "tt0111161",
+						"tmdb": "278",
+						"tvdb": "190",
+						"tvdbslug": "the-shawshank-redemption",
+						"traktslug": "the-shawshank-redemption-1994",
+						"letterboxd": "the-shawshank-redemption"
+					}
+				}
+			},
+			{
+				"added_to_watchlist_at": "2026-11-12T19:53:41Z",
+				"last_watched_at": null,
+				"user_rated_at": null,
+				"user_rating": null,
+				"status": "plantowatch",
+				"watched_episodes_count": 0,
+				"total_episodes_count": 0,
+				"not_aired_episodes_count": 0,
+				"movie": {
+					"title": "Big Buck Bunny",
+					"poster": "94/946653863d9675246",
+					"year": 2008,
+					"runtime": 8,
+					"ids": {
+						"simkl": 63926,
+						"slug": "big-buck-bunny",
+						"imdb": "tt1254207",
+						"tmdb": "10378",
+						"tvdb": "12352",
+						"tvdbslug": "big-buck-bunny",
+						"traktslug": "big-buck-bunny-2008",
+						"letterboxd": "big-buck-bunny"
+					}
+				}
+			},
+			{
+				"added_to_watchlist_at": "2026-11-12T18:01:25Z",
+				"last_watched_at": "2026-11-12T18:01:25Z",
+				"user_rated_at": null,
+				"user_rating": null,
+				"status": "completed",
+				"watched_episodes_count": 0,
+				"total_episodes_count": 0,
+				"not_aired_episodes_count": 0,
+				"movie": {
+					"title": "Sintel",
+					"poster": "20/20746731177fe0e9a9",
+					"year": 2010,
+					"runtime": 14,
+					"ids": {
+						"simkl": 113214,
+						"slug": "sintel",
+						"imdb": "tt1727587",
+						"tmdb": "45745",
+						"tvdb": "9413",
+						"tvdbslug": "sintel",
+						"traktslug": "sintel-2010",
+						"letterboxd": "sintel"
+					}
+				}
+			},
+			{
+				"added_to_watchlist_at": "2026-11-12T18:36:55Z",
+				"last_watched_at": "2026-11-12T18:36:55Z",
+				"user_rated_at": null,
+				"user_rating": null,
+				"status": "completed",
+				"watched_episodes_count": 0,
+				"total_episodes_count": 0,
+				"not_aired_episodes_count": 0,
+				"movie": {
+					"title": "Birds of Prey (and the Fantabulous Emancipation of One Harley Quinn)",
+					"poster": "84/8477242cca0150e11",
+					"year": 2020,
+					"runtime": 109,
+					"ids": {
+						"simkl": 751468,
+						"slug": "birds-of-prey-and-the-fantabulous-emancipation-of-one-harley-quinn",
+						"imdb": "tt7713068",
+						"tmdb": "495764",
+						"tvdb": "43390",
+						"tvdbslug": "birds-of-prey-and-the-fantabulous-emancipation-of-one-harley-quinn",
+						"traktslug": "birds-of-prey-and-the-fantabulous-emancipation-of-one-harley-quinn-2020",
+						"letterboxd": "birds-of-prey-and-the-fantabulous-emancipation-of-one-harley-quinn"
+					}
+				}
+			},
+			{
+				"added_to_watchlist_at": "2026-11-12T19:53:39Z",
+				"last_watched_at": null,
+				"user_rated_at": null,
+				"user_rating": null,
+				"status": "plantowatch",
+				"watched_episodes_count": 0,
+				"total_episodes_count": 0,
+				"not_aired_episodes_count": 0,
+				"movie": {
+					"title": "Dune: Part Two",
+					"poster": "13/13998627ed34118524",
+					"year": 2024,
+					"runtime": 167,
+					"ids": {
+						"simkl": 1321382,
+						"slug": "dune-part-two",
+						"imdb": "tt15239678",
+						"tmdb": "693134",
+						"tvdb": "290272",
+						"tvdbslug": "dune-part-two",
+						"traktslug": "dune-part-two-2024",
+						"letterboxd": "dune-part-two"
+					}
+				}
+			}
+		],
+		"anime": [
+			{
+				"added_to_watchlist_at": "2026-11-12T18:03:29Z",
+				"last_watched_at": "2026-11-09T20:00:00Z",
+				"user_rated_at": null,
+				"user_rating": null,
+				"status": "completed",
+				"last_watched": null,
+				"next_to_watch": null,
+				"watched_episodes_count": 1,
+				"total_episodes_count": 1,
+				"not_aired_episodes_count": 0,
+				"show": {
+					"title": "Kimi no Na wa.",
+					"poster": "31/3114820930656c5ed",
+					"year": 2016,
+					"runtime": 110,
+					"ids": {
+						"simkl": 543146,
+						"slug": "kimi-no-na-wa",
+						"imdb": "tt5311514",
+						"mal": "32281",
+						"anilist": "21519",
+						"kitsu": "11614",
+						"anidb": "11829",
+						"tmdb": "372058",
+						"tvdb": "197",
+						"tvdbslug": "your-name",
+						"traktslug": "your-name-2016",
+						"letterboxd": "your-name"
+					}
+				},
+				"anime_type": "movie",
+				"seasons": [
+					{
+						"number": 1,
+						"episodes": [
+							{
+								"number": 1,
+								"watched_at": "2026-11-09T20:00:00Z",
+								"tvdb": {
+									"season": 1,
+									"episode": 1
+								}
+							}
+						]
+					}
+				]
+			},
+			{
+				"added_to_watchlist_at": "2026-11-12T18:01:45Z",
+				"last_watched_at": "2026-11-12T18:01:45Z",
+				"user_rated_at": null,
+				"user_rating": null,
+				"status": "watching",
+				"last_watched": "E14",
+				"next_to_watch": "E15",
+				"watched_episodes_count": 1,
+				"total_episodes_count": 25,
+				"not_aired_episodes_count": 0,
+				"show": {
+					"title": "Boku no Hero Academia",
+					"poster": "84/841464130fa9ad1b3",
+					"year": 2019,
+					"runtime": 25,
+					"ids": {
+						"simkl": 920009,
+						"slug": "boku-no-hero-academia",
+						"mal": "38408",
+						"anilist": "104276",
+						"kitsu": "41971",
+						"anidb": "14416",
+						"imdb": "tt5626028",
+						"tmdb": "65930",
+						"tvdb": "305074"
+					}
+				},
+				"anime_type": "tv",
+				"mapped_tvdb_seasons": [
+					4
+				],
+				"seasons": [
+					{
+						"number": 1,
+						"episodes": [
+							{
+								"number": 14,
+								"watched_at": "2026-11-12T18:01:45Z",
+								"tvdb": {
+									"season": 4,
+									"episode": 14
+								}
+							}
+						]
+					}
+				]
+			},
+			{
+				"added_to_watchlist_at": "2026-11-12T19:53:39Z",
+				"last_watched_at": null,
+				"user_rated_at": null,
+				"user_rating": null,
+				"status": "plantowatch",
+				"last_watched": null,
+				"next_to_watch": "E1",
+				"watched_episodes_count": 0,
+				"total_episodes_count": 28,
+				"not_aired_episodes_count": 0,
+				"show": {
+					"title": "Sousou no Frieren",
+					"poster": "14/14625673bbdc6b52ea",
+					"year": 2023,
+					"runtime": 30,
+					"ids": {
+						"simkl": 1990194,
+						"slug": "sousou-no-frieren",
+						"mal": "52991",
+						"imdb": "tt22248376",
+						"anilist": "154587",
+						"kitsu": "46474",
+						"anidb": "17617",
+						"tmdb": "209867",
+						"tvdb": "424536",
+						"tvdbslug": "sousou-no-frieren",
+						"traktslug": "frieren-beyond-journey-s-end"
+					}
+				},
+				"anime_type": "tv",
+				"mapped_tvdb_seasons": [
+					1
+				]
+			}
+		]
+	}
+}

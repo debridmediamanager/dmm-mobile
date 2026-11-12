@@ -21,6 +21,11 @@ import historyAddNotFound from './test/fixtures/trakt-history-add-not-found-2026
 import historyRemove from './test/fixtures/trakt-history-remove-2026-11-12.json';
 import playbackList from './test/fixtures/trakt-playback-2026-11-12.json';
 import renewed from './test/fixtures/dmm-trakt-refresh-2026-11-12.json';
+import watchlistFixture from './test/fixtures/trakt-watchlist-2026-11-12.json';
+import ownLists from './test/fixtures/trakt-my-lists-2026-11-12.json';
+import likedLists from './test/fixtures/trakt-liked-lists-2026-11-12.json';
+import ownItems from './test/fixtures/trakt-list-items-own-2026-11-12.json';
+import likedItems from './test/fixtures/trakt-list-items-liked-2026-11-12.json';
 
 const NOW = Date.parse('2026-11-12T12:00:00Z');
 const MIN = 60_000;
@@ -64,6 +69,11 @@ const IMPORT = {
 	'GET /sync/watched/movies': [ok({ status: 200, body: moviesPage1 }, 2), ok({ status: 200, body: moviesPage2 }, 2)],
 	'GET /sync/watched/shows': ok({ status: 200, body: shows }, 1),
 	'GET /sync/playback': ok(playbackList),
+	'GET /sync/watchlist/movies,shows/added/desc': ok(watchlistFixture, 1),
+	'GET /users/me/lists': ok(ownLists, 1),
+	'GET /users/me/likes/lists': ok(likedLists, 1),
+	'GET /lists/38132493/items/movie,show': ok(ownItems, 1),
+	'GET /lists/36987891/items/movie,show': ok(likedItems, 1),
 };
 
 async function setup(routes: Record<string, TraktReply | TraktReply[]>, options: { marks?: WatchStore; state?: unknown; post?: () => Promise<{ status: number; data: any }> } = {}) {
@@ -186,6 +196,12 @@ describe('watched history', () => {
 			'/sync/watched/movies?page=2&limit=250',
 			'/sync/watched/shows?extended=progress&page=1&limit=250',
 			'/sync/playback',
+			// The lists (src/lists.test.ts): the watchlist, own and liked lists and each one's items.
+			'/sync/watchlist/movies,shows/added/desc?page=1&limit=250',
+			'/users/me/lists?page=1&limit=250',
+			'/users/me/likes/lists?page=1&limit=250',
+			'/lists/38132493/items/movie,show?page=1&limit=250',
+			'/lists/36987891/items/movie,show?page=1&limit=250',
 		]);
 		// Watched on Trakt in 2025 and marked here a day ago: the later time stands, as when two trackers both list it.
 		expect(marks.watchedAt({ imdbId: ALITA })).toBe(NOW - DAY);

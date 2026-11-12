@@ -228,7 +228,7 @@ describe('Simkl through the tracker sync', () => {
 
 	it('reads the history only when an activity stamp moved', async () => {
 		const stamps = SIMKL.stamps(activities.body);
-		const { sync, calls } = await simklSync(SIMKL_IMPORT, { state: { joined: true, ...stamps, playback: {}, unsent: {}, drops: [] } });
+		const { sync, calls } = await simklSync(SIMKL_IMPORT, { state: { joined: true, ...stamps, playback: {}, unsent: {}, drops: [], lists: [], listStamp: stamps.watched } });
 		await sync.sync(true);
 		expect(calls.map((call) => call.path)).toEqual(['/sync/activities']);
 	});
