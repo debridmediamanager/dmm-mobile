@@ -129,11 +129,37 @@ about 6 s, smooth scrolling, search under a second per keystroke).
   (Real-Debrid; active TorBox torrents; failed AllDebrid magnets), and choose
   Real-Debrid files, including on a finished torrent.
 
-Download links are resolved only after a user taps a file. Videos open in the
-player chosen in Settings (VLC, MX Player, Just Player or Android's app
-picker; Infuse, VLC, VidHub, Outplayer, SenPlayer or Aether on iOS), the same
-list DMM web offers; other files go to the operating system. Hash lists open on DMM web's `/hashlist` page, carried
+Download links are resolved only after a user taps a file. Videos play in the
+app's built-in player (below) unless another is chosen in Settings (VLC, MX
+Player, Just Player or Android's app picker; Infuse, VLC, VidHub, Outplayer,
+SenPlayer or Aether on iOS), the same list DMM web offers; other files go to the
+operating system. Hash lists open on DMM web's `/hashlist` page, carried
 in the link itself.
+
+## Built-in player
+
+libVLC 3 (through `@lunarr/vlc-player`), so the files debrid services hold play as
+they are: MKV and MP4, H.264 and HEVC (10-bit too; HDR plays but shows as SDR),
+AC3, E-AC3, DTS and TrueHD audio, and SRT, ASS and PGS subtitles. Full screen and landscape, with
+play/pause, a seek bar, 10-second skips, and pickers for the audio track and for
+subtitles, which list the tracks inside the video and then subtitle files of the
+same release. On a TV the remote's play/pause and skip keys work, left and right
+skip 10 seconds while the controls are hidden, and Select shows them.
+
+- **Resume**: where each file was left is kept on the device (provider, release
+  hash and file path), saved every 5 seconds and on leaving; opening it again
+  offers to resume or start over. Past 92% a file counts as watched and starts
+  from the beginning (`src/playback.ts`).
+- **Next episode**: when an episode ends and the library has the next one (the
+  next number in the season, else the next season's first), it starts after a
+  10-second countdown, from the same release or provider when it can.
+- A file that does not play, or a stream that stops for 30 seconds, offers Try
+  again (from where it stopped) and Open in another app.
+- On a Fire TV the first video after installing takes about half a minute to
+  start while libVLC indexes the system fonts; later ones start in 2 to 5 seconds.
+
+DMM web knows only its own players, so choosing the built-in player is kept on
+the device and not sent to DMM; a player app chosen here is.
 
 ## Search
 
@@ -153,7 +179,8 @@ ticked) and the other logins and settings come back; keys DMM web keeps that the
 app does not use are saved back untouched. Anyone who can sign in to one of
 those accounts gets all of them, so keep shared debrid accounts out of the app.
 Settings (video player, the provider adds start on) use DMM web's
-`settings:player` and `settings:addMagnetProvider`.
+`settings:player` and `settings:addMagnetProvider`; the built-in player and
+"Browser or default app" stay on the device, as DMM web has neither.
 
 Not in the app, because they need DMM's servers: casting to Stremio, sending
 to Real-Debrid through DMM's uploader and the media info panel.
@@ -167,8 +194,8 @@ remote inside a focused field), and the dark theme is always on. Apple TV draws
 the Android TV layout at twice the size, so both look the same. What a TV has
 no way to do is left out: sharing, file pickers, opening links in a browser,
 and so the Search tab.
-On Apple TV videos go to a player app chosen in Settings (Infuse, VLC and the
-rest of DMM web's list).
+On Apple TV videos play in the built-in player, or in a player app chosen in
+Settings (Infuse, VLC and the rest of DMM web's list).
 
 ## Screenshots
 
@@ -237,6 +264,5 @@ This project is distributed under AGPL-3.0-only. See `LICENSE` and `NOTICE.md`.
 
 For a populated preview without provider credentials, use the [fixture QA entry](qa/README.md) in a separate checkout.
 
-An embedded player, background downloads and store distribution are outside
-this release. The pinned Expo CLI has five moderate transitive development-tool
+Background downloads are outside this release. The pinned Expo CLI has five moderate transitive development-tool
 advisories; no incompatible forced dependency downgrade was applied.

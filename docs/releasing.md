@@ -35,6 +35,12 @@ lacks the native code it expects. The workflow enforces that rule (below).
    The OTA workflow compares the native code of every later update with this
    tag, so tag before publishing any update for 1.2.0.
 
+The built-in player (libVLC, on `main` since 2026-11-12) is native code that the
+1.0.0 builds lack, so from then on `main` cannot be published to 1.0.0 over the
+air: the workflow's fingerprint check refuses it. It reaches users with the next
+store release; until then a fix for 1.0.0 goes out from a branch off `v1.0.0`
+(below).
+
 A binary runs its own code until an update newer than the build itself is
 published: updates are ordered by date, so one published before the build is
 ignored. Builds of older versions keep the last update published for their version. To
