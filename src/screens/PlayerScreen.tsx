@@ -7,7 +7,7 @@ import { useApp } from '../AppContext';
 import { filePath, isVideoName } from '../core';
 import type { RootStackParamList } from '../navigation';
 import { FINISHED, playback, playbackKey } from '../playback';
-import { BUILT_IN, openFileLink, playersForPlatform } from '../player';
+import { BUILT_IN, openFileLink, playersForPlatform, soundUnplayable } from '../player';
 import { findEpisode, nextEpisode, showEpisodes, type EpisodeCopy } from '../titles';
 import { isSafeExternalUrl } from '../validation';
 import { ActionSheet, Icon, Pressable, type IconName, type SheetAction } from '../ui';
@@ -77,6 +77,8 @@ export function PlayerScreen({ route, navigation }: Props) {
 	const player = useRef<VLCPlayerRef>(null);
 	const mounted = useRef(true);
 	const position = useRef({ time: 0, duration: 0, savedAt: 0, movedAt: 0 });
+	/** Whether the sound was checked once the video started: 'asked' while libVLC lists its tracks. */
+	const soundCheck = useRef<'no' | 'asked' | 'done'>('no');
 	/** Where playback starts; null while asking whether to resume. */
 	const [start, setStart] = useState<number | null>(null);
 	const [resumeAt, setResumeAt] = useState(0);
@@ -318,10 +320,24 @@ export function PlayerScreen({ route, navigation }: Props) {
 					onPlaying={() => {
 						setPaused(false);
 						setBuffering(false);
+						if (soundCheck.current === 'no') {
+							soundCheck.current = 'asked';
+							player.current?.getTracks();
+						}
 					}}
 					onPaused={() => setPaused(true)}
 					onEnd={ended}
-					onTracks={setTracks}
+					onTracks={(listed) => {
+						setTracks(listed);
+						if (soundCheck.current !== 'asked') return;
+						soundCheck.current = 'done';
+						// Rather than play on in silence.
+						if (soundUnplayable(listed)) {
+							player.current?.pause();
+							save();
+							setError('Its sound is in a format this player cannot decode.');
+						}
+					}}
 					onError={() => setError('This file could not be played here.')}
 				/>
 			) : null}
@@ -414,6 +430,7 @@ export function PlayerScreen({ route, navigation }: Props) {
 					<Text style={local.dialogText}>{error}</Text>
 					{textButton('Try again', () => {
 						setError('');
+						soundCheck.current = 'no';
 						setBuffering(true);
 						setStart(position.current.time);
 						setAttempt((n) => n + 1);

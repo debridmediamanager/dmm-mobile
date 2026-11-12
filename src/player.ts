@@ -1,4 +1,5 @@
 import { Linking, Platform } from 'react-native';
+import type { VLCPlayerTracks } from '@lunarr/vlc-player';
 import * as IntentLauncher from 'expo-intent-launcher';
 import { isVideoName } from './core';
 import { loadSettings, saveSetting } from './settings';
@@ -64,6 +65,12 @@ export async function loadPlayer(): Promise<string> {
 }
 
 export const savePlayer = (id: string): Promise<void> => saveSetting('player', id);
+
+/**
+ * Whether a video that has started plays without sound it has: libVLC lists an audio track it has
+ * no decoder for but never selects it, so tracks to choose from and none selected means none decodes.
+ */
+export const soundUnplayable = (tracks: Pick<VLCPlayerTracks, 'audio' | 'audioIndex'>): boolean => tracks.audioIndex === -1 && tracks.audio.some((track) => track.id !== -1);
 
 /** Whether a file opens in the built-in player rather than in another app. */
 export const playsBuiltIn = async (fileName: string): Promise<boolean> => isVideoName(fileName) && (await loadPlayer()) === BUILT_IN;

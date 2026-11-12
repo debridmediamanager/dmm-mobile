@@ -7,7 +7,7 @@ vi.mock('expo-intent-launcher', () => ({ startActivityAsync: vi.fn(async () => (
 
 import { Linking } from 'react-native';
 import * as IntentLauncher from 'expo-intent-launcher';
-import { iosPlayerUrl, loadPlayer, openFileLink, playersForPlatform, playsBuiltIn } from './player';
+import { iosPlayerUrl, loadPlayer, openFileLink, playersForPlatform, playsBuiltIn, soundUnplayable } from './player';
 import { _resetSettingsCache } from './settings';
 
 const TB = 'https://store-024.weur.tb-cdn.st/zip/1?token=abc&x=1';
@@ -90,5 +90,19 @@ describe('players on Apple TV', () => {
 		_resetSettingsCache();
 		// A browser choice synced from an iPhone falls back to the built-in player here.
 		expect(await loadPlayer()).toBe('builtin');
+	});
+});
+
+describe('sound the built-in player cannot decode', () => {
+	// libVLC's track lists as VideoLAN's MobileVLCKit 3.7.5 gave them (vlckit/check/sound.c in the simulator, 2026-11-12).
+	const disable = { id: -1, name: 'Disable' };
+	it('is told apart when every audio track is listed and none plays (a TrueHD-only episode without the decoder)', () => {
+		expect(soundUnplayable({ audio: [disable, { id: 1, name: 'Track 1 - [English]' }, { id: 2, name: 'Track 2 - [Japanese]' }], audioIndex: -1 })).toBe(true);
+	});
+	it('is not when another track plays (TrueHD with AC3 beside it) or the video has no sound at all', () => {
+		expect(soundUnplayable({ audio: [disable, { id: 0, name: 'TrueHD 5.1 - [English]' }, { id: 1, name: 'AC-3 5.1 - [English]' }], audioIndex: 1 })).toBe(false);
+		expect(soundUnplayable({ audio: [disable, { id: 0, name: 'TrueHD 5.1 - [English]' }], audioIndex: 0 })).toBe(false);
+		expect(soundUnplayable({ audio: [], audioIndex: -1 })).toBe(false);
+		expect(soundUnplayable({ audio: [disable], audioIndex: -1 })).toBe(false);
 	});
 });

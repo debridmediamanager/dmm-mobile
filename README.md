@@ -157,8 +157,9 @@ skip 10 seconds while the controls are hidden, and Select shows them.
 - **Next episode**: when an episode ends and the library has the next one (the
   next number in the season, else the next season's first), it starts after a
   10-second countdown, from the same release or provider when it can.
-- A file that does not play, or a stream that stops for 30 seconds, offers Try
-  again (from where it stopped) and Open in another app.
+- A file that does not play, a stream that stops for 30 seconds, or a video whose
+  sound the player cannot decode offers Try again (from where it stopped) and Open
+  in another app.
 - On a Fire TV the first video after installing takes about half a minute to
   start while libVLC indexes the system fonts; later ones start in 2 to 5 seconds.
 
