@@ -1,0 +1,11 @@
+{
+	"status": 200,
+	"body": {
+		"service": "trakt",
+		"userCode": "JWR7D289",
+		"deviceCode": "DEVICECODE",
+		"verifyUrl": "https://auth.trakt.tv/activate/JWR7D289",
+		"interval": 6,
+		"expiresIn": 600
+	}
+}

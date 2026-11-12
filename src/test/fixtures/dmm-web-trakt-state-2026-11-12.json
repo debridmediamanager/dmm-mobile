@@ -1,0 +1,5 @@
+{
+	"trakt:accessToken": "{\"value\":\"WEBACCESS\",\"expiry\":1795099706324}",
+	"trakt:refreshToken": "\"WEBREFRESH\"",
+	"trakt:userSlug": "\"dmm-mobile-test\""
+}

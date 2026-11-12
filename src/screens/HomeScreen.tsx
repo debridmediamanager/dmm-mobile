@@ -1,26 +1,30 @@
-import { useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { Alert, FlatList, Platform, RefreshControl, ScrollView, Text, View, type ScrollViewInstance } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useApp } from '../AppContext';
 import { filePath } from '../core';
-import type { LibraryItem } from '../model';
+import type { LibraryFile, LibraryItem } from '../model';
 import { PROVIDER_META } from '../model';
 import type { RootStackParamList } from '../navigation';
 import { playback } from '../playback';
 import { useAppTheme } from '../theme';
-import { episodeCode, groupTitles, seasonRange } from '../titles';
+import { episodeCode, groupTitles, mainFile, pickCopy, seasonRange } from '../titles';
 import { ActionSheet, EmptyState, ErrorBanner, Pressable, Screen, styles, useLayout, type SheetAction } from '../ui';
-import { continueWatching, nextUp, releaseFinder, resumable, rowRefs, titleStates, watched, watchKey, type NextUp, type WatchRef } from '../watched';
+import { continueWatching, nextUp, releaseFinder, remoteResumes, resumable, rowRefs, titleStates, watched, watchKey, type NextUp, type RemotePlayback, type WatchRef } from '../watched';
 import { useOpenCopy, useWatch } from './hooks';
 import { PosterCard } from './TitlesView';
 
 const GAP = 10;
+const idle = () => () => undefined;
+const zero = () => 0;
 /** Newest titles in Recently Added. */
 const RECENT = 20;
 
 interface Card {
 	key: string;
+	/** When it was left, for Continue Watching's order. */
+	at?: number;
 	imdbId?: string;
 	title: string;
 	detail: string;
@@ -41,8 +45,9 @@ export function HomeScreen() {
 	const theme = useAppTheme();
 	const { wide } = useLayout();
 	const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-	const { ready, startupError, snapshot, titles, refreshAll, retryStartup } = useApp();
+	const { ready, startupError, snapshot, titles, refreshAll, retryStartup, trakt } = useApp();
 	const version = useSyncExternalStore(titles.subscribe, titles.getVersion);
+	const traktVersion = useSyncExternalStore(trakt ? trakt.subscribe : idle, trakt ? trakt.getVersion : zero);
 	const { watchVersion, playVersion } = useWatch();
 	const openCopy = useOpenCopy();
 	const [opening, setOpening] = useState('');
@@ -60,7 +65,6 @@ export function HomeScreen() {
 		const byId = new Map(groups.map((group) => [group.imdbId, group]));
 		const marks = watched.list();
 		const entries = playback.list();
-		const resume = continueWatching(entries, snapshot.items, (ref) => watched.watchedAt(ref));
 		// A show's next episode plays from the release it was last played from, when that has it.
 		const find = releaseFinder(snapshot.items);
 		const lastPlayed = new Map<string, LibraryItem>();
@@ -68,7 +72,29 @@ export function HomeScreen() {
 			const found = entry.imdbId ? find(key) : undefined;
 			if (found && entry.imdbId) lastPlayed.set(entry.imdbId, found.item);
 		}
-		const resuming = new Set(resume.map(({ entry }) => (entry.imdbId && entry.season !== undefined ? watchKey({ imdbId: entry.imdbId, season: entry.season, episode: entry.episode }) : '')));
+		// Left part way on another device (Trakt): newer than anything played here, so it replaces this device's row.
+		const unread: string[] = [];
+		const away = (trakt ? remoteResumes(entries, trakt.playback(), (imdbId) => byId.has(imdbId), (ref) => watched.watchedAt(ref)) : []).flatMap((point) => {
+			const group = byId.get(point.imdbId)!;
+			const before = lastPlayed.get(point.imdbId);
+			if (point.season === undefined) {
+				const item = group.kind === 'movie' ? (before ?? group.items.find((copy) => copy.status === 'finished')) : undefined;
+				return item ? [{ point, item, pick: (files: LibraryFile[]) => mainFile(item, files) }] : [];
+			}
+			const copies = titles.episodesOf(group.items, point.imdbId).seasons.get(point.season)?.get(point.episode!);
+			if (!copies?.length) {
+				unread.push(point.imdbId);
+				return [];
+			}
+			const copy = pickCopy(copies, before);
+			return [{ point, item: copy.item, pick: (files: LibraryFile[]) => files.find((file) => file.id === copy.file.id) }];
+		});
+		const elsewhere = new Set(away.map(({ point }) => point.imdbId));
+		const resume = continueWatching(entries, snapshot.items, (ref) => watched.watchedAt(ref)).filter(({ entry }) => !entry.imdbId || !elsewhere.has(entry.imdbId));
+		const resuming = new Set([
+			...resume.map(({ entry }) => (entry.imdbId && entry.season !== undefined ? watchKey({ imdbId: entry.imdbId, season: entry.season, episode: entry.episode }) : '')),
+			...away.map(({ point }) => watchKey(point)),
+		]);
 		const next = [...new Set(marks.filter((mark) => mark.season).map((mark) => mark.imdbId))]
 			.map((imdbId) => {
 				const group = byId.get(imdbId);
@@ -79,8 +105,18 @@ export function HomeScreen() {
 			.sort((a, b) => b.after - a.after);
 		const recent = groups.slice(0, RECENT);
 		const states = titleStates(recent, (group) => titles.episodesOf(group.items, group.imdbId), marks, resumable(entries));
-		return { byId, resume, next, recent, states };
-	}, [groups, snapshot.items, titles, version, watchVersion, playVersion]);
+		return { byId, resume, away, unread, next, recent, states };
+	}, [groups, snapshot.items, titles, trakt, version, watchVersion, playVersion, traktVersion]);
+
+	// Finding another device's episode takes the show's file lists, which Real-Debrid does not list: read them once.
+	const reading = useRef(new Set<string>());
+	useEffect(() => {
+		for (const imdbId of board.unread) {
+			if (reading.current.has(imdbId)) continue;
+			reading.current.add(imdbId);
+			void titles.loadFiles(board.byId.get(imdbId)!.items).catch(() => undefined);
+		}
+	}, [board, titles]);
 
 	const run = (key: string, action: () => Promise<void>) => {
 		if (opening) return;
@@ -98,6 +134,7 @@ export function HomeScreen() {
 		const refs: WatchRef[] = !entry.imdbId ? [] : code ? rowRefs(entry.imdbId, { season: entry.season!, episode: entry.episode!, end: entry.end ?? entry.episode! }) : entry.kind === 'tv' ? [] : [{ imdbId: entry.imdbId }];
 		return {
 			key,
+			at: entry.updatedAt,
 			imdbId: entry.imdbId,
 			title,
 			detail: [code, `${Math.max(1, Math.round((entry.duration - entry.position) / 60_000))} min left`].filter(Boolean).join(' · '),
@@ -105,12 +142,40 @@ export function HomeScreen() {
 			progress: entry.position / entry.duration,
 			open: () => run(key, () => openCopy(item, (files) => files.find((file) => filePath(file.name, file.path) === path), true)),
 			actions: [
-				{ label: 'Remove from Continue Watching', onPress: () => void playback.forget(key) },
+				{
+					label: 'Remove from Continue Watching',
+					onPress: () => {
+						void playback.forget(key);
+						// Trakt has this pause too (it was scrobbled): gone there as well, or it would come back from another device.
+						if (entry.imdbId) trakt?.forget(entry.season !== undefined ? { imdbId: entry.imdbId, season: entry.season, episode: entry.episode } : { imdbId: entry.imdbId });
+					},
+				},
 				...(refs.length ? [{ label: 'Mark watched', onPress: () => void watched.set(refs, true) }] : []),
 				...(group ? [{ label: group.kind === 'tv' ? 'Go to show' : 'Go to film', onPress: () => goTo(group.imdbId) }] : []),
 			],
 		};
 	});
+	const awayCards: Card[] = board.away.map(({ point, item, pick }: { point: RemotePlayback; item: LibraryItem; pick: (files: LibraryFile[]) => LibraryFile | undefined }) => {
+		const group = board.byId.get(point.imdbId)!;
+		const code = point.season !== undefined ? episodeCode(point.season, point.episode!) : '';
+		const key = `trakt:${watchKey(point)}`;
+		return {
+			key,
+			at: point.pausedAt,
+			imdbId: point.imdbId,
+			title: group.title,
+			detail: [code, `${Math.round(point.progress)}% watched`].filter(Boolean).join(' · '),
+			label: `Resume ${group.title}${code ? ` ${code}` : ''}`,
+			progress: point.progress / 100,
+			open: () => run(key, () => openCopy(item, pick, true)),
+			actions: [
+				{ label: 'Remove from Continue Watching', onPress: () => trakt?.forget(point) },
+				{ label: 'Mark watched', onPress: () => void watched.set([point], true) },
+				{ label: group.kind === 'tv' ? 'Go to show' : 'Go to film', onPress: () => goTo(group.imdbId) },
+			],
+		};
+	});
+	const continueCards = [...resumeCards, ...awayCards].sort((a, b) => (b.at ?? 0) - (a.at ?? 0));
 	const nextCards: Card[] = board.next.map(({ imdbId, row, copy }) => {
 		const title = board.byId.get(imdbId)?.title ?? '';
 		const code = episodeCode(row.season, row.episode, row.end);
@@ -185,7 +250,7 @@ export function HomeScreen() {
 			<View style={{ paddingHorizontal: 12, paddingTop: 6 }}>
 				<Text style={{ color: theme.text, fontSize: 20, fontWeight: '700' }}>Home</Text>
 				<Text numberOfLines={2} style={{ color: titles.progress ? theme.accent : theme.muted, fontSize: 12 }}>
-					{titles.progress || (resumeCards.length || nextCards.length ? 'Press and hold a poster for more' : 'What you play shows up here to continue, and the next episode of each show')}
+					{titles.progress || (continueCards.length || nextCards.length ? 'Press and hold a poster for more' : 'What you play shows up here to continue, and the next episode of each show')}
 				</Text>
 			</View>
 			{startupError ? <ErrorBanner message={`Secure account storage: ${startupError}`} actionLabel="Retry secure account load" onAction={() => void retryStartup()} busy={!ready} /> : null}
@@ -198,7 +263,7 @@ export function HomeScreen() {
 				<View><EmptyState title={titles.progress || refreshing ? 'Naming your library…' : 'No films or shows named yet'} detail={titles.error || 'DMM names each release as a film or show; the rest stay in Library.'} />{openLibrary}</View>
 			) : (
 				<ScrollView ref={scroller} onScroll={(event) => (scrolled.current = event.nativeEvent.contentOffset.y)} scrollEventThrottle={100} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void refreshAll()} tintColor={theme.accent} />} contentContainerStyle={{ paddingBottom: 24 }}>
-					{shelf('Continue Watching', resumeCards)}
+					{shelf('Continue Watching', continueCards)}
 					{shelf('Next Up', nextCards)}
 					{shelf('Recently Added', recentCards)}
 				</ScrollView>

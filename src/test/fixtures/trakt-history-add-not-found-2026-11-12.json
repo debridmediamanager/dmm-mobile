@@ -1,0 +1,38 @@
+{
+	"status": 201,
+	"body": {
+		"added": {
+			"movies": 0,
+			"episodes": 0
+		},
+		"updated": {
+			"movies": 0,
+			"episodes": 0
+		},
+		"not_found": {
+			"movies": [],
+			"shows": [],
+			"seasons": [],
+			"episodes": [
+				{
+					"ids": {
+						"imdb": "tt0103558"
+					},
+					"seasons": [
+						{
+							"number": 1,
+							"episodes": [
+								{
+									"number": 4,
+									"watched_at": "2026-11-11T21:00:00.000Z"
+								}
+							]
+						}
+					]
+				}
+			],
+			"people": [],
+			"users": []
+		}
+	}
+}

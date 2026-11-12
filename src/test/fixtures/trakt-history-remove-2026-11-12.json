@@ -1,0 +1,36 @@
+{
+	"status": 200,
+	"body": {
+		"deleted": {
+			"movies": 1,
+			"episodes": 1
+		},
+		"not_found": {
+			"movies": [],
+			"shows": [],
+			"seasons": [],
+			"episodes": [
+				{
+					"ids": {
+						"imdb": "tt0103558"
+					},
+					"seasons": [
+						{
+							"number": 1,
+							"episodes": [
+								{
+									"number": 3
+								},
+								{
+									"number": 4
+								}
+							]
+						}
+					]
+				}
+			],
+			"people": [],
+			"users": []
+		}
+	}
+}

@@ -1,0 +1,61 @@
+{
+	"status": 200,
+	"body": [
+		{
+			"progress": 40,
+			"paused_at": "2026-11-12T14:44:20.000Z",
+			"id": 1898573124,
+			"type": "episode",
+			"episode": {
+				"ids": {
+					"imdb": null,
+					"plex": {
+						"guid": null
+					},
+					"tmdb": 1081297,
+					"tvdb": null,
+					"trakt": 11792122
+				},
+				"title": "Episode 3",
+				"number": 3,
+				"season": 1
+			},
+			"show": {
+				"ids": {
+					"imdb": "tt0103558",
+					"plex": {
+						"guid": null,
+						"slug": null
+					},
+					"slug": "sterne-des-sudens",
+					"tmdb": 63051,
+					"tvdb": null,
+					"trakt": 236787
+				},
+				"year": 1992,
+				"title": "Sterne des S\u00fcdens",
+				"aired_episodes": 42
+			}
+		},
+		{
+			"progress": 79.9,
+			"paused_at": "2026-11-12T14:43:05.000Z",
+			"id": 1898572537,
+			"type": "movie",
+			"movie": {
+				"ids": {
+					"imdb": "tt1254207",
+					"plex": {
+						"guid": "5d7768352e80df001ebde4c9",
+						"slug": "big-buck-bunny"
+					},
+					"slug": "big-buck-bunny-2008",
+					"tmdb": 10378,
+					"trakt": 5573
+				},
+				"year": 2008,
+				"title": "Big Buck Bunny"
+			}
+		}
+	]
+}

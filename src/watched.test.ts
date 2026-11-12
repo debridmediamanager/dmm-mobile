@@ -62,7 +62,8 @@ describe('watched from playback (rd6893c80a7036 "Sightings", testacct123 release
 		expect(store.list()).toEqual([]);
 		now = 2000;
 		await plays.record(tbKey, 42 * MIN, 45 * MIN, metaOf(tbSightings, '1x01', SIGHTINGS, sightingsShow));
-		await vi.waitFor(() => expect(store.list()).toEqual([{ imdbId: SIGHTINGS, season: 1, episode: 1, watchedAt: 2000 }]));
+		// Pending: waiting to be sent to Trakt (or settled by the player's scrobble).
+		await vi.waitFor(() => expect(store.list()).toEqual([{ imdbId: SIGHTINGS, season: 1, episode: 1, watchedAt: 2000, pending: true }]));
 		// Per title, not per copy: the Real-Debrid copy of the same episode is watched too.
 		expect(store.watchedAt({ imdbId: SIGHTINGS, season: 1, episode: 1 })).toBe(2000);
 	});
@@ -86,15 +87,22 @@ describe('watched from playback (rd6893c80a7036 "Sightings", testacct123 release
 });
 
 describe('WatchStore marks', () => {
-	it('marks and unmarks by hand and keeps Trakt-shaped entries across launches', async () => {
+	it('marks and unmarks by hand and keeps Trakt-shaped entries across launches, an unmark as a removal to send', async () => {
 		const file = memory();
 		const store = new WatchStore(file, () => 7000);
 		await store.set([{ imdbId: 'tt2285752' }, { imdbId: SIGHTINGS, season: 1, episode: 2 }], true);
 		await store.set([{ imdbId: SIGHTINGS, season: 1, episode: 2 }], false);
 		const relaunched = new WatchStore(file);
 		await relaunched.load();
-		expect(relaunched.list()).toEqual([{ imdbId: 'tt2285752', watchedAt: 7000 }]);
-		expect(JSON.parse(file.text()!)).toEqual({ tt2285752: { imdbId: 'tt2285752', watchedAt: 7000 } });
+		expect(relaunched.list()).toEqual([{ imdbId: 'tt2285752', watchedAt: 7000, pending: true }]);
+		expect(relaunched.watchedAt({ imdbId: SIGHTINGS, season: 1, episode: 2 })).toBeUndefined();
+		expect(JSON.parse(file.text()!)).toEqual({
+			tt2285752: { imdbId: 'tt2285752', watchedAt: 7000, pending: true },
+			[`${SIGHTINGS}:1:2`]: { imdbId: SIGHTINGS, season: 1, episode: 2, watchedAt: 7000, removed: true, pending: true },
+		});
+		// Unmarking what was never marked leaves nothing to send.
+		await store.set([{ imdbId: SIGHTINGS, season: 9, episode: 9 }], false);
+		expect(store.pending()).toHaveLength(2);
 	});
 
 	it('marks "up to here" through earlier seasons, and specials only among specials', () => {

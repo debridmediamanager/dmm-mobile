@@ -19,14 +19,15 @@ export const BROWSER_STATE_URL = 'https://debridmediamanager.com/api/browser-sta
 
 type Credentials = Partial<Record<ProviderId, StoredCredential>>;
 
-/** The keys each provider's login lives under on DMM web. */
-const PROVIDER_KEYS: Record<ProviderId, string[]> = {
+/** The keys each provider's login, and Trakt's, live under on DMM web. */
+const LOGIN_KEYS: Record<ProviderId | 'trakt', string[]> = {
 	rd: ['rd:clientId', 'rd:clientSecret', 'rd:refreshToken', 'rd:accessToken'],
 	ad: ['ad:apiKey'],
 	tb: ['tb:apiKey'],
 	pm: ['pm:accessToken', 'pm:apiKey'],
 	oc: ['oc:apiKey'],
 	dl: ['dl:accessToken', 'dl:refreshToken', 'dl:tokenExpiry', 'dl:apiKey'],
+	trakt: ['trakt:accessToken', 'trakt:refreshToken', 'trakt:userSlug'],
 };
 
 /** A device sign-in carries an expiry (RD, DL) or OAuth client data; a pasted key has neither. */
@@ -135,13 +136,13 @@ export function settingsFromState(state: BrowserState): AppSettings {
  * What to save: everything DMM web keeps that the app does not use rides along untouched,
  * the logins of providers removed in the app are dropped, and the app's own values win.
  */
-export function mergeState(remote: BrowserState, app: BrowserState, removed: Iterable<ProviderId>): BrowserState {
+export function mergeState(remote: BrowserState, app: BrowserState, removed: Iterable<ProviderId | 'trakt'>): BrowserState {
 	const merged = { ...remote };
-	for (const provider of removed) for (const key of PROVIDER_KEYS[provider]) delete merged[key];
+	for (const login of removed) for (const key of LOGIN_KEYS[login]) delete merged[key];
 	for (const key of Object.keys(app)) {
 		// An app login replaces the provider's every key, so a pasted key never sits beside stale OAuth data.
-		const provider = PROVIDERS.find((id) => key.startsWith(`${id}:`));
-		if (provider) for (const stale of PROVIDER_KEYS[provider]) if (!(stale in app)) delete merged[stale];
+		const login = (Object.keys(LOGIN_KEYS) as (keyof typeof LOGIN_KEYS)[]).find((id) => key.startsWith(`${id}:`));
+		if (login) for (const stale of LOGIN_KEYS[login]) if (!(stale in app)) delete merged[stale];
 	}
 	return { ...merged, ...app };
 }

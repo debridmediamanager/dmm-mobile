@@ -1,0 +1,23 @@
+{
+	"status": 201,
+	"body": {
+		"id": 1898572537,
+		"action": "pause",
+		"progress": 79.9,
+		"sharing": {},
+		"movie": {
+			"ids": {
+				"imdb": "tt1254207",
+				"plex": {
+					"guid": "5d7768352e80df001ebde4c9",
+					"slug": "big-buck-bunny"
+				},
+				"slug": "big-buck-bunny-2008",
+				"tmdb": 10378,
+				"trakt": 5573
+			},
+			"year": 2008,
+			"title": "Big Buck Bunny"
+		}
+	}
+}

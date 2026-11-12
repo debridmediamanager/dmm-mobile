@@ -9,6 +9,8 @@ import type { RootStackParamList } from '../navigation';
 import { FINISHED, playback, playbackKey } from '../playback';
 import { BUILT_IN, openFileLink, playersForPlatform, soundUnplayable } from '../player';
 import { episodeCode, findEpisode, nextEpisode, showEpisodes, type EpisodeCopy } from '../titles';
+import { refOf, type ScrobbleAction } from '../traktSync';
+import { otherDevice } from '../watched';
 import { isSafeExternalUrl } from '../validation';
 import { ActionSheet, Icon, Pressable, type IconName, type SheetAction } from '../ui';
 
@@ -43,7 +45,7 @@ const uniqueLabels = (names: string[]) => names.map((name, n) => (names.indexOf(
  */
 export function PlayerScreen({ route, navigation }: Props) {
 	const { url, item, fileId, resume } = route.params;
-	const { titles, snapshot, openFile } = useApp();
+	const { titles, snapshot, openFile, trakt } = useApp();
 	const file = item.files.find((entry) => entry.id === fileId) ?? { id: fileId, name: 'Video', size: 0 };
 	const key = playbackKey(item, file);
 	const named = titles.identification(item);
@@ -81,7 +83,13 @@ export function PlayerScreen({ route, navigation }: Props) {
 	const soundCheck = useRef<'no' | 'asked' | 'done'>('no');
 	/** Where playback starts; null while asking whether to resume. */
 	const [start, setStart] = useState<number | null>(null);
-	const [resumeAt, setResumeAt] = useState(0);
+	/** The resume offer: milliseconds, or a fraction of a file not played on this device yet (Trakt's progress from another device). */
+	const [resumeAt, setResumeAt] = useState<{ ms: number } | { fraction: number } | null>(null);
+	/** Where to jump once the duration is known, for a fraction. */
+	const jumpTo = useRef<number | null>(null);
+	/** What Trakt was told last: a stop is final, a start is repeated only after a seek. */
+	const scrobbled = useRef<ScrobbleAction | null>(null);
+	const seekTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const [attempt, setAttempt] = useState(0);
 	const [time, setTime] = useState(0);
 	const [duration, setDuration] = useState(0);
@@ -102,13 +110,24 @@ export function PlayerScreen({ route, navigation }: Props) {
 		mounted.current = true;
 		void playback.load().then(() => {
 			if (!mounted.current) return;
-			const at = playback.resumeAt(key);
+			// Another device's newer pause (through Trakt) wins over this device's own resume point.
+			const ref = refOf(meta);
+			const local = playback.get(key);
+			const remote = ref ? trakt?.resumeFor(ref) : undefined;
+			const fraction = remote && otherDevice(remote, local) ? remote.progress / 100 : 0;
+			const at = fraction && local?.duration ? Math.round(fraction * local.duration) : fraction ? 0 : playback.resumeAt(key);
+			const offer = at ? { ms: at } : fraction ? { fraction } : null;
 			// Continue Watching resumes without asking.
-			if (at && !resume) setResumeAt(at);
-			else setStart(at);
+			if (offer && !resume) setResumeAt(offer);
+			else begin(offer);
 		});
 		return () => void (mounted.current = false);
+		// Decided once, as the player opens.
 	}, [key, resume]);
+	const begin = (offer: { ms: number } | { fraction: number } | null) => {
+		if (offer && 'fraction' in offer) jumpTo.current = offer.fraction;
+		setStart(offer && 'ms' in offer ? offer.ms : 0);
+	};
 
 	// The screen stays on while a video plays, not while one sits paused.
 	useEffect(() => {
@@ -121,14 +140,33 @@ export function PlayerScreen({ route, navigation }: Props) {
 		const { time: at, duration: length } = position.current;
 		if (at > 0 && length > 0) void playback.record(key, at, length, meta);
 	}, [key, meta]);
-	// On leaving the player, and when the app goes to the background (the player pauses itself).
+	/** Tells Trakt (when connected) what playback does; past FINISHED the first stop marks it watched there. */
+	const scrobble = useCallback(
+		(action: ScrobbleAction, again = false) => {
+			const { time: at, duration: length } = position.current;
+			if (!length || scrobbled.current === 'stop' || (scrobbled.current === action && !again)) return;
+			scrobbled.current = action;
+			trakt?.scrobble({ ...meta, provider: item.provider }, action, (at / length) * 100);
+		},
+		[item.provider, meta, trakt]
+	);
+	// On leaving the player, and when the app goes to the background (the player pauses itself). Through a ref:
+	// the episode's name can arrive after opening, and a re-run would tell Trakt it stopped.
+	const leave = useRef({ save, scrobble });
+	leave.current = { save, scrobble };
 	useEffect(() => {
-		const subscription = AppState.addEventListener('change', (state) => state !== 'active' && save());
+		const subscription = AppState.addEventListener('change', (state) => {
+			if (state === 'active') return;
+			leave.current.save();
+			leave.current.scrobble('pause');
+		});
 		return () => {
 			subscription.remove();
-			save();
+			leave.current.save();
+			leave.current.scrobble('stop');
 		};
-	}, [save]);
+	}, []);
+	useEffect(() => () => void (seekTimer.current && clearTimeout(seekTimer.current)), []);
 
 	const show = useCallback((mode: 'shown' | 'peek' = 'shown') => {
 		setControls((was) => (was === 'shown' ? 'shown' : mode));
@@ -146,7 +184,10 @@ export function PlayerScreen({ route, navigation }: Props) {
 		position.current.time = target;
 		setTime(target);
 		player.current?.seek(target / 1000);
-	}, []);
+		// Trakt's watching status ends when the runtime it expects runs out: tell it where playback is now.
+		if (seekTimer.current) clearTimeout(seekTimer.current);
+		seekTimer.current = setTimeout(() => scrobbled.current === 'start' && scrobble('start', true), 2000);
+	}, [scrobble]);
 	const skip = useCallback((ms: number) => seekTo(position.current.time + ms), [seekTo]);
 	useEffect(() => {
 		if (paused || error || countdown !== null || start === null) return undefined;
@@ -228,6 +269,7 @@ export function PlayerScreen({ route, navigation }: Props) {
 		}
 		position.current.time = length;
 		save();
+		scrobble('stop');
 		if (next) setCountdown(NEXT_IN_S);
 		else navigation.goBack();
 	};
@@ -309,6 +351,19 @@ export function PlayerScreen({ route, navigation }: Props) {
 							position.current.duration = length * 1000;
 							setDuration(length * 1000);
 						}
+						if (jumpTo.current !== null && length > 0) {
+							position.current.time = jumpTo.current * length * 1000;
+							jumpTo.current = null;
+							return player.current?.seek(position.current.time / 1000);
+						}
+						// The clock moving is playback started: Trakt hears it once there is a duration to measure progress by.
+						if (scrobbled.current === null) scrobble('start');
+						// Watched now: the save marks it here first, so Trakt's answer settles that mark rather than a later one sending it again.
+						if (length > 0 && currentTime >= length * FINISHED && scrobbled.current !== 'stop') {
+							position.current.savedAt = Date.now();
+							save();
+							scrobble('stop');
+						}
 						// Whole seconds: the clock shows no more.
 						if (scrubbing.current === null) setTime(Math.floor(currentTime) * 1000);
 						const now = Date.now();
@@ -321,12 +376,16 @@ export function PlayerScreen({ route, navigation }: Props) {
 					onPlaying={() => {
 						setPaused(false);
 						setBuffering(false);
+						if (scrobbled.current === 'pause') scrobble('start');
 						if (soundCheck.current === 'no') {
 							soundCheck.current = 'asked';
 							player.current?.getTracks();
 						}
 					}}
-					onPaused={() => setPaused(true)}
+					onPaused={() => {
+						setPaused(true);
+						scrobble('pause');
+					}}
 					onEnd={ended}
 					onTracks={(listed) => {
 						setTracks(listed);
@@ -408,11 +467,11 @@ export function PlayerScreen({ route, navigation }: Props) {
 				</View>
 			) : null}
 
-			{start === null && resumeAt > 0 ? (
+			{start === null && resumeAt ? (
 				<View style={local.dialog}>
 					<Text style={local.dialogTitle} numberOfLines={2}>{title}</Text>
-					{textButton(`Resume from ${clock(resumeAt)}`, () => setStart(resumeAt), true)}
-					{textButton('Start over', () => setStart(0))}
+					{textButton(`Resume from ${'ms' in resumeAt ? clock(resumeAt.ms) : `${Math.round(resumeAt.fraction * 100)}%`}`, () => begin(resumeAt), true)}
+					{textButton('Start over', () => begin(null))}
 				</View>
 			) : null}
 

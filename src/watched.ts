@@ -1,12 +1,12 @@
 import type { LibraryItem } from './model';
-import { documentStore, MIN_RESUME_MS, playback, type PlaybackEntry, type PlaybackEvent } from './playback';
+import { documentStore, FINISHED, MIN_RESUME_MS, playback, type PlaybackEntry, type PlaybackEvent } from './playback';
 import type { CacheStore } from './titleIndex';
 import { pickCopy, type EpisodeCopy, type ShowEpisodes, type TitleGroup } from './titles';
 
 /**
  * What has been watched, per title rather than per copy: a film by its IMDb id, an episode by its
- * show's IMDb id, season and number, so any release or provider of it counts. Kept on this device
- * only; each entry is a Trakt history item (ids and when), ready to sync.
+ * show's IMDb id, season and number, so any release or provider of it counts. Each entry is a Trakt
+ * history item (ids and when); with Trakt connected it syncs both ways (src/traktSync.ts).
  */
 export interface WatchRef {
 	imdbId: string;
@@ -16,6 +16,13 @@ export interface WatchRef {
 
 export interface WatchedEntry extends WatchRef {
 	watchedAt: number;
+	/** Unwatched here: kept, as a removal, until Trakt has it, so a history import cannot bring it back. */
+	removed?: true;
+	/** Changed here and not on Trakt yet. */
+	pending?: true;
+	/** Trakt listed it in an import: gone from a later one, it was unwatched there. One Trakt never listed (it
+	 * does not know that film or episode) stays watched here only. */
+	onTrakt?: true;
 }
 
 export const watchKey = ({ imdbId, season, episode }: WatchRef): string => (season === undefined ? imdbId : `${imdbId}:${season}:${episode}`);
@@ -64,23 +71,78 @@ export class WatchStore {
 	getVersion = (): number => this.version;
 
 	watchedAt(ref: WatchRef): number | undefined {
-		return this.entries[watchKey(ref)]?.watchedAt;
+		const entry = this.entries[watchKey(ref)];
+		return entry && !entry.removed ? entry.watchedAt : undefined;
 	}
 
+	/** What is watched. */
 	list(): WatchedEntry[] {
-		return Object.values(this.entries);
+		return Object.values(this.entries).filter((entry) => !entry.removed);
 	}
 
-	/** Marks each ref watched (at `at`) or not, and saves. ponytail: unwatching deletes; Trakt sync will need it kept as a removal. */
+	/** Changes made here that Trakt does not have yet: marks and removals. */
+	pending(): WatchedEntry[] {
+		return Object.values(this.entries).filter((entry) => entry.pending);
+	}
+
+	private async save(): Promise<void> {
+		this.changed();
+		await this.store.write(JSON.stringify(this.entries)).catch(() => undefined);
+	}
+
+	/**
+	 * Marks each ref watched (at `at`) or not, and saves; each change waits to be sent to Trakt. Marking
+	 * what is watched already only moves its time: Trakt would count another play (a whole season marked
+	 * again), and a rewatch reaches Trakt through the player's scrobble.
+	 */
 	async set(refs: readonly WatchRef[], watched: boolean, at = this.now()): Promise<void> {
 		await this.load();
 		for (const { imdbId, season, episode } of refs) {
 			const ref = season === undefined ? { imdbId } : { imdbId, season, episode };
-			if (watched) this.entries[watchKey(ref)] = { ...ref, watchedAt: at };
-			else delete this.entries[watchKey(ref)];
+			const key = watchKey(ref);
+			const was = this.entries[key];
+			if (watched) this.entries[key] = was && !was.removed && !was.pending ? { ...was, watchedAt: at } : { ...ref, watchedAt: at, pending: true };
+			else if (was) this.entries[key] = { ...ref, watchedAt: at, removed: true, pending: true };
 		}
-		this.changed();
-		await this.store.write(JSON.stringify(this.entries)).catch(() => undefined);
+		await this.save();
+	}
+
+	/**
+	 * Trakt has these changes now. Each one is settled only as it was sent (same time, same removal):
+	 * one changed again meanwhile is still to send. Without a time, a mark of the ref is settled.
+	 * `onTrakt`: Trakt took every one of them, so a later import that lacks one means it was unwatched there.
+	 */
+	async settle(sent: readonly (WatchRef & { watchedAt?: number; removed?: true })[], onTrakt = false): Promise<void> {
+		await this.load();
+		for (const change of sent) {
+			const key = watchKey(change);
+			const entry = this.entries[key];
+			if (!entry?.pending) continue;
+			if (change.watchedAt === undefined ? entry.removed : entry.watchedAt !== change.watchedAt || Boolean(entry.removed) !== Boolean(change.removed)) continue;
+			const { pending: _sent, ...settled } = entry;
+			if (entry.removed) delete this.entries[key];
+			else this.entries[key] = onTrakt ? { ...settled, onTrakt: true } : settled;
+		}
+		await this.save();
+	}
+
+	/**
+	 * Takes Trakt's whole watched history. A change made here and not sent yet wins over it; a mark
+	 * Trakt listed before and lacks now was unwatched there. The first time, the two histories join
+	 * instead: what only this device had waits to go to Trakt, and nothing on Trakt is removed for a
+	 * removal made here before. ponytail: one JSON file; a history of ~50,000 episodes wants an index.
+	 */
+	async merge(trakt: ReadonlyMap<string, WatchedEntry>, first: boolean): Promise<void> {
+		await this.load();
+		const next: Record<string, WatchedEntry> = {};
+		for (const [key, entry] of trakt) next[key] = { ...entry, onTrakt: true };
+		for (const [key, entry] of Object.entries(this.entries)) {
+			if (first) {
+				if (!entry.removed && !trakt.has(key)) next[key] = { ...entry, pending: true };
+			} else if (entry.pending || (!entry.onTrakt && !trakt.has(key))) next[key] = entry;
+		}
+		this.entries = next;
+		await this.save();
 	}
 
 	/** Records what each playback save finishes, at the time it was saved. */
@@ -241,4 +303,42 @@ export function continueWatching(entries: readonly [string, PlaybackEntry][], it
 		if (found) rows.push({ key, entry, ...found });
 	}
 	return rows;
+}
+
+/** A resume point Trakt holds: a pause on any device signed in to the same Trakt account. */
+export interface RemotePlayback extends WatchRef {
+	/** 0–100, as Trakt keeps it. */
+	progress: number;
+	pausedAt: number;
+	/** Trakt's playback id, to remove it. */
+	id: number;
+}
+
+/** Trakt's clock and this device's may disagree by this much. */
+const CLOCK_SLACK_MS = 60_000;
+
+/**
+ * Whether Trakt's resume point is another device's and newer than `local`, this device's latest save of
+ * the title. This device's own pause comes back from Trakt with the same progress and is not offered twice.
+ */
+export function otherDevice(remote: RemotePlayback, local: PlaybackEntry | undefined): boolean {
+	if (remote.progress < 1 || remote.progress >= FINISHED * 100) return false;
+	if (!local) return true;
+	const ours = local.finished ? 100 : local.duration ? (local.position / local.duration) * 100 : 0;
+	return Math.abs(ours - remote.progress) >= 1 && remote.pausedAt > local.updatedAt + CLOCK_SLACK_MS;
+}
+
+/**
+ * Continue Watching's rows from other devices: per title the newest Trakt resume point, only for titles the
+ * library holds, only where it is newer than this device's own playback of the title and not watched since.
+ */
+export function remoteResumes(entries: readonly [string, PlaybackEntry][], remote: readonly RemotePlayback[], held: (imdbId: string) => boolean, watchedAt: (ref: WatchRef) => number | undefined): RemotePlayback[] {
+	const latest = new Map<string, PlaybackEntry>();
+	for (const [, entry] of entries) if (entry.imdbId && (latest.get(entry.imdbId)?.updatedAt ?? -1) < entry.updatedAt) latest.set(entry.imdbId, entry);
+	const best = new Map<string, RemotePlayback>();
+	for (const item of remote) {
+		if (!held(item.imdbId) || !otherDevice(item, latest.get(item.imdbId)) || (watchedAt(item) ?? -1) >= item.pausedAt) continue;
+		if ((best.get(item.imdbId)?.pausedAt ?? -1) < item.pausedAt) best.set(item.imdbId, item);
+	}
+	return [...best.values()].sort((a, b) => b.pausedAt - a.pausedAt);
 }

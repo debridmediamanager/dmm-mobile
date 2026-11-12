@@ -1,0 +1,39 @@
+{
+	"status": 201,
+	"body": {
+		"id": 14627496729,
+		"action": "scrobble",
+		"progress": 95,
+		"sharing": {},
+		"episode": {
+			"ids": {
+				"imdb": null,
+				"plex": {
+					"guid": null
+				},
+				"tmdb": 1081296,
+				"tvdb": null,
+				"trakt": 11792121
+			},
+			"title": "Episode 2",
+			"number": 2,
+			"season": 1
+		},
+		"show": {
+			"ids": {
+				"imdb": "tt0103558",
+				"plex": {
+					"guid": null,
+					"slug": null
+				},
+				"slug": "sterne-des-sudens",
+				"tmdb": 63051,
+				"tvdb": null,
+				"trakt": 236787
+			},
+			"year": 1992,
+			"title": "Sterne des S\u00fcdens",
+			"aired_episodes": 42
+		}
+	}
+}

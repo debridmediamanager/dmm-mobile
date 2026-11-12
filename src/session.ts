@@ -25,7 +25,8 @@ import type { CredentialStorage } from './storage';
 import type { AddEntry } from './share';
 import { browserStateApi, credentialsFromState, identitiesFor, mergeState, settingsFromState, stateFromApp, type BrowserState, type BrowserStateApi, type SyncIdentity } from './sync';
 import { loadSettings, saveSetting, type SettingName } from './settings';
-import { withDemo } from './demo';
+import { isDemoToken, withDemo } from './demo';
+import { TraktAccount } from './trakt';
 import { runBulk, type BulkResult } from './core';
 
 export type { BulkResult };
@@ -121,6 +122,8 @@ export class LibrarySession {
 	private readonly storageTails: Partial<Record<ProviderId, Promise<void>>> = {};
 
 	private readonly sync: BrowserStateApi | null;
+	/** The Trakt login, saved across devices with the others (none where nothing syncs: tests, the QA build). */
+	readonly trakt: TraktAccount | null;
 	/** Providers removed in the app since it started: their logins leave the saved state. */
 	private readonly removedLogins = new Set<ProviderId>();
 	private pushTimer: ReturnType<typeof setTimeout> | null = null;
@@ -130,6 +133,13 @@ export class LibrarySession {
 		this.storage = storage;
 		this.api = api;
 		this.sync = sync;
+		// Saved at once after a renewal: Trakt's refresh tokens work once, and another device may be about to renew.
+		this.trakt = sync ? new TraktAccount({ pull: () => this.pull(), changed: () => this.schedulePush(0) }) : null;
+	}
+
+	/** The demo key's library never reaches DMM or Trakt. */
+	isDemo(provider: ProviderId): boolean {
+		return isDemoToken(this.tokens[provider]);
 	}
 
 	subscribe(listener: () => void): () => void {
@@ -259,6 +269,8 @@ export class LibrarySession {
 		this.failures.delete(provider);
 		this.loading.delete(provider);
 		this.notify();
+		// Signed out of everything: whoever signs in next must not inherit this Trakt login.
+		if (!Object.values(this.tokens).some(Boolean)) void this.trakt?.forget();
 		try {
 			await this.enqueueStorage(provider, () => this.storage.remove(provider));
 		} catch (error) {
@@ -292,6 +304,7 @@ export class LibrarySession {
 	 * a restore after a sign-in, or a TV linked from a phone (DMM's /tv pairing). Failing logins are skipped.
 	 */
 	async adoptState(state: BrowserState): Promise<ProviderId[]> {
+		await this.trakt?.adopt(state);
 		const restored = credentialsFromState(state);
 		for (const other of Object.keys(restored) as ProviderId[]) this.removedLogins.delete(other);
 		await Promise.all(
@@ -343,15 +356,25 @@ export class LibrarySession {
 		return stateFromApp(this.credentials, await loadSettings());
 	}
 
+	/** DMM's saved state behind this device's logins, read fresh; null when nothing syncs or nothing is saved. */
+	private async pull(): Promise<BrowserState | null> {
+		const [identity] = this.titleIdentities();
+		return identity && this.sync ? this.sync.restore(identity) : null;
+	}
+
 	private async push(): Promise<void> {
 		const identities = identitiesFor(this.credentials);
 		if (!this.sync || identities.length === 0) return;
 		// Read fresh each time: another device may have saved since, and a cached copy would erase its changes.
 		const remote = (await this.sync.restore(identities[0])) ?? {};
-		const state = mergeState(remote, stateFromApp(this.credentials, await loadSettings()), this.removedLogins);
+		// A Trakt login renewed or signed in elsewhere since is newer than ours: ours may be dead already.
+		await this.trakt?.adopt(remote);
+		const removed = this.trakt?.removed ? [...this.removedLogins, 'trakt' as const] : this.removedLogins;
+		const state = mergeState(remote, { ...stateFromApp(this.credentials, await loadSettings()), ...this.trakt?.state() }, removed);
 		await this.sync.save(identities, state);
 		// Those logins are gone from DMM now; a later save must not erase them if another device adds them back.
 		this.removedLogins.clear();
+		if (this.trakt) this.trakt.removed = false;
 	}
 
 	async refreshProvider(provider: ProviderId): Promise<void> {

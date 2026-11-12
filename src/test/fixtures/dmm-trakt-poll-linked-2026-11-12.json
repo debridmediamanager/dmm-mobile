@@ -1,0 +1,14 @@
+{
+	"status": 200,
+	"body": {
+		"status": "linked",
+		"accessToken": "ACCESSTOKEN",
+		"refreshToken": "REFRESHTOKEN",
+		"expiresAt": "2026-11-19T14:42:15.027Z",
+		"clientId": "8a7455d06804b07fa25e27454706c6f2107b6fe5ed2ad805eff3b456a17e79f0",
+		"user": {
+			"name": "dmm_mobile_test",
+			"slug": "dmm-mobile-test"
+		}
+	}
+}

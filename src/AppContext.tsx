@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { AppState } from 'react-native';
 import { File, Paths } from 'expo-file-system';
 import type { StoredCredential } from './auth';
 import type { LibraryFile, LibraryItem, ProviderId } from './model';
@@ -8,6 +9,8 @@ import type { AddOptions, PickedFile } from './providerApi';
 import type { AddEntry } from './share';
 import type { BrowserState } from './sync';
 import { TitleIndex, type CacheStore } from './titleIndex';
+import { TraktSync } from './traktSync';
+import { watched } from './watched';
 
 /** The title index's memory between launches; the OS may clear it, which only costs a slower load. */
 const titleCache = (): File => new File(Paths.cache, 'titles-v1.json');
@@ -47,6 +50,10 @@ interface AppContextValue {
 	browserState(): Promise<BrowserState>;
 	/** The library by title (Library's Titles view and the title page). */
 	titles: TitleIndex;
+	/** Trakt (scrobbling, watched history, resume points); null where nothing syncs (the QA build). */
+	trakt: TraktSync | null;
+	/** Whether a real provider login is connected: the demo key alone never reaches Trakt. */
+	traktAvailable: boolean;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -63,6 +70,7 @@ export function AppProvider({ children, session: injectedSession }: { children: 
 		void index.load();
 		return index;
 	}, [session]);
+	const trakt = useMemo(() => (session.trakt ? new TraktSync(session.trakt, watched, (provider) => session.isDemo(provider)) : null), [session]);
 	// Named once every provider has listed, like DMM web's library; the index asks only about releases it has not seen.
 	const listing = Object.values(snapshot.loading).some(Boolean);
 	useEffect(() => {
@@ -75,6 +83,8 @@ export function AppProvider({ children, session: injectedSession }: { children: 
 			await session.loadCredentials();
 			setReady(true);
 			sync();
+			// DMM web's Trakt login, when this device has none (or an older one), is used as it is; reading it starts a sync.
+			void session.trakt?.adoptSaved();
 			await session.refreshAll();
 		} catch (error) {
 			setStartupError(error instanceof Error ? error.message : 'Could not read secure account storage.');
@@ -83,7 +93,13 @@ export function AppProvider({ children, session: injectedSession }: { children: 
 			sync();
 			setReady(true);
 		}
-	}, [session, sync]);
+	}, [session, sync, trakt]);
+
+	// Coming back to the app reads what other devices sent to Trakt meanwhile (at most once a minute).
+	useEffect(() => {
+		const subscription = AppState.addEventListener('change', (state) => state === 'active' && void trakt?.sync());
+		return () => subscription.remove();
+	}, [trakt]);
 
 	useEffect(() => {
 		const unsubscribe = session.subscribe(sync);
@@ -116,7 +132,10 @@ export function AppProvider({ children, session: injectedSession }: { children: 
 		[run, session]
 	);
 	const disconnect = useCallback((provider: ProviderId) => run(() => session.disconnect(provider)), [run, session]);
-	const refreshAll = useCallback(() => run(() => session.refreshAll()), [run, session]);
+	const refreshAll = useCallback(() => run(async () => {
+		void trakt?.sync(true);
+		await session.refreshAll();
+	}), [run, session, trakt]);
 	const detail = useCallback((provider: ProviderId, itemId: string) => run(() => session.detail(provider, itemId)), [run, session]);
 	const openFile = useCallback((provider: ProviderId, item: LibraryItem, fileId: string) => session.openFile(provider, item, fileId), [session]);
 	const add = useCallback((provider: ProviderId, magnet: string) => run(() => session.add(provider, magnet)), [run, session]);
@@ -156,8 +175,10 @@ export function AppProvider({ children, session: injectedSession }: { children: 
 			linkState,
 			browserState,
 			titles,
+			trakt,
+			traktAvailable: session.titleIdentities().length > 0,
 		}),
-		[titles, add, addFile, addMany, browserState, bulk, checkRdUncached, linkState, reinsert, bootstrap, connect, detail, disconnect, openFile, ready, refreshAll, remove, selectFiles, snapshot, startupError]
+		[titles, trakt, add, addFile, addMany, browserState, bulk, checkRdUncached, linkState, reinsert, bootstrap, connect, detail, disconnect, openFile, ready, refreshAll, remove, selectFiles, snapshot, startupError]
 	);
 
 	return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
