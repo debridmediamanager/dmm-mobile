@@ -1,7 +1,7 @@
 import type { TrackerList } from './lists';
 import { documentStore } from './playback';
 import type { CacheStore } from './titleIndex';
-import type { EpisodeCopy, ShowEpisodes } from './titles';
+import { episodeCode, type EpisodeCopy, type ShowEpisodes } from './titles';
 import { TRAKT_API, TRAKT_CLIENT_ID } from './trakt';
 import { DMM_ORIGIN } from './tvLink';
 import type { Tracker } from './watched';
@@ -124,6 +124,41 @@ export function yourShows(library: Iterable<{ imdbId: string; title: string; kin
 		}
 	}
 	return [...shows.values()];
+}
+
+/** A local notification for an episode: when it airs, or 9:00 that day when only the date is known. */
+export interface Alert {
+	id: string;
+	at: number;
+	title: string;
+	body: string;
+}
+/** iOS keeps 64 pending notifications per app; the furthest wait for a later refresh. */
+export const ALERT_LIMIT = 60;
+const DATE_ONLY_ALERT_HOUR = 9;
+
+export function alertsFor(episodes: readonly CalendarEpisode[], now: number): Alert[] {
+	return episodes
+		.map((ep) => ({
+			id: `episode:${keyOf(ep)}`,
+			at: ep.timed ? ep.airsAt : ep.airsAt + DATE_ONLY_ALERT_HOUR * HOUR,
+			title: ep.show,
+			body: `${episodeCode(ep.season, ep.episode)}${ep.title ? ` "${ep.title}"` : ''} ${ep.timed ? 'is out now' : 'comes out today'}`,
+		}))
+		.filter((alert) => alert.at > now)
+		.sort((a, b) => a.at - b.at)
+		.slice(0, ALERT_LIMIT);
+}
+
+/** What to cancel and what to schedule so the scheduled alerts become `wanted`; an unchanged one is left alone. */
+export function alertDiff(scheduled: readonly Alert[], wanted: readonly Alert[]): { cancel: string[]; add: Alert[] } {
+	const same = (a: Alert, b: Alert) => a.at === b.at && a.title === b.title && a.body === b.body;
+	const want = new Map(wanted.map((alert) => [alert.id, alert]));
+	const have = new Map(scheduled.map((alert) => [alert.id, alert]));
+	return {
+		cancel: scheduled.filter((alert) => !want.has(alert.id) || !same(alert, want.get(alert.id)!)).map((alert) => alert.id),
+		add: wanted.filter((alert) => !have.has(alert.id) || !same(alert, have.get(alert.id)!)),
+	};
 }
 
 export type GetJson = (url: string, headers?: Record<string, string>) => Promise<any>;

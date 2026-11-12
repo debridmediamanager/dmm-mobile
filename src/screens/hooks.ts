@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useSyncExternalStore } from 'r
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useApp } from '../AppContext';
+import { syncAlerts } from '../alerts';
 import { calendar, yourShows, type CalendarEpisode } from '../calendar';
 import type { TrackerList } from '../lists';
 import type { LibraryFile, LibraryItem } from '../model';
@@ -71,14 +72,17 @@ export function useTrackerLists(): { tracker: TrackerSync; lists: TrackerList[] 
 
 /**
  * Your shows' episodes from 7 days back to 30 ahead (src/calendar.ts). Whatever is due is read again whenever the
- * screen using this comes into view (`refresh` reads now: pull to refresh). Trakt's calendar only with a real
- * provider login, never with the demo key alone.
+ * screen using this comes into view (`refresh` reads now: pull to refresh), and each new answer reschedules the
+ * new-episode alerts. Trakt's calendar only with a real provider login, never with the demo key alone.
  */
 export function useCalendar(): { episodes: CalendarEpisode[]; refresh(): Promise<void> } {
-	const { trakt, trackersAvailable } = useApp();
+	const { trakt, trackersAvailable, ready, snapshot, titles } = useApp();
 	const library = useLibraryTitles();
 	const trackerLists = useTrackerLists();
 	const version = useSyncExternalStore(calendar.subscribe, calendar.getVersion);
+	// Alerts follow the calendar once the library is listed and named (a half-known list would cancel the rest's alerts)
+	// and the calendar's read is done (a first look at a big library answers show by show).
+	const settled = ready && !Object.values(snapshot.loading).some(Boolean) && !titles.progress && !calendar.progress;
 	const shows = yourShows(library.values(), trackerLists);
 	const latest = useRef(shows);
 	latest.current = shows;
@@ -95,5 +99,6 @@ export function useCalendar(): { episodes: CalendarEpisode[]; refresh(): Promise
 	useFocusEffect(useCallback(() => void read(false).catch(() => undefined), [read, key, traktOn]));
 	// `version` and `key` are the store's and the list's change signals.
 	const episodes = useMemo(() => calendar.episodes(latest.current, traktOn), [version, key, traktOn]);
+	useEffect(() => void (settled && syncAlerts(episodes).catch(() => undefined)), [episodes, settled]);
 	return { episodes, refresh: useCallback(() => read(true).catch(() => undefined), [read]) };
 }

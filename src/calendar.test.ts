@@ -4,7 +4,7 @@ vi.mock('react-native', () => ({ Platform: { OS: 'android' } }));
 vi.mock('expo-secure-store', () => ({ getItemAsync: vi.fn(async () => null), setItemAsync: vi.fn(), deleteItemAsync: vi.fn() }));
 vi.mock('expo-file-system', () => ({ File: class {}, Paths: {} }));
 
-import { airTime, byDay, calendarOf, CalendarStore, dayLabel, dayStart, fromShowInfo, fromTraktCalendar, fromTraktSeason, heldCopies, yourShows, type CalendarEpisode, type GetJson } from './calendar';
+import { alertDiff, alertsFor, ALERT_LIMIT, airTime, byDay, calendarOf, CalendarStore, dayLabel, dayStart, fromShowInfo, fromTraktCalendar, fromTraktSeason, heldCopies, yourShows, type CalendarEpisode, type GetJson } from './calendar';
 import type { TrackerList } from './lists';
 import type { LibraryItem } from './model';
 import { showEpisodes } from './titles';
@@ -155,6 +155,36 @@ describe('your shows and the library', () => {
 		const trakt: TrackerList[] = [{ id: 'watchlist', name: 'Watchlist', kind: 'watchlist', items: [{ imdbId: STICK, kind: 'tv', title: 'Stick' }] }];
 		const library = [{ ...JOJO, kind: 'tv' as const }, { imdbId: 'tt1254207', title: 'Big Buck Bunny', kind: 'movie' as const }];
 		expect(yourShows(library, [{ tracker: { api: { id: 'trakt' } }, lists: trakt }, { tracker: { api: { id: 'simkl' } }, lists: simkl }])).toEqual([JOJO, ABBOTT, TULSA]);
+	});
+});
+
+describe('alerts', () => {
+	const episodes = calendarOf([fromTraktCalendar(traktCalendar.body)], NOW);
+
+	it('one per episode still to air, at its air time', () => {
+		const alerts = alertsFor(episodes, NOW);
+		expect(alerts).toHaveLength(8);
+		expect(alerts[0]).toEqual({ id: `episode:${JOJO.imdbId}:6:9`, at: Date.parse('2026-11-13T07:00:00Z'), title: JOJO.title, body: 'S06E09 "Frightening Monsters (1)" is out now' });
+		expect(alertsFor(episodes, Date.parse('2026-11-13T07:00:00Z'))[0].id).toBe(`episode:${STICK}:2:4`);
+	});
+
+	it('at 9:00 that day when only the date is known, and never more than iOS keeps', () => {
+		const dated = { ...episodes[3], timed: false, airsAt: new Date(2026, 10, 18).getTime() };
+		expect(alertsFor([dated], NOW)[0]).toMatchObject({ at: new Date(2026, 10, 18, 9).getTime(), body: 'S02E04 "The Boog" comes out today' });
+		const many = Array.from({ length: 80 }, (_, n) => ({ ...episodes[3], episode: n + 1, airsAt: NOW + (n + 1) * HOUR }));
+		expect(alertsFor(many, NOW)).toHaveLength(ALERT_LIMIT);
+		expect(alertsFor(many, NOW).at(-1)!.at).toBe(NOW + ALERT_LIMIT * HOUR);
+	});
+
+	it('a refresh cancels what left or moved and schedules only what is new or moved', () => {
+		const before = alertsFor(episodes, NOW);
+		const moved = { ...episodes.find((ep) => ep.imdbId === STICK && ep.episode === 4)!, airsAt: Date.parse('2026-11-18T03:00:00Z') };
+		const after = alertsFor([...episodes.filter((ep) => !(ep.imdbId === STICK && ep.episode === 4) && !(ep.imdbId === JOJO.imdbId && ep.episode === 12)), moved], NOW);
+		const diff = alertDiff(before, after);
+		expect(diff.cancel.sort()).toEqual([`episode:${JOJO.imdbId}:6:12`, `episode:${STICK}:2:4`]);
+		expect(diff.add.map((alert) => [alert.id, new Date(alert.at).toISOString()])).toEqual([[`episode:${STICK}:2:4`, '2026-11-18T03:00:00.000Z']]);
+		expect(alertDiff(after, after)).toEqual({ cancel: [], add: [] });
+		expect(alertDiff([], after).add).toHaveLength(after.length);
 	});
 });
 

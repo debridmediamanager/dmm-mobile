@@ -1,7 +1,8 @@
 import { Fragment, useEffect, useRef, useState, useSyncExternalStore } from 'react';
-import { ActivityIndicator, Alert, Linking, Platform, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, AppState, Linking, Platform, ScrollView, Switch, Text, View } from 'react-native';
 import * as Updates from 'expo-updates';
 import { useApp } from '../AppContext';
+import { alertsAllowed, alertsOn, alertsSupported, setAlerts } from '../alerts';
 import { PROVIDERS, PROVIDER_META, type ProviderId } from '../model';
 import { playersForPlatform } from '../player';
 import { loadSettings, onSettingsChange, saveSetting, type AppSettings, type SettingName } from '../settings';
@@ -142,6 +143,31 @@ export function SettingsScreen() {
 		load();
 		return onSettingsChange(load);
 	}, []);
+	// New-episode alerts: null until read; `allowed` is the system's permission, which can be withdrawn there.
+	const [alerts, setAlertsState] = useState<boolean | null>(null);
+	const [allowed, setAllowed] = useState(true);
+	useEffect(() => {
+		if (!alertsSupported) return;
+		const read = () => void Promise.all([alertsOn(), alertsAllowed()]).then(([enabled, ok]) => (setAlertsState(enabled), setAllowed(ok))).catch(() => undefined);
+		read();
+		const subscription = AppState.addEventListener('change', (state) => state === 'active' && read());
+		return () => subscription.remove();
+	}, []);
+	const switchAlerts = async (enable: boolean) => {
+		try {
+			if (!(await setAlerts(enable))) {
+				setAllowed(false);
+				return Alert.alert('Notifications are off for DMM Mobile', 'Allow notifications for DMM Mobile in the system settings, then switch alerts on again.', [
+					{ text: 'Not now', style: 'cancel' },
+					{ text: 'Open settings', onPress: () => void Linking.openSettings() },
+				]);
+			}
+			setAlertsState(enable);
+			setAllowed(true);
+		} catch (caught) {
+			Alert.alert('Could not change alerts', caught instanceof Error ? caught.message : String(caught));
+		}
+	};
 	const updates = Updates.useUpdates();
 	const [checking, setChecking] = useState(false);
 	const save = (name: SettingName, value: string) => void saveSetting(name, value).catch((caught) => Alert.alert('Could not save the setting', caught instanceof Error ? caught.message : String(caught)));
@@ -219,6 +245,16 @@ export function SettingsScreen() {
 						}
 					/>
 				) : null}
+				{/* A TV is seldom in a pocket: alerts are for phones and tablets. */}
+				{alertsSupported && alerts !== null
+					? row(
+							'New-episode alerts',
+							alerts && !allowed
+								? 'On, but notifications are turned off for DMM Mobile in the system settings, so none show.'
+								: 'A notification when an episode of your shows airs (the Calendar on Home). Set on this device each time the app updates the calendar; no server sends anything.',
+							<Switch accessibilityLabel="New-episode alerts" value={alerts} onValueChange={(next) => void switchAlerts(next)} trackColor={{ true: theme.accent, false: theme.border }} thumbColor={Platform.OS === 'android' ? theme.surface : undefined} />
+						)
+					: null}
 				{row('Remembered across devices', 'Always on in the app. Sign in to any one provider here or on DMM web with "Remember my logins and settings across devices", and your other logins and these settings come back. Anyone who can sign in to one of those accounts gets all of them, so do not use a shared debrid account.', <Text style={{ color: theme.accent, fontWeight: '700' }}>On</Text>)}
 				{row(`Version ${Updates.runtimeVersion ?? ''}`.trim(), updates.isUpdatePending ? `${versionDetail} An update is ready.` : versionDetail, Updates.isEnabled ? <FilterButton label={updates.isUpdatePending ? 'Restart' : checking ? 'Checking…' : 'Check'} active={updates.isUpdatePending} onPress={() => void (checking ? undefined : updateApp())} /> : null)}
 				{/* A TV has no browser, so it shows where the pages are. */}
