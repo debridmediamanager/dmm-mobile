@@ -84,9 +84,8 @@ function TrackerRow<Login>({ tracker, account, start, poll, signedOut, footer }:
 	const who = login?.slug ?? login?.name;
 	const shown = error || (login && tracker.error) || '';
 	const page = link?.page;
-	// While a code shows, Cancel takes the remote's focus: Connect is gone, and focus would fall back to the tab rail.
-	const button = (label: string, color: string, onPress: () => void, preferred = false) => (
-		<Pressable accessibilityRole="button" accessibilityLabel={`${label} ${name}`} hasTVPreferredFocus={Platform.isTV && preferred} onPress={onPress} style={[styles.outlineButton, { borderColor: color }]}>
+	const button = (label: string, color: string, onPress: () => void) => (
+		<Pressable accessibilityRole="button" accessibilityLabel={`${label} ${name}`} onPress={onPress} style={[styles.outlineButton, { borderColor: color }]}>
 			<Text style={[styles.outlineButtonText, { color }]}>{label}</Text>
 		</Pressable>
 	);
@@ -94,7 +93,9 @@ function TrackerRow<Login>({ tracker, account, start, poll, signedOut, footer }:
 		<View style={[styles.accountCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
 			<View style={styles.rowBetween}>
 				<Text style={[styles.accountTitle, { color: theme.text, flex: 1 }]}>{name}</Text>
-				{link ? null : login && !account.refused ? button('Disconnect', theme.danger, () => void account.disconnect()) : button('Connect', theme.accent, () => void connect())}
+				{/* One button that changes in place (Connect, Cancel, Disconnect): the TV remote's focus stays on it. A button
+				    that unmounted dropped the focus to the tab rail or the page, which scrolled the code out of sight. */}
+				{link ? button('Cancel', theme.accent, cancel) : login && !account.refused ? button('Disconnect', theme.danger, () => void account.disconnect()) : button('Connect', theme.accent, () => void connect())}
 			</View>
 			<Text style={[styles.subheading, { color: theme.muted, marginTop: 0 }]}>
 				{login && account.refused
@@ -120,7 +121,6 @@ function TrackerRow<Login>({ tracker, account, start, poll, signedOut, footer }:
 							<ActivityIndicator color={theme.muted} />
 							<Text style={[styles.detailMeta, { color: theme.muted, marginTop: 0 }]}>Waiting for approval…</Text>
 						</View>
-						{button('Cancel', theme.accent, cancel, true)}
 					</View>
 				</View>
 			) : null}
