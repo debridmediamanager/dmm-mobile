@@ -1,0 +1,26 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Ben Adrian Sarmiento <me@bensarmiento.com>
+Date: Thu, 12 Nov 2026 12:00:00 +0100
+Subject: [PATCH] contrib/ffmpeg: build the MLP/TrueHD decoder again
+
+Patch 0003 switches it off; without it a TrueHD-only file plays silent.
+---
+ contrib/src/ffmpeg/rules.mak | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/contrib/src/ffmpeg/rules.mak b/contrib/src/ffmpeg/rules.mak
+--- a/contrib/src/ffmpeg/rules.mak
++++ b/contrib/src/ffmpeg/rules.mak
+@@ -33,9 +33,6 @@ FFMPEGCONF = --prefix="$(PREFIX)" --enable-static --disable-shared \
+ 	--disable-encoder=vorbis \
+ 	--disable-decoder=opus \
+ 	--enable-libgsm \
+-	--disable-decoder=mlp \
+-	--disable-demuxer=mlp \
+-	--disable-parser=mlp \
+ 	--disable-debug \
+ 	--disable-avdevice \
+ 	--disable-devices \
+-- 
+2.50.1
+

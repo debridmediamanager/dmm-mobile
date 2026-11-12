@@ -39,9 +39,12 @@ cd android && ./gradlew :app:assembleRelease -PreactNativeArchitectures=arm64-v8
 ```
 
 Apple builds one project per platform: `npx expo prebuild -p ios` for iPhone
-and iPad, `EXPO_TV=1 npx expo prebuild -p ios` for Apple TV. `package.json`
-overrides `react-native` for every package: the fork's own list component asks
-for stock React Native, and two copies in one bundle leave the app unable to start.
+and iPad, `EXPO_TV=1 npx expo prebuild -p ios` for Apple TV. Run `vlckit/fetch.sh`
+once first (it needs `gh` signed in with access to this repository): the player's
+VLCKit frameworks are our own build, kept in a GitHub release (Built-in player,
+below). `package.json` overrides `react-native` for every package: the fork's own
+list component asks for stock React Native, and two copies in one bundle leave the
+app unable to start.
 
 `npm run export:web` is a browser preview of the same screens. It is useful for
 layout checks, but it does not prove native device behavior; browser previews do
@@ -140,10 +143,8 @@ in the link itself.
 
 libVLC 3 (through `@lunarr/vlc-player`), so the files debrid services hold play as
 they are: MKV and MP4, H.264 and HEVC (10-bit too; HDR plays but shows as SDR),
-AC3, E-AC3 and DTS audio, and SRT, ASS and PGS subtitles. TrueHD plays on Android
-only: Apple's VLCKit builds have no TrueHD decoder, so on an iPhone, iPad or Apple
-TV a file's other audio track plays instead, and a file with only TrueHD is silent
-(choose another app in Settings for those). Full screen and landscape, with
+AC3, E-AC3 (Atmos too), DTS (DTS-HD MA and DTS:X too), TrueHD (Atmos too), FLAC,
+Opus and PCM audio, and SRT, ASS and PGS subtitles. Full screen and landscape, with
 play/pause, a seek bar, 10-second skips, and pickers for the audio track and for
 subtitles, which list the tracks inside the video and then subtitle files of the
 same release. On a TV the remote's play/pause and skip keys work, left and right
@@ -163,6 +164,15 @@ skip 10 seconds while the controls are hidden, and Select shows them.
 
 DMM web knows only its own players, so choosing the built-in player is kept on
 the device and not sent to DMM; a player app chosen here is.
+
+On iPhone, iPad and Apple TV the app does not use VideoLAN's MobileVLCKit and
+TVVLCKit pods: VLCKit switches FFmpeg's TrueHD decoder off for Apple (its patch
+0003), so TrueHD-only files played silent there. `vlckit/build.sh` builds the same
+VLCKit 3.7.5 with the decoder back on (about 25 minutes per platform on an M3
+Pro), the frameworks sit in this repository's GitHub release `vlckit-3.7.5-truehd`,
+`vlckit/fetch.sh` downloads and checks them, and `plugins/withVlcKit.js` points the
+Podfile at them. `vlckit/check.sh` plays the real TrueHD clips in `vlckit/check/` in a simulator and
+fails unless each one makes sound; run it on every new build.
 
 ## Search
 

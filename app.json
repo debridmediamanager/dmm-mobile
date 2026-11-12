@@ -120,7 +120,8 @@
         }
       ],
       "./plugins/withReleaseSigning",
-      "./plugins/withLibVlcKeep"
+      "./plugins/withLibVlcKeep",
+      "./plugins/withVlcKit"
     ],
     "updates": {
       "url": "https://ota.debridmediamanager.com/manifest",

@@ -10,3 +10,8 @@ ios/
 .env.*
 !.env.example
 .wrangler/
+
+# VLCKit builds (vlckit/build.sh, vlckit/fetch.sh)
+vlckit/build/
+vlckit/out/
+vlckit/*.xcframework
