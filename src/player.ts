@@ -1,8 +1,21 @@
 import { Linking, Platform } from 'react-native';
 import type { VLCPlayerTracks } from '@lunarr/vlc-player';
+import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 import * as IntentLauncher from 'expo-intent-launcher';
 import { isVideoName } from './core';
 import { loadSettings, saveSetting } from './settings';
+
+/** The built-in player's screen: full screen, landscape on phones and tablets (TVs are), the remote's Back or Menu leaves. */
+export const PLAYER_SCREEN: NativeStackNavigationOptions = {
+	headerShown: false,
+	orientation: 'landscape',
+	statusBarHidden: true,
+	navigationBarHidden: true,
+	autoHideHomeIndicator: true,
+	contentStyle: { backgroundColor: '#000' },
+	// iOS 26 pops a screen on a rightward drag anywhere in it, which took the seek bar's drags: back is from the edge only.
+	fullScreenGestureEnabled: false,
+};
 
 /**
  * The players DMM web offers in Settings (src/components/SettingsSection.tsx), with the

@@ -7,7 +7,7 @@ vi.mock('expo-intent-launcher', () => ({ startActivityAsync: vi.fn(async () => (
 
 import { Linking } from 'react-native';
 import * as IntentLauncher from 'expo-intent-launcher';
-import { iosPlayerUrl, loadPlayer, openFileLink, playersForPlatform, playsBuiltIn, soundUnplayable } from './player';
+import { iosPlayerUrl, loadPlayer, openFileLink, PLAYER_SCREEN, playersForPlatform, playsBuiltIn, soundUnplayable } from './player';
 import { _resetSettingsCache } from './settings';
 
 const TB = 'https://store-024.weur.tb-cdn.st/zip/1?token=abc&x=1';
@@ -62,6 +62,11 @@ describe('external players', () => {
 });
 
 describe('the built-in player', () => {
+	it('leaves its screen only by the edge swipe, so dragging the seek bar to the right does not close it on iOS 26 and later', () => {
+		// Seen on an iPhone 15 Pro (iOS 27): a drag along the seek bar popped the player (rightward) or cancelled the scrub (leftward).
+		expect(PLAYER_SCREEN.fullScreenGestureEnabled).toBe(false);
+		expect(PLAYER_SCREEN.gestureEnabled).not.toBe(false);
+	});
 	it('is the default where nothing is chosen, and plays only videos', async () => {
 		expect(playersForPlatform()[0]).toEqual({ id: 'builtin', label: 'Built-in player' });
 		expect(await loadPlayer()).toBe('builtin');
