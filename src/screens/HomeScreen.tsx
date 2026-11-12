@@ -47,9 +47,10 @@ export function HomeScreen() {
 	const openCopy = useOpenCopy();
 	const [opening, setOpening] = useState('');
 	const [menu, setMenu] = useState<Card | null>(null);
-	// A remote moving up into a row shows its title too: Android scrolls only the focused card into view.
+	// A remote moving up into a row shows its title too: the platform scrolls only the focused card into view.
 	const scroller = useRef<ScrollViewInstance>(null);
 	const shelfTop = useRef<Record<string, number>>({});
+	const scrolled = useRef(0);
 	const refreshing = Object.values(snapshot.loading).some(Boolean);
 	const cardWidth = wide ? 130 : 112;
 
@@ -167,7 +168,7 @@ export function HomeScreen() {
 							dim={Boolean(opening) && opening !== card.key}
 							onPress={card.open}
 							onLongPress={card.actions.length ? () => setMenu(card) : undefined}
-							onFocus={Platform.isTV ? () => scroller.current?.scrollTo({ y: shelfTop.current[title] ?? 0 }) : undefined}
+							onFocus={Platform.isTV ? () => (shelfTop.current[title] ?? 0) < scrolled.current && scroller.current?.scrollTo({ y: shelfTop.current[title] ?? 0 }) : undefined}
 						/>
 					)}
 				/>
@@ -196,7 +197,7 @@ export function HomeScreen() {
 			) : groups.length === 0 ? (
 				<View><EmptyState title={titles.progress || refreshing ? 'Naming your library…' : 'No films or shows named yet'} detail={titles.error || 'DMM names each release as a film or show; the rest stay in Library.'} />{openLibrary}</View>
 			) : (
-				<ScrollView ref={scroller} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void refreshAll()} tintColor={theme.accent} />} contentContainerStyle={{ paddingBottom: 24 }}>
+				<ScrollView ref={scroller} onScroll={(event) => (scrolled.current = event.nativeEvent.contentOffset.y)} scrollEventThrottle={100} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void refreshAll()} tintColor={theme.accent} />} contentContainerStyle={{ paddingBottom: 24 }}>
 					{shelf('Continue Watching', resumeCards)}
 					{shelf('Next Up', nextCards)}
 					{shelf('Recently Added', recentCards)}
