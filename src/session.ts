@@ -23,7 +23,7 @@ import {
 import { needsRenewal, parseCredential, renewCredential, serializeCredential, type StoredCredential } from './auth';
 import type { CredentialStorage } from './storage';
 import type { AddEntry } from './share';
-import { browserStateApi, credentialsFromState, identitiesFor, mergeState, settingsFromState, stateFromApp, type BrowserState, type BrowserStateApi } from './sync';
+import { browserStateApi, credentialsFromState, identitiesFor, mergeState, settingsFromState, stateFromApp, type BrowserState, type BrowserStateApi, type SyncIdentity } from './sync';
 import { loadSettings, saveSetting, type SettingName } from './settings';
 import { withDemo } from './demo';
 import { runBulk, type BulkResult } from './core';
@@ -325,6 +325,17 @@ export class LibrarySession {
 			this.pushTimer = null;
 			void this.push().catch(() => undefined);
 		}, delayMs);
+	}
+
+	/**
+	 * The logins DMM may check before it names this library (its library identification), none
+	 * where nothing syncs with DMM (the demo key, tests, the QA build). Real-Debrid's last: DMM
+	 * checks a login from its own address, and Real-Debrid holds an account to one.
+	 */
+	titleIdentities(): SyncIdentity[] {
+		if (!this.sync) return [];
+		const identities = identitiesFor(this.credentials);
+		return [...identities.filter((identity) => identity.service !== 'rd'), ...identities.filter((identity) => identity.service === 'rd')];
 	}
 
 	/** The app's logins and settings in DMM web's format, for a DMM page opened in the browser. */

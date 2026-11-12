@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { File, Paths } from 'expo-file-system';
 import type { StoredCredential } from './auth';
 import type { LibraryFile, LibraryItem, ProviderId } from './model';
 import { onSettingsChange } from './settings';
@@ -6,6 +7,21 @@ import { LibrarySession, type BulkResult, type SessionSnapshot } from './session
 import type { AddOptions, PickedFile } from './providerApi';
 import type { AddEntry } from './share';
 import type { BrowserState } from './sync';
+import { TitleIndex, type CacheStore } from './titleIndex';
+
+/** The title index's memory between launches; the OS may clear it, which only costs a slower load. */
+const titleCache = (): File => new File(Paths.cache, 'titles-v1.json');
+const fileCacheStore: CacheStore = {
+	read: async () => {
+		const file = titleCache();
+		return file.exists ? file.text() : null;
+	},
+	write: async (text) => {
+		const file = titleCache();
+		if (!file.exists) file.create();
+		await file.write(text);
+	},
+};
 
 interface AppContextValue {
 	ready: boolean;
@@ -29,6 +45,8 @@ interface AppContextValue {
 	linkState(state: BrowserState): Promise<ProviderId[]>;
 	/** What a DMM page opened in the browser is signed in with (Search). */
 	browserState(): Promise<BrowserState>;
+	/** The library by title (Library's Titles view and the title page). */
+	titles: TitleIndex;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -39,6 +57,17 @@ export function AppProvider({ children, session: injectedSession }: { children: 
 	const [startupError, setStartupError] = useState('');
 	const [snapshot, setSnapshot] = useState<SessionSnapshot>(() => session.snapshot());
 	const sync = useCallback(() => setSnapshot(session.snapshot()), [session]);
+	const titles = useMemo(() => {
+		const index = new TitleIndex({ identities: () => session.titleIdentities(), detail: (provider, itemId) => session.detail(provider, itemId) }, fileCacheStore);
+		// Read now, so rows a provider lists come out as titles at once rather than after every provider has listed.
+		void index.load();
+		return index;
+	}, [session]);
+	// Named once every provider has listed, like DMM web's library; the index asks only about releases it has not seen.
+	const listing = Object.values(snapshot.loading).some(Boolean);
+	useEffect(() => {
+		if (ready && !listing && snapshot.items.length > 0) void titles.identify(snapshot.items);
+	}, [listing, ready, snapshot.items, titles]);
 	const bootstrap = useCallback(async () => {
 		setReady(false);
 		setStartupError('');
@@ -126,8 +155,9 @@ export function AppProvider({ children, session: injectedSession }: { children: 
 			retryStartup: bootstrap,
 			linkState,
 			browserState,
+			titles,
 		}),
-		[add, addFile, addMany, browserState, bulk, checkRdUncached, linkState, reinsert, bootstrap, connect, detail, disconnect, openFile, ready, refreshAll, remove, selectFiles, snapshot, startupError]
+		[titles, add, addFile, addMany, browserState, bulk, checkRdUncached, linkState, reinsert, bootstrap, connect, detail, disconnect, openFile, ready, refreshAll, remove, selectFiles, snapshot, startupError]
 	);
 
 	return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

@@ -1,0 +1,827 @@
+{
+	"captured": "2026-11-12, production DMM 7ab1b64c, asked as the app with a Premiumize test login (identity left out here); names and hashes from RD testacct123",
+	"items": [
+		{
+			"id": "rd:2CHSZZUOPVH3Q",
+			"filename": "South Park - Seasons 1 to 25 (S01-S25) Master Collection, The Movie & Extras [1080p-2160p NVEnc 10Bit HEVC][TrueHD+DDP 5.1Ch][English Subs]",
+			"hash": "3c50a9e66077b0132047916f2ee862f4716adf59",
+			"bytes": 235410924321,
+			"added": "2026-10-15T03:39:45.000Z"
+		},
+		{
+			"id": "rd:HM5WI7JFU7HRQ",
+			"filename": "Weeds.S01-08.1080p.TrueHD.5.1.AVC.REMUX-FraMeSToR",
+			"hash": "4a1d3730948b1cdb008ca3148babed9265abee44",
+			"bytes": 602440000395,
+			"added": "2026-10-15T03:39:42.000Z"
+		},
+		{
+			"id": "rd:VYFNODUYKM2NY",
+			"filename": "Tensei Shitara Slime Datta Ken Season 2 Part 1 (BD 1080p HEVC 10bit FLAC) [Dual Audio] [FLE]",
+			"hash": "e286dfae9e72677745c137608eda7d7b6f0ea153",
+			"bytes": 26996896393,
+			"added": "2026-10-15T03:39:45.000Z"
+		},
+		{
+			"id": "rd:AJDRASLVSFS7E",
+			"filename": "[Yuki] Chihayafuru Season 1 (BD 1080p Hi10 FLAC)",
+			"hash": "e6f50175b1a9f47bc87c7424d440c3af11f0e423",
+			"bytes": 44029633795,
+			"added": "2026-10-15T03:39:40.000Z"
+		},
+		{
+			"id": "rd:3YIR44MQ7572Y",
+			"filename": "[Some-Stuffs] Jojo's Bizarre Adventure Stone Ocean 33 (1920x1080 Blu-Ray Opus) [18E17992].mkv",
+			"hash": "9a84a7ef327d75847907a2114590920e04bb5e6f",
+			"bytes": 1389406292,
+			"added": "2026-10-15T03:00:35.000Z"
+		},
+		{
+			"id": "rd:M5HBTJEOYPHTE",
+			"filename": "Fate.Zero.2011.S01.1080p.BluRay.Opus2.0.H.265-LYS1TH3A",
+			"hash": "b7c4496f615255f727dbba831a072eae58fbec0c",
+			"bytes": 108963083425,
+			"added": "2026-10-15T03:38:51.000Z"
+		},
+		{
+			"id": "rd:DJ7R4XRGH3U4M",
+			"filename": "Pokémon (1997) Season 5 S05 (480p DVD x265 HEVC 10bit AAC 2.0 ImE)",
+			"hash": "95e8eabbaf357f1ecc11e4fc40d7328a495062e8",
+			"bytes": 15474868710,
+			"added": "2026-10-15T03:38:56.000Z"
+		},
+		{
+			"id": "rd:RIXR6H7F4BYTE",
+			"filename": "Season 01",
+			"hash": "894760d7dd48a1870fbe5ae576b1980a3b6c6c5f",
+			"bytes": 3614636988,
+			"added": "2026-10-15T03:38:36.000Z"
+		},
+		{
+			"id": "rd:UEANL4UCXDW6O",
+			"filename": "Season 3",
+			"hash": "8016aaf87e3d8b7bcd55af9ed159b4d02e485ac0",
+			"bytes": 41464840760,
+			"added": "2026-10-15T03:37:58.000Z"
+		},
+		{
+			"id": "rd:OJAV36AZ5GF22",
+			"filename": "Family.Matters.seasons.01-09.AMZN.1080p.10bit.hevc.x265-bearfish",
+			"hash": "ddd5ba15597e466715ef3196f2305fe67ab73d78",
+			"bytes": 119999376982,
+			"added": "2026-10-15T03:39:35.000Z"
+		},
+		{
+			"id": "rd:INVZ4PTLLTNKQ",
+			"filename": "The Electric Company - 1970s (Childrens TV series in MP4 format)",
+			"hash": "3fba53b6adaf34ef7a36d94effaf42b92dbe11d4",
+			"bytes": 15446928793,
+			"added": "2026-10-15T03:28:24.000Z"
+		},
+		{
+			"id": "rd:W6K5DHHI5WGBG",
+			"filename": "Paw Patrol Season 5 HD 1080P S05 Complete 13Aug2018",
+			"hash": "e1832e79311018d5c5084577372304092da96db5",
+			"bytes": 9114604439,
+			"added": "2026-10-15T03:36:10.000Z"
+		},
+		{
+			"id": "rd:DQ673KSP5H2L2",
+			"filename": "Spongebob Squarepants Season 9 Complete WEB x264 [i_c]",
+			"hash": "3ede0e787b2ec50a98db89c329af7e35fcd2df81",
+			"bytes": 3688879556,
+			"added": "2026-10-15T03:36:07.000Z"
+		},
+		{
+			"id": "rd:4LT5BXQSVWDA6",
+			"filename": "My.Hero.Academia.S04.P2.CRF-16.1080p.Blu-Ray.10-Bit.Dual-Audio.TrueHD.x265-iAHD",
+			"hash": "f60f7f182ed92d49a56f07bde918645834e2187f",
+			"bytes": 32397157962,
+			"added": "2026-10-15T03:39:54.000Z"
+		},
+		{
+			"id": "rd:WORTBUDQ6V6OG",
+			"filename": "[nyadex] Reincarnated as a Sword - S01 (BDremux 1080p PCM AAC Dual Audio)",
+			"hash": "e7c93d4873db805188f21ce362d3d89e315567d6",
+			"bytes": 63138439011,
+			"added": "2026-10-15T03:30:51.000Z"
+		},
+		{
+			"id": "rd:PXNZHFAWWDCQO",
+			"filename": "[LostYears] The Rising of the Shield Hero - Season 03 (WEB 1080p x264 AAC) [Dual-Audio]",
+			"hash": "be2c3f25c71958f9954b6b3ae298c87e981de5b9",
+			"bytes": 18699955110,
+			"added": "2026-10-15T03:30:44.000Z"
+		},
+		{
+			"id": "rd:5CU6N75BP5ZUC",
+			"filename": "The Six Million Dollar Man (S4, Season 4) 1080p",
+			"hash": "811c38f57577125e2c7e675d15dce6a20484a3fc",
+			"bytes": 131931344296,
+			"added": "2026-10-15T03:36:39.000Z"
+		},
+		{
+			"id": "rd:PZV6JHKCK4ZPM",
+			"filename": "Star Wars Rebels Complete Season 3",
+			"hash": "96255f65a5f31efba49f60fd889efdd9ba96c6d9",
+			"bytes": 20353855133,
+			"added": "2026-10-15T03:39:44.000Z"
+		},
+		{
+			"id": "rd:BXPE4RRDJND6W",
+			"filename": "Rick and Morty (Season 3)  BDRemux 1080p",
+			"hash": "d5f4e3f3c1dbb88378ab5badc96bf1cac178ec04",
+			"bytes": 20637288074,
+			"added": "2026-10-15T03:36:07.000Z"
+		},
+		{
+			"id": "rd:HURTOGA6FV5TW",
+			"filename": "All.Creatures.Great.And.Small.2020.S01.1080p.BluRay.REMUX.AVC.FLAC.2.0-NOGRP[rartv]",
+			"hash": "42f37c8ec2f0606dd3a31ef7712c487336394679",
+			"bytes": 75514564175,
+			"added": "2026-10-15T03:39:48.000Z"
+		},
+		{
+			"id": "rd:KFAKB2SGUTDAO",
+			"filename": "[Erai-raws] Jujutsu Kaisen 2nd Season - 01 ~ 23 [1080p][Multiple Subtitle]",
+			"hash": "48fff3c728bd4f9101a311a66f7f3277863c32e0",
+			"bytes": 34094102767,
+			"added": "2026-10-15T03:39:41.000Z"
+		},
+		{
+			"id": "rd:ZUT2TSJVPQAWU",
+			"filename": "[Judas] Heidi Girl of the Alps (Alps no Shoujo Heidi) (Season 1) [BD 1080p][HEVC x265 10bit][Eng-Subs]",
+			"hash": "201cfcae2f20161480f4500fb6e1cf02ec8b928e",
+			"bytes": 10307985332,
+			"added": "2026-10-15T03:38:29.000Z"
+		},
+		{
+			"id": "rd:JEZN3MGZ4U6H2",
+			"filename": "[SubsPlease] Boku no Hero Academia - 168 (1080p) [68B2000A].mkv",
+			"hash": "ee530b904cb7ce91d4152341b47b7c7dd9e2e0ed",
+			"bytes": 1455453221,
+			"added": "2026-10-15T02:23:11.000Z"
+		},
+		{
+			"id": "rd:J3UMKGNUNF36W",
+			"filename": "[SubsPlease] Solo Leveling - 17 (1080p) [42075782].mkv",
+			"hash": "ff1fe52c6a76d1e239717090382fdb80c7e31218",
+			"bytes": 1445004177,
+			"added": "2026-10-15T03:00:45.000Z"
+		},
+		{
+			"id": "rd:QQRHRDWNQ7ZEE",
+			"filename": "[SubsPlease] Fate Strange Fake - 01 (1080p) [50820296].mkv",
+			"hash": "deea095e04747d85938c97051c9782fcb18f5136",
+			"bytes": 1513408104,
+			"added": "2026-10-15T02:28:15.000Z"
+		},
+		{
+			"id": "rd:IMULG42O24N6K",
+			"filename": "[Some-Stuffs] Jojo's Bizarre Adventure Stone Ocean 30 (1920x1080 Blu-Ray Opus) [C8C04BD3].mkv",
+			"hash": "c7dcc53c6e5a1205bd4f068af1b49f8a712445ee",
+			"bytes": 1163061414,
+			"added": "2026-10-15T03:20:44.000Z"
+		},
+		{
+			"id": "rd:SGVTKS2EURLBQ",
+			"filename": "[izu] Boku no Hero Academia the Movie - You`re Next (2024) [BD-Remux] [60D551DA].mkv",
+			"hash": "e202496ed650adcee009bc9011849fb05aabc2ca",
+			"bytes": 36414530230,
+			"added": "2026-10-15T02:48:35.000Z"
+		},
+		{
+			"id": "rd:AJO45NPILC3DE",
+			"filename": "[zerocool] Kiki's Delivery Service (1989) gigachad edition.mkv",
+			"hash": "cc64f771b184407a582393858685bc5dca232a9b",
+			"bytes": 34100215845,
+			"added": "2026-10-15T03:28:34.000Z"
+		},
+		{
+			"id": "rd:WHUMIPAAS6WAU",
+			"filename": "Alpha (2026) Hindi TRUE WEB.DL - 1080p - AVC - (DD+5.1 - 640Kbps & AAC) - 3GB - ESub {imdb-tt28363783}.mkv",
+			"hash": "0380b3ed6577afdfaaae4ef68bc052b539b89af6",
+			"bytes": 3425691137,
+			"added": "2026-11-04T03:22:54.000Z"
+		},
+		{
+			"id": "rd:6FR5GC7RPO5E2",
+			"filename": "Pig 2021 1080p BluRay REMUX AVC DTS-HD MA 5.1-BdC.mkv",
+			"hash": "76b9b5f7472596526360bc00fb5762abbe0c8616",
+			"bytes": 22624507894,
+			"added": "2026-11-03T09:19:29.000Z"
+		},
+		{
+			"id": "rd:6NDUGRMJVHMP2",
+			"filename": "Palm.Springs.2020.1080p.Remux.AVC.DD5.1-EniaHD.mkv",
+			"hash": "60aeb2963f7a6cb1bfbaa1b701aad06bd5ebe2c4",
+			"bytes": 25186744051,
+			"added": "2026-11-03T09:18:49.000Z"
+		},
+		{
+			"id": "rd:N7V7BOTWNZOPC",
+			"filename": "Los.Renglones.Torcidos.de.Dios.2022.BDRemux.1080p.pk.mkv",
+			"hash": "5953caef6e71737b59b3ae719bf5b56b9785c6b1",
+			"bytes": 34447882317,
+			"added": "2026-11-03T09:18:29.000Z"
+		},
+		{
+			"id": "rd:2VF5YUJGCZ6Q2",
+			"filename": "Mudbound.2017.BluRay.1080p.TrueHD.Atmos.7.1.AVC.REMUX-FraMeSToR.mkv",
+			"hash": "01da5ca1a31bb636a55f9c52e676261a640eb763",
+			"bytes": 36236076223,
+			"added": "2026-11-03T09:18:09.000Z"
+		},
+		{
+			"id": "rd:MYHDYSU3VXA2O",
+			"filename": "Spy.Game.2001.1080p.BluRay.REMUX.VC-1.DTS-HD.MA.5.1-EPSiLON.mkv",
+			"hash": "1468a0ed766c95107aab51d2d97b19e050788291",
+			"bytes": 34114000576,
+			"added": "2026-11-03T09:17:49.000Z"
+		},
+		{
+			"id": "rd:VCPUE3T3A23EE",
+			"filename": "Waking.Life.2001.1080p.Remux.AVC.mkv",
+			"hash": "8d3e13f045851b6dcab1794dec8cdfefa0a8a7c8",
+			"bytes": 15963277534,
+			"added": "2026-11-03T09:17:29.000Z"
+		},
+		{
+			"id": "rd:LVTWEL44KBYYM",
+			"filename": "The Quintessential Quintuplets Movie (2022) (BD 1080p HEVC Opus) [Dual-Audio] [P9]",
+			"hash": "c3a826966a961e552d405e3263ebf4270c97e1ff",
+			"bytes": 8363227484,
+			"added": "2026-11-03T09:17:09.000Z"
+		},
+		{
+			"id": "rd:SEAX63RY47OLA",
+			"filename": "Amelie.2001.1080p.CZE.BluRay.REMUX.AVC.DTS-HD.MA.5.1-HDH.mkv",
+			"hash": "1fed175c0387d39245fa3be98d1692f046241b28",
+			"bytes": 35029365706,
+			"added": "2026-11-03T09:16:49.000Z"
+		},
+		{
+			"id": "rd:56FVWRYJ7OTTI",
+			"filename": "Children.of.Paradise.1945.Criterion.Collection.BDRemux.1080p",
+			"hash": "6bb007bc69fa85038c14c575a9d026f1adad0744",
+			"bytes": 39145046733,
+			"added": "2026-11-03T09:16:29.000Z"
+		},
+		{
+			"id": "rd:X3Z6NQ7UAXZF6",
+			"filename": "The.Boys.S04.Eng.Fre.Ger.Ita.Por.Spa.2160p.WEBMux.HDR10Plus.HDR.HEVC.DDP-SGF",
+			"hash": "d569ae5cc49e1da5d96320c978b6c5b34b0bd762",
+			"bytes": 86823747656,
+			"added": "2026-10-15T03:39:47.000Z"
+		},
+		{
+			"id": "rd:H4W47OTIQ2BPY",
+			"filename": "The.Mandalorian.S01.2160p.UHD.Blu-ray.Remux.HEVC.TrueHD.7.1.Atmos-SiCFoI",
+			"hash": "c9198ab00090b97e5dc6748697fdfcf8bb2f9d38",
+			"bytes": 157502694630,
+			"added": "2026-10-15T03:39:47.000Z"
+		}
+	],
+	"identified": {
+		"results": [
+			{
+				"imdbId": "tt0121955",
+				"title": "South Park",
+				"year": 1997,
+				"kind": "tv"
+			},
+			{
+				"imdbId": "tt0439100",
+				"title": "Weeds",
+				"year": 2005,
+				"kind": "tv"
+			},
+			{
+				"imdbId": "tt9054364",
+				"title": "That Time I Got Reincarnated as a Slime",
+				"year": 2018,
+				"kind": "tv"
+			},
+			{
+				"imdbId": "tt2150751",
+				"title": "Chihayafuru",
+				"year": 2011,
+				"kind": "tv"
+			},
+			null,
+			{
+				"imdbId": "tt2051178",
+				"title": "Fate/Zero",
+				"year": 2011,
+				"kind": "tv"
+			},
+			{
+				"imdbId": "tt0168366",
+				"title": "Pokémon",
+				"year": 1997,
+				"kind": "tv"
+			},
+			null,
+			null,
+			{
+				"imdbId": "tt0096579",
+				"title": "Family Matters",
+				"year": 1989,
+				"kind": "tv"
+			},
+			{
+				"imdbId": "tt0066651",
+				"title": "The Electric Company",
+				"year": 1971,
+				"kind": "tv"
+			},
+			{
+				"imdbId": "tt3121722",
+				"title": "PAW Patrol",
+				"year": 2013,
+				"kind": "tv"
+			},
+			{
+				"imdbId": "tt0206512",
+				"title": "SpongeBob SquarePants",
+				"year": 1999,
+				"kind": "tv"
+			},
+			{
+				"imdbId": "tt5626028",
+				"title": "My Hero Academia",
+				"year": 2016,
+				"kind": "tv"
+			},
+			{
+				"imdbId": "tt15483602",
+				"title": "Reincarnated as a Sword",
+				"year": 2022,
+				"kind": "tv"
+			},
+			{
+				"imdbId": "tt9529546",
+				"title": "The Rising of the Shield Hero",
+				"year": 2019,
+				"kind": "tv"
+			},
+			{
+				"imdbId": "tt0071054",
+				"title": "The Six Million Dollar Man",
+				"year": 1974,
+				"kind": "tv"
+			},
+			{
+				"imdbId": "tt2930604",
+				"title": "Star Wars: Rebels",
+				"year": 2014,
+				"kind": "tv"
+			},
+			{
+				"imdbId": "tt2861424",
+				"title": "Rick and Morty",
+				"year": 2013,
+				"kind": "tv"
+			},
+			{
+				"imdbId": "tt10590066",
+				"title": "All Creatures Great & Small",
+				"year": 2020,
+				"kind": "tv"
+			},
+			{
+				"imdbId": "tt12343534",
+				"title": "Jujutsu Kaisen",
+				"year": 2020,
+				"kind": "tv"
+			},
+			{
+				"imdbId": "tt0070968",
+				"title": "Heidi, Girl of the Alps",
+				"year": 1974,
+				"kind": "tv"
+			},
+			{
+				"imdbId": "tt5626028",
+				"title": "My Hero Academia",
+				"year": 2016,
+				"kind": "tv"
+			},
+			{
+				"imdbId": "tt21209876",
+				"title": "Solo Leveling",
+				"year": 2024,
+				"kind": "tv"
+			},
+			{
+				"imdbId": "tt32864316",
+				"title": "Fate/Strange Fake",
+				"year": 2024,
+				"kind": "tv"
+			},
+			null,
+			null,
+			{
+				"imdbId": "tt0097814",
+				"title": "Kiki's Delivery Service",
+				"year": 1989,
+				"kind": "movie"
+			},
+			{
+				"imdbId": "tt28363783",
+				"title": "Alpha",
+				"year": 2026,
+				"kind": "movie"
+			},
+			{
+				"imdbId": "tt11003218",
+				"title": "Pig",
+				"year": 2021,
+				"kind": "movie"
+			},
+			{
+				"imdbId": "tt9484998",
+				"title": "Palm Springs",
+				"year": 2020,
+				"kind": "movie"
+			},
+			{
+				"imdbId": "tt13229894",
+				"title": "God's Crooked Lines",
+				"year": 2022,
+				"kind": "movie"
+			},
+			{
+				"imdbId": "tt2396589",
+				"title": "Mudbound",
+				"year": 2017,
+				"kind": "movie"
+			},
+			{
+				"imdbId": "tt0266987",
+				"title": "Spy Game",
+				"year": 2001,
+				"kind": "movie"
+			},
+			{
+				"imdbId": "tt0243017",
+				"title": "Waking Life",
+				"year": 2001,
+				"kind": "movie"
+			},
+			{
+				"imdbId": "tt15721650",
+				"title": "The Quintessential Quintuplets Movie",
+				"year": 2022,
+				"kind": "movie"
+			},
+			{
+				"imdbId": "tt0211915",
+				"title": "Amélie",
+				"year": 2001,
+				"kind": "movie"
+			},
+			{
+				"imdbId": "tt0037674",
+				"title": "Children of Paradise",
+				"year": 1945,
+				"kind": "movie"
+			},
+			{
+				"imdbId": "tt1190634",
+				"title": "The Boys",
+				"year": 2019,
+				"kind": "tv"
+			},
+			{
+				"imdbId": "tt8111088",
+				"title": "The Mandalorian",
+				"year": 2019,
+				"kind": "tv"
+			}
+		]
+	},
+	"identify": {
+		"results": [
+			{
+				"imdbId": "tt0121955",
+				"title": "South Park",
+				"year": 1997,
+				"kind": "tv",
+				"seasons": [
+					1,
+					2,
+					3,
+					4,
+					5,
+					6,
+					7,
+					8,
+					9,
+					10,
+					11,
+					12,
+					13,
+					14,
+					15,
+					16,
+					17,
+					18,
+					19,
+					20,
+					21,
+					22,
+					23,
+					24,
+					25
+				]
+			},
+			{
+				"imdbId": "tt0439100",
+				"title": "Weeds",
+				"year": 2005,
+				"kind": "tv",
+				"seasons": [
+					1,
+					2,
+					3,
+					4,
+					5,
+					6,
+					7,
+					8
+				]
+			},
+			{
+				"imdbId": "tt9054364",
+				"title": "That Time I Got Reincarnated as a Slime",
+				"year": 2018,
+				"kind": "tv",
+				"seasons": [
+					2
+				]
+			},
+			{
+				"imdbId": "tt2150751",
+				"title": "Chihayafuru",
+				"year": 2011,
+				"kind": "tv",
+				"seasons": [
+					1
+				]
+			},
+			null,
+			{
+				"imdbId": "tt2051178",
+				"title": "Fate/Zero",
+				"year": 2011,
+				"kind": "tv",
+				"seasons": [
+					1
+				]
+			},
+			{
+				"imdbId": "tt0168366",
+				"title": "Pokémon",
+				"year": 1997,
+				"kind": "tv",
+				"seasons": [
+					5
+				]
+			},
+			null,
+			null,
+			{
+				"imdbId": "tt0096579",
+				"title": "Family Matters",
+				"year": 1989,
+				"kind": "tv",
+				"seasons": [
+					1,
+					2,
+					3,
+					4,
+					5,
+					6,
+					7,
+					8,
+					9
+				]
+			},
+			{
+				"imdbId": "tt0066651",
+				"title": "The Electric Company",
+				"year": 1971,
+				"kind": "tv",
+				"seasons": []
+			},
+			{
+				"imdbId": "tt3121722",
+				"title": "PAW Patrol",
+				"year": 2013,
+				"kind": "tv",
+				"seasons": [
+					5
+				]
+			},
+			{
+				"imdbId": "tt0206512",
+				"title": "SpongeBob SquarePants",
+				"year": 1999,
+				"kind": "tv",
+				"seasons": [
+					9
+				]
+			},
+			{
+				"imdbId": "tt5626028",
+				"title": "My Hero Academia",
+				"year": 2016,
+				"kind": "tv",
+				"seasons": [
+					4
+				]
+			},
+			{
+				"imdbId": "tt15483602",
+				"title": "Reincarnated as a Sword",
+				"year": 2022,
+				"kind": "tv",
+				"seasons": [
+					1
+				]
+			},
+			{
+				"imdbId": "tt9529546",
+				"title": "The Rising of the Shield Hero",
+				"year": 2019,
+				"kind": "tv",
+				"seasons": [
+					3
+				]
+			},
+			{
+				"imdbId": "tt0071054",
+				"title": "The Six Million Dollar Man",
+				"year": 1974,
+				"kind": "tv",
+				"seasons": [
+					4
+				]
+			},
+			{
+				"imdbId": "tt2930604",
+				"title": "Star Wars: Rebels",
+				"year": 2014,
+				"kind": "tv",
+				"seasons": [
+					3
+				]
+			},
+			{
+				"imdbId": "tt2861424",
+				"title": "Rick and Morty",
+				"year": 2013,
+				"kind": "tv",
+				"seasons": [
+					3
+				]
+			},
+			{
+				"imdbId": "tt10590066",
+				"title": "All Creatures Great & Small",
+				"year": 2020,
+				"kind": "tv",
+				"seasons": [
+					1
+				]
+			},
+			{
+				"imdbId": "tt12343534",
+				"title": "Jujutsu Kaisen",
+				"year": 2020,
+				"kind": "tv",
+				"seasons": [
+					2
+				]
+			},
+			{
+				"imdbId": "tt0070968",
+				"title": "Heidi, Girl of the Alps",
+				"year": 1974,
+				"kind": "tv",
+				"seasons": [
+					1
+				]
+			},
+			{
+				"imdbId": "tt5626028",
+				"title": "My Hero Academia",
+				"year": 2016,
+				"kind": "tv",
+				"seasons": []
+			},
+			{
+				"imdbId": "tt21209876",
+				"title": "Solo Leveling",
+				"year": 2024,
+				"kind": "tv",
+				"seasons": []
+			},
+			{
+				"imdbId": "tt32864316",
+				"title": "Fate/Strange Fake",
+				"year": 2024,
+				"kind": "tv",
+				"seasons": []
+			},
+			null,
+			null,
+			{
+				"imdbId": "tt0097814",
+				"title": "Kiki's Delivery Service",
+				"year": 1989,
+				"kind": "movie"
+			},
+			{
+				"imdbId": "tt28363783",
+				"title": "Alpha",
+				"year": 2026,
+				"kind": "movie"
+			},
+			{
+				"imdbId": "tt11003218",
+				"title": "Pig",
+				"year": 2021,
+				"kind": "movie"
+			},
+			{
+				"imdbId": "tt9484998",
+				"title": "Palm Springs",
+				"year": 2020,
+				"kind": "movie"
+			},
+			{
+				"imdbId": "tt13229894",
+				"title": "God's Crooked Lines",
+				"year": 2022,
+				"kind": "movie"
+			},
+			{
+				"imdbId": "tt2396589",
+				"title": "Mudbound",
+				"year": 2017,
+				"kind": "movie"
+			},
+			{
+				"imdbId": "tt0266987",
+				"title": "Spy Game",
+				"year": 2001,
+				"kind": "movie"
+			},
+			{
+				"imdbId": "tt0243017",
+				"title": "Waking Life",
+				"year": 2001,
+				"kind": "movie"
+			},
+			{
+				"imdbId": "tt15721650",
+				"title": "The Quintessential Quintuplets Movie",
+				"year": 2022,
+				"kind": "movie"
+			},
+			{
+				"imdbId": "tt0211915",
+				"title": "Amélie",
+				"year": 2001,
+				"kind": "movie"
+			},
+			{
+				"imdbId": "tt0037674",
+				"title": "Children of Paradise",
+				"year": 1945,
+				"kind": "movie"
+			},
+			{
+				"imdbId": "tt1190634",
+				"title": "The Boys",
+				"year": 2019,
+				"kind": "tv",
+				"seasons": [
+					4
+				]
+			},
+			{
+				"imdbId": "tt8111088",
+				"title": "The Mandalorian",
+				"year": 2019,
+				"kind": "tv",
+				"seasons": [
+					1
+				]
+			}
+		],
+		"complete": true
+	}
+}

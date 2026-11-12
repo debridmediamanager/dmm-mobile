@@ -7,6 +7,7 @@ import { AppProvider, useApp } from './AppContext';
 import type { MainTabParamList, RootStackParamList } from './navigation';
 import { AccountsScreen } from './screens/AccountsScreen';
 import { DetailScreen } from './screens/DetailScreen';
+import { TitleScreen } from './screens/TitleScreen';
 import { LibraryScreen } from './screens/LibraryScreen';
 import { SearchScreen } from './screens/SearchScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
@@ -73,9 +74,11 @@ export function AppNavigation() {
 					<Stack.Screen name="SignIn" component={AccountsScreen} options={{ headerShown: false }} />
 				) : (
 					<>
-						<Stack.Screen name="Main" component={MainTabs} options={{ headerShown: false }} />
+						{/* Its title is the back button's label on iOS pages opened from the library. */}
+						<Stack.Screen name="Main" component={MainTabs} options={{ headerShown: false, title: 'Library' }} />
 						{/* TVs go back with the remote; the native header would also be drawn twice its size by the Apple TV scale. */}
 						<Stack.Screen name="Detail" component={DetailScreen} options={{ title: 'Library item', headerShown: !Platform.isTV }} />
+						<Stack.Screen name="Title" component={TitleScreen} options={{ title: '', headerShown: !Platform.isTV }} />
 					</>
 				)}
 			</Stack.Navigator>

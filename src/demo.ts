@@ -1,5 +1,6 @@
 import type { LibraryFile, LibraryItem, ProviderId } from './model';
 import type { SessionApi } from './session';
+import type { Identification } from './titles';
 
 /**
  * The demo library: entered as the API key of any provider, it signs in to a library of
@@ -23,6 +24,8 @@ interface DemoFile {
 
 interface DemoTitle {
 	title: string;
+	/** Named here rather than by DMM: the demo key is no login, so the app cannot ask. */
+	named: Identification;
 	/** The release's real BitTorrent info hash (the WebTorrent free-media set), so sharing gives a working magnet. */
 	hash: string;
 	added: string;
@@ -33,6 +36,7 @@ interface DemoTitle {
 const TITLES: DemoTitle[] = [
 	{
 		title: 'Tears of Steel (2012) 1080p',
+		named: { imdbId: 'tt2285752', title: 'Tears of Steel', year: 2012, kind: 'movie' },
 		hash: '209c8226b299b308beaf2b9cd3fb49212dbd13ec',
 		added: '2026-11-09T09:12:00Z',
 		files: [
@@ -44,24 +48,30 @@ const TITLES: DemoTitle[] = [
 	},
 	{
 		title: 'Sintel (2010) 2K',
+		named: { imdbId: 'tt1727587', title: 'Sintel', year: 2010, kind: 'movie' },
 		hash: '08ada5a7a6183aae1e09d831df6748d566095a10',
 		added: '2026-11-08T18:22:00Z',
 		files: [{ name: 'sintel-2048-stereo.mp4', size: 282_690_045, url: `${ARCHIVE}/Sintel/sintel-2048-stereo.mp4` }],
 	},
 	{
 		title: 'Big Buck Bunny (2008) 720p',
+		named: { imdbId: 'tt1254207', title: 'Big Buck Bunny', year: 2008, kind: 'movie' },
 		hash: 'dd8255ecdc7ca55fb0bbf81323d87062db1f6d1c',
 		added: '2026-11-06T16:30:00Z',
 		files: [{ name: 'big_buck_bunny_720p_surround.mp4', size: 61_878_609, url: `${ARCHIVE}/BigBuckBunny_124/Content/big_buck_bunny_720p_surround.mp4` }],
 	},
 	{
 		title: 'Cosmos Laundromat (2015)',
+		named: { imdbId: 'tt4957236', title: 'Cosmos Laundromat', year: 2015, kind: 'movie' },
 		hash: 'c9e15763f722f23e98a29decdfae341b98d53056',
 		added: '2026-11-01T09:00:00Z',
 		files: [{ name: 'Cosmos Laundromat.mp4', size: 220 * MB, url: '' }],
 		downloading: true,
 	},
 ];
+
+/** The title of a demo release, by its hash; the same releases in a real library are these films too. */
+export const demoIdentification = (hash: string): Identification | undefined => TITLES.find((title) => title.hash === hash.toLowerCase())?.named;
 
 const sizeOf = (files: readonly LibraryFile[]) => files.reduce((total, file) => total + file.size, 0);
 

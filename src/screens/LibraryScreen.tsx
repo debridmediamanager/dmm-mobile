@@ -1,4 +1,4 @@
-import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import {
 	ActivityIndicator,
 	Alert,
@@ -47,6 +47,8 @@ import type { RootStackParamList } from '../navigation';
 import { useAppTheme } from '../theme';
 import { confirmNativeAction } from '../confirmAction';
 import { ActionSheet, DropdownChip, EmptyState, ErrorBanner, FilterButton, Icon, IconButton, LibraryRow, Pressable, ROW_HEIGHT, Screen, SearchField, styles, TextField, TvScale, useSheetStyles, type SheetAction } from '../ui';
+import { TitlesView } from './TitlesView';
+import type { TitleGroup } from '../titles';
 
 type Navigation = NativeStackNavigationProp<RootStackParamList, 'Main'>;
 
@@ -82,7 +84,10 @@ const shareMagnet = (item: LibraryItem) => {
 
 export function LibraryScreen({ navigation }: { navigation: Navigation }) {
 	const theme = useAppTheme();
-	const { ready, startupError, snapshot, refreshAll, retryStartup, bulk, remove, reinsert, checkRdUncached } = useApp();
+	const { ready, startupError, snapshot, refreshAll, retryStartup, bulk, remove, reinsert, checkRdUncached, titles } = useApp();
+	useSyncExternalStore(titles.subscribe, titles.getVersion);
+	// Films and shows first; the release rows, with every filter and bulk action, are one tap away.
+	const [mode, setMode] = useState<'titles' | 'torrents'>('titles');
 	const [query, setQuery] = useState<LibraryQuery>(EMPTY_QUERY);
 	const [selected, setSelected] = useState<Set<string>>(new Set());
 	const [adding, setAdding] = useState<{ text: string; file?: PickedFile } | null>(null);
@@ -161,6 +166,8 @@ export function LibraryScreen({ navigation }: { navigation: Navigation }) {
 	const selectingRef = useRef(false);
 	selectingRef.current = selected.size > 0;
 	const openRow = useCallback((item: LibraryItem) => (selectingRef.current ? toggle(item) : navigation.navigate('Detail', { itemId: item.id })), [navigation, toggle]);
+	const openTitle = useCallback((title: TitleGroup) => navigation.navigate('Title', { imdbId: title.imdbId }), [navigation]);
+	const titleItems = useMemo(() => (query.provider === 'all' ? sorted : sorted.filter((item) => item.provider === query.provider)), [query.provider, sorted]);
 	const groupRow = useCallback((item: LibraryItem, group: 'hash' | 'title') =>
 		setQuery((current) => ({ ...current, ...(group === 'hash' ? { hashKey: hashKeyOf(item), titleKey: undefined } : { titleKey: titleKeyOf(item), hashKey: undefined }) })), []);
 
@@ -286,29 +293,33 @@ export function LibraryScreen({ navigation }: { navigation: Navigation }) {
 					<View style={{ flex: 1 }}>
 						<Text style={{ color: theme.text, fontSize: 20, fontWeight: '700' }}>Library</Text>
 						<Text numberOfLines={1} style={{ color: progress ? theme.accent : theme.muted, fontSize: 12 }}>
-							{progress || `${items.length === baseItems.length ? `${baseItems.length} item${baseItems.length === 1 ? '' : 's'}` : `${items.length} of ${baseItems.length} shown`} · ${formatBytes(grouping.totalBytes)}${snapshot.fetchedAt ? ` · ${formatAgo(snapshot.fetchedAt)}` : ''}${selected.size ? ` · ${selected.size} selected` : ''}`}
+							{progress || (mode === 'titles' && titles.progress) || `${items.length === baseItems.length ? `${baseItems.length} item${baseItems.length === 1 ? '' : 's'}` : `${items.length} of ${baseItems.length} shown`} · ${formatBytes(grouping.totalBytes)}${snapshot.fetchedAt ? ` · ${formatAgo(snapshot.fetchedAt)}` : ''}${selected.size ? ` · ${selected.size} selected` : ''}`}
 						</Text>
 					</View>
 					{refreshing ? <View style={[styles.iconButton, { borderColor: 'transparent' }]}><ActivityIndicator color={theme.accent} /></View> : <IconButton icon="refresh" label="Refresh library" onPress={() => void refreshAll()} color={snapshot.failures.length ? theme.danger : theme.accent} />}
 					<IconButton icon="plus" label="Add to library" onPress={() => setAdding({ text: '' })} color={theme.accent} filled />
 					{/* Overflow menu last, as on Android; it fills in while items are selected, since it acts on them. */}
-					{progress ? <View style={[styles.iconButton, { borderColor: 'transparent' }]}><ActivityIndicator color={theme.accent} /></View> : <IconButton icon="dots-vertical" label={selected.size ? `Actions for ${selected.size} selected` : 'Library actions'} onPress={() => setSheet(true)} color={theme.accent} filled={selected.size > 0} />}
+					{mode === 'titles' ? null : progress ? <View style={[styles.iconButton, { borderColor: 'transparent' }]}><ActivityIndicator color={theme.accent} /></View> : <IconButton icon="dots-vertical" label={selected.size ? `Actions for ${selected.size} selected` : 'Library actions'} onPress={() => setSheet(true)} color={theme.accent} filled={selected.size > 0} />}
 				</View>
-				<SearchField accessibilityLabel="Search library" value={query.search} onChangeText={(search) => set({ search })} placeholder="Search names (regex), id, hash or status" />
+				<SearchField accessibilityLabel="Search library" value={query.search} onChangeText={(search) => set({ search })} placeholder={mode === 'titles' ? 'Search titles' : 'Search names (regex), id, hash or status'} />
 			</View>
 			<View style={styles.row}>
 				<ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 12, paddingVertical: 6, gap: 6 }}>
-					<DropdownChip label={sortLabel} active={query.sort !== 'newest'} onPress={() => setPicker('sort')} />
+					<FilterButton label="Titles" active={mode === 'titles'} onPress={() => setMode('titles')} />
+					<FilterButton label="Torrents" active={mode === 'torrents'} onPress={() => setMode('torrents')} />
+					{mode === 'titles' ? null : <DropdownChip label={sortLabel} active={query.sort !== 'newest'} onPress={() => setPicker('sort')} />}
 					<DropdownChip label={query.provider === 'all' ? 'Provider' : PROVIDER_META[query.provider].label} active={query.provider !== 'all'} onPress={() => setPicker('provider')} />
 					<DropdownChip label={medias.find((media) => media.value === query.media)?.label ?? 'Any type'} active={query.media !== 'all'} onPress={() => setPicker('media')} />
-					<DropdownChip label={query.view === 'selected' ? `Selected (${selected.size})` : viewLabel} active={query.view !== 'all'} onPress={() => setPicker('view')} />
-				{filtersActive ? <FilterButton label={query.titleKey ? 'One title' : 'One hash'} icon="close" active onPress={() => set({ titleKey: undefined, hashKey: undefined })} /> : null}
+					{mode === 'titles' ? null : <DropdownChip label={query.view === 'selected' ? `Selected (${selected.size})` : viewLabel} active={query.view !== 'all'} onPress={() => setPicker('view')} />}
+				{mode === 'torrents' && filtersActive ? <FilterButton label={query.titleKey ? 'One title' : 'One hash'} icon="close" active onPress={() => set({ titleKey: undefined, hashKey: undefined })} /> : null}
 				{JSON.stringify({ ...query, search: '' }) !== JSON.stringify({ ...EMPTY_QUERY, search: '' }) ? <FilterButton label="Reset" active={false} onPress={() => setQuery({ ...EMPTY_QUERY, search: query.search })} /> : null}
 				</ScrollView>
 			</View>
 			{startupError ? <ErrorBanner message={`Secure account storage: ${startupError}`} actionLabel="Retry secure account load" onAction={() => void retryStartup()} busy={!ready} /> : null}
 			{snapshot.failures.length > 0 ? <ErrorBanner message={snapshot.failures.map((failure) => `${PROVIDER_META[failure.provider].label}: ${failure.message}`).join('\n')} actionLabel="Retry library" onAction={() => void refreshAll()} busy={refreshing} /> : null}
-			{!ready ? <EmptyState title="Unlocking secure accounts…" detail="Provider credentials are read from the device secure store." /> : items.length === 0 ? (
+			{!ready ? <EmptyState title="Unlocking secure accounts…" detail="Provider credentials are read from the device secure store." /> : mode === 'titles' && baseItems.length > 0 ? (
+				<TitlesView items={titleItems} search={deferredQuery.search} media={query.media} grouping={grouping} selected={selected} refreshing={refreshing} onRefresh={() => void refreshAll()} onOpenTitle={openTitle} onOpenItem={openRow} onLongPressItem={toggle} onMoreItem={setRowMenu} />
+			) : items.length === 0 ? (
 				<View>
 					<EmptyState
 						title={refreshing ? 'Loading library…' : snapshot.items.length === 0 ? (connectedProviders.length === 0 ? 'Connect a provider to start' : 'Your library is empty') : 'No matching items'}

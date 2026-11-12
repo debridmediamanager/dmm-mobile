@@ -1,0 +1,1465 @@
+{
+	"captured": "2026-11-12, RD /torrents/info of testacct123 (read-only), links dropped; long packs trimmed to a few real entries",
+	"torrents": {
+		"2CHSZZUOPVH3Q": {
+			"filename": "South Park - Seasons 1 to 25 (S01-S25) Master Collection, The Movie & Extras [1080p-2160p NVEnc 10Bit HEVC][TrueHD+DDP 5.1Ch][English Subs]",
+			"hash": "3c50a9e66077b0132047916f2ee862f4716adf59",
+			"status": "downloaded",
+			"links": 360,
+			"files": [
+				{
+					"id": 2,
+					"path": "/Extras/6 Days to Air - The Making of South Park (2011)/6 Days to Air - The Making of South Park (2011).mkv",
+					"bytes": 1173583108,
+					"selected": 1
+				},
+				{
+					"id": 3,
+					"path": "/Extras/S01 Extras/Jay Leno's Appearance on South Park.mkv",
+					"bytes": 27683418,
+					"selected": 1
+				},
+				{
+					"id": 4,
+					"path": "/Extras/S01 Extras/O Holy Night - Cartman Music Video.mkv",
+					"bytes": 25541532,
+					"selected": 1
+				},
+				{
+					"id": 5,
+					"path": "/Extras/S02 Extras/Chocolate Salty Balls - Music Video.mkv",
+					"bytes": 44067983,
+					"selected": 1
+				},
+				{
+					"id": 359,
+					"path": "/Season 25/South Park - S25E05 - Help, My Teenager Hates Me!.mkv",
+					"bytes": 291409198,
+					"selected": 1
+				},
+				{
+					"id": 360,
+					"path": "/Season 25/South Park - S25E06 - Credigree Weed St Patrick's Day Special.mkv",
+					"bytes": 333738500,
+					"selected": 1
+				},
+				{
+					"id": 361,
+					"path": "/South Park Bigger, Longer and Uncut (1992)[2160p]/South Park Bigger, Longer and Uncut (1992).mkv",
+					"bytes": 4984134108,
+					"selected": 1
+				}
+			]
+		},
+		"3YIR44MQ7572Y": {
+			"filename": "[Some-Stuffs] Jojo's Bizarre Adventure Stone Ocean 33 (1920x1080 Blu-Ray Opus) [18E17992].mkv",
+			"hash": "9a84a7ef327d75847907a2114590920e04bb5e6f",
+			"status": "downloaded",
+			"links": 1,
+			"files": [
+				{
+					"id": 1,
+					"path": "/[Some-Stuffs] Jojo's Bizarre Adventure Stone Ocean 33 (1920x1080 Blu-Ray Opus) [18E17992].mkv",
+					"bytes": 1389406292,
+					"selected": 1
+				}
+			]
+		},
+		"4LT5BXQSVWDA6": {
+			"filename": "My.Hero.Academia.S04.P2.CRF-16.1080p.Blu-Ray.10-Bit.Dual-Audio.TrueHD.x265-iAHD",
+			"hash": "f60f7f182ed92d49a56f07bde918645834e2187f",
+			"status": "downloaded",
+			"links": 12,
+			"files": [
+				{
+					"id": 1,
+					"path": "/My.Hero.Academia.S04E20.1080p.Blu-Ray.10-Bit.Dual-Audio.TrueHD.x265-iAHD.mkv",
+					"bytes": 2518403024,
+					"selected": 1
+				},
+				{
+					"id": 2,
+					"path": "/My.Hero.Academia.S04E18.1080p.Blu-Ray.10-Bit.Dual-Audio.TrueHD.x265-iAHD.mkv",
+					"bytes": 2567841628,
+					"selected": 1
+				},
+				{
+					"id": 3,
+					"path": "/My.Hero.Academia.S04E24.1080p.Blu-Ray.10-Bit.Dual-Audio.TrueHD.x265-iAHD.mkv",
+					"bytes": 2596938807,
+					"selected": 1
+				},
+				{
+					"id": 4,
+					"path": "/My.Hero.Academia.S04E15.1080p.Blu-Ray.10-Bit.Dual-Audio.TrueHD.x265-iAHD.mkv",
+					"bytes": 2609870435,
+					"selected": 1
+				},
+				{
+					"id": 5,
+					"path": "/My.Hero.Academia.S04E17.1080p.Blu-Ray.10-Bit.Dual-Audio.TrueHD.x265-iAHD.mkv",
+					"bytes": 2621900656,
+					"selected": 1
+				},
+				{
+					"id": 6,
+					"path": "/My.Hero.Academia.S04E19.1080p.Blu-Ray.10-Bit.Dual-Audio.TrueHD.x265-iAHD.mkv",
+					"bytes": 2691105550,
+					"selected": 1
+				},
+				{
+					"id": 7,
+					"path": "/My.Hero.Academia.S04E21.1080p.Blu-Ray.10-Bit.Dual-Audio.TrueHD.x265-iAHD.mkv",
+					"bytes": 2691301217,
+					"selected": 1
+				},
+				{
+					"id": 8,
+					"path": "/My.Hero.Academia.S04E16.1080p.Blu-Ray.10-Bit.Dual-Audio.TrueHD.x265-iAHD.mkv",
+					"bytes": 2693494670,
+					"selected": 1
+				},
+				{
+					"id": 9,
+					"path": "/My.Hero.Academia.S04E14.1080p.Blu-Ray.10-Bit.Dual-Audio.TrueHD.x265-iAHD.mkv",
+					"bytes": 2739348654,
+					"selected": 1
+				},
+				{
+					"id": 10,
+					"path": "/My.Hero.Academia.S04E23.1080p.Blu-Ray.10-Bit.Dual-Audio.TrueHD.x265-iAHD.mkv",
+					"bytes": 2790285801,
+					"selected": 1
+				},
+				{
+					"id": 11,
+					"path": "/My.Hero.Academia.S04E22.1080p.Blu-Ray.10-Bit.Dual-Audio.TrueHD.x265-iAHD.mkv",
+					"bytes": 2897872211,
+					"selected": 1
+				},
+				{
+					"id": 12,
+					"path": "/My.Hero.Academia.S04E25.1080p.Blu-Ray.10-Bit.Dual-Audio.TrueHD.x265-iAHD.mkv",
+					"bytes": 2978795309,
+					"selected": 1
+				}
+			]
+		},
+		"5CU6N75BP5ZUC": {
+			"filename": "The Six Million Dollar Man (S4, Season 4) 1080p",
+			"hash": "811c38f57577125e2c7e675d15dce6a20484a3fc",
+			"status": "downloaded",
+			"links": 25,
+			"files": [
+				{
+					"id": 1,
+					"path": "/The Six Million Dollar Man -- 4x01 -- The Return of Bigfoot (Part 1).mkv",
+					"bytes": 6087296717,
+					"selected": 1
+				},
+				{
+					"id": 2,
+					"path": "/The Six Million Dollar Man -- 4x01 -- The Return of Bigfoot (Part 2).mkv",
+					"bytes": 3017285846,
+					"selected": 1
+				},
+				{
+					"id": 3,
+					"path": "/The Six Million Dollar Man -- 4x01 -- The Return of Bigfoot (Part 2).txt",
+					"bytes": 139,
+					"selected": 0
+				},
+				{
+					"id": 4,
+					"path": "/The Six Million Dollar Man -- 4x02 -- Nightmare in the Sky.mkv",
+					"bytes": 5900015162,
+					"selected": 1
+				},
+				{
+					"id": 5,
+					"path": "/The Six Million Dollar Man -- 4x03 -- Double Trouble.mkv",
+					"bytes": 5191627308,
+					"selected": 1
+				},
+				{
+					"id": 6,
+					"path": "/The Six Million Dollar Man -- 4x04 -- The Most Dangerous Enemy.mkv",
+					"bytes": 5344144364,
+					"selected": 1
+				},
+				{
+					"id": 7,
+					"path": "/The Six Million Dollar Man -- 4x05 -- H+2+O = Death.mkv",
+					"bytes": 5276325029,
+					"selected": 1
+				},
+				{
+					"id": 8,
+					"path": "/The Six Million Dollar Man -- 4x06 -- Kill Oscar (Part 1).mkv",
+					"bytes": 387659357,
+					"selected": 1
+				},
+				{
+					"id": 26,
+					"path": "/The Six Million Dollar Man -- 4x20 -- The Privacy of the Mind.mkv",
+					"bytes": 5723020961,
+					"selected": 1
+				},
+				{
+					"id": 27,
+					"path": "/The Six Million Dollar Man -- 4x21 -- To Catch the Eagle.mkv",
+					"bytes": 5771446934,
+					"selected": 1
+				},
+				{
+					"id": 28,
+					"path": "/The Six Million Dollar Man -- 4x22 -- The Ghostly Teletype.mkv",
+					"bytes": 5443448902,
+					"selected": 1
+				}
+			]
+		},
+		"AJDRASLVSFS7E": {
+			"filename": "[Yuki] Chihayafuru Season 1 (BD 1080p Hi10 FLAC)",
+			"hash": "e6f50175b1a9f47bc87c7424d440c3af11f0e423",
+			"status": "downloaded",
+			"links": 25,
+			"files": [
+				{
+					"id": 1,
+					"path": "/[Yuki] Chihayafuru S1 - 24 (BD 1080p Hi10 FLAC) [0670F602].mkv",
+					"bytes": 1976664002,
+					"selected": 1
+				},
+				{
+					"id": 2,
+					"path": "/[Yuki] Chihayafuru S1 - 02 (BD 1080p Hi10 FLAC) [4D107092].mkv",
+					"bytes": 1711404811,
+					"selected": 1
+				},
+				{
+					"id": 3,
+					"path": "/[Yuki] Chihayafuru S1 - 03 (BD 1080p Hi10 FLAC) [46F9E0CC].mkv",
+					"bytes": 1661559332,
+					"selected": 1
+				},
+				{
+					"id": 4,
+					"path": "/[Yuki] Chihayafuru S1 - 04 (BD 1080p Hi10 FLAC) [7C43AA12].mkv",
+					"bytes": 1708192384,
+					"selected": 1
+				},
+				{
+					"id": 5,
+					"path": "/[Yuki] Chihayafuru S1 - 05 (BD 1080p Hi10 FLAC) [956DD93C].mkv",
+					"bytes": 1709346544,
+					"selected": 1
+				},
+				{
+					"id": 6,
+					"path": "/[Yuki] Chihayafuru S1 - 06 (BD 1080p Hi10 FLAC) [75B65C04].mkv",
+					"bytes": 1734732696,
+					"selected": 1
+				},
+				{
+					"id": 7,
+					"path": "/[Yuki] Chihayafuru S1 - 07 (BD 1080p Hi10 FLAC) [A8BF8090].mkv",
+					"bytes": 1675195541,
+					"selected": 1
+				},
+				{
+					"id": 8,
+					"path": "/[Yuki] Chihayafuru S1 - 08 (BD 1080p Hi10 FLAC) [768A4DF8].mkv",
+					"bytes": 1692596249,
+					"selected": 1
+				},
+				{
+					"id": 23,
+					"path": "/[Yuki] Chihayafuru S1 - 23 (BD 1080p Hi10 FLAC) [9972163C].mkv",
+					"bytes": 1771867554,
+					"selected": 1
+				},
+				{
+					"id": 24,
+					"path": "/[Yuki] Chihayafuru S1 - 01 (BD 1080p Hi10 FLAC) [DD64515E].mkv",
+					"bytes": 1676370719,
+					"selected": 1
+				},
+				{
+					"id": 25,
+					"path": "/[Yuki] Chihayafuru S1 - 25 (BD 1080p Hi10 FLAC) [EB1B01FF].mkv",
+					"bytes": 1924946607,
+					"selected": 1
+				}
+			]
+		},
+		"BXPE4RRDJND6W": {
+			"filename": "Rick and Morty (Season 3)  BDRemux 1080p",
+			"hash": "d5f4e3f3c1dbb88378ab5badc96bf1cac178ec04",
+			"status": "downloaded",
+			"links": 10,
+			"files": [
+				{
+					"id": 1,
+					"path": "/Rick and Morty S3E04 - Vindicators 3 - The Return of Worldender.mkv",
+					"bytes": 2342288107,
+					"selected": 1
+				},
+				{
+					"id": 2,
+					"path": "/Rick and Morty S3E02 - Rickmancing the Stone.mkv",
+					"bytes": 2055302296,
+					"selected": 1
+				},
+				{
+					"id": 3,
+					"path": "/Rick and Morty S3E03 - Pickle Rick.mkv",
+					"bytes": 1860709877,
+					"selected": 1
+				},
+				{
+					"id": 4,
+					"path": "/Rick and Morty  S3E01 - The Rickshank Rickdemption.mkv",
+					"bytes": 2197986497,
+					"selected": 1
+				},
+				{
+					"id": 5,
+					"path": "/Rick and Morty S3E05 - The Whirly Dirly Conspiracy.mkv",
+					"bytes": 2290622956,
+					"selected": 1
+				},
+				{
+					"id": 6,
+					"path": "/Rick and Morty S3E06 - Rest and Ricklaxation.mkv",
+					"bytes": 2085855101,
+					"selected": 1
+				},
+				{
+					"id": 7,
+					"path": "/Rick and Morty S3E07 - The Ricklantis Mixup.mkv",
+					"bytes": 1981133289,
+					"selected": 1
+				},
+				{
+					"id": 8,
+					"path": "/Rick and Morty S3E08 - Morty's Mind Blowers.mkv",
+					"bytes": 2017878008,
+					"selected": 1
+				},
+				{
+					"id": 9,
+					"path": "/Rick and Morty S3E09 - The ABCs of Beth.mkv",
+					"bytes": 1897967486,
+					"selected": 1
+				},
+				{
+					"id": 10,
+					"path": "/Rick and Morty S3E10 - The Rickchurian Mortydate.mkv",
+					"bytes": 1907544457,
+					"selected": 1
+				}
+			]
+		},
+		"DJ7R4XRGH3U4M": {
+			"filename": "Pokémon (1997) Season 5 S05 (480p DVD x265 HEVC 10bit AAC 2.0 ImE)",
+			"hash": "95e8eabbaf357f1ecc11e4fc40d7328a495062e8",
+			"status": "downloaded",
+			"links": 64,
+			"files": [
+				{
+					"id": 1,
+					"path": "/Pokémon (1997) - S05E01 - Around the Whirlpool (480p DVD x265 ImE).mkv",
+					"bytes": 241992259,
+					"selected": 1
+				},
+				{
+					"id": 2,
+					"path": "/Pokémon (1997) - S05E03 - Takin' It On the Chinchou (480p DVD x265 ImE).mkv",
+					"bytes": 241680347,
+					"selected": 1
+				},
+				{
+					"id": 3,
+					"path": "/Pokémon (1997) - S05E04 - A Corsola Caper! (480p DVD x265 ImE).mkv",
+					"bytes": 241856136,
+					"selected": 1
+				},
+				{
+					"id": 4,
+					"path": "/Pokémon (1997) - S05E05 - Mantine Overboard! (480p DVD x265 ImE).mkv",
+					"bytes": 242409012,
+					"selected": 1
+				},
+				{
+					"id": 5,
+					"path": "/Pokémon (1997) - S05E06 - Octillery The Outcast (480p DVD x265 ImE).mkv",
+					"bytes": 240552009,
+					"selected": 1
+				},
+				{
+					"id": 6,
+					"path": "/Pokémon (1997) - S05E07 - Dueling Heroes (480p DVD x265 ImE).mkv",
+					"bytes": 242422164,
+					"selected": 1
+				},
+				{
+					"id": 7,
+					"path": "/Pokémon (1997) - S05E08 - The Perfect Match! (480p DVD x265 ImE).mkv",
+					"bytes": 241848667,
+					"selected": 1
+				},
+				{
+					"id": 8,
+					"path": "/Pokémon (1997) - S05E09 - Plant it Now... Diglett Later (480p DVD x265 ImE).mkv",
+					"bytes": 242590098,
+					"selected": 1
+				},
+				{
+					"id": 62,
+					"path": "/Pokémon (1997) - S05E63 - Johto Photo Finish (480p DVD x265 ImE).mkv",
+					"bytes": 241359042,
+					"selected": 1
+				},
+				{
+					"id": 63,
+					"path": "/Pokémon (1997) - S05E64 - Gotta Catch Ya Later! (480p DVD x265 ImE).mkv",
+					"bytes": 241748867,
+					"selected": 1
+				},
+				{
+					"id": 64,
+					"path": "/Pokémon (1997) - S05E65 - Hoenn Alone! (480p DVD x265 ImE).mkv",
+					"bytes": 243208269,
+					"selected": 1
+				}
+			]
+		},
+		"DQ673KSP5H2L2": {
+			"filename": "Spongebob Squarepants Season 9 Complete WEB x264 [i_c]",
+			"hash": "3ede0e787b2ec50a98db89c329af7e35fcd2df81",
+			"status": "downloaded",
+			"links": 42,
+			"files": [
+				{
+					"id": 1,
+					"path": "/Spongebob Squarepants S09E01 A Friendly Game.mkv",
+					"bytes": 105714278,
+					"selected": 1
+				},
+				{
+					"id": 2,
+					"path": "/Spongebob Squarepants S09E02 Sentimental Sponge.mkv",
+					"bytes": 82634152,
+					"selected": 1
+				},
+				{
+					"id": 3,
+					"path": "/Spongebob Squarepants S09E03 Squidward's School for Grown-Ups.mkv",
+					"bytes": 68123333,
+					"selected": 1
+				},
+				{
+					"id": 4,
+					"path": "/Spongebob Squarepants S09E04 Oral Report.mkv",
+					"bytes": 75596990,
+					"selected": 1
+				},
+				{
+					"id": 5,
+					"path": "/Spongebob Squarepants S09E05 The Hot Shot.mkv",
+					"bytes": 99669904,
+					"selected": 1
+				},
+				{
+					"id": 6,
+					"path": "/Spongebob Squarepants S09E06 The Other Patty.mkv",
+					"bytes": 71209041,
+					"selected": 1
+				},
+				{
+					"id": 7,
+					"path": "/Spongebob Squarepants S09E07 Frozen Face-Off.mkv",
+					"bytes": 176456050,
+					"selected": 1
+				},
+				{
+					"id": 8,
+					"path": "/Spongebob Squarepants S09E08 Accidents Will Happen.mkv",
+					"bytes": 71272821,
+					"selected": 1
+				},
+				{
+					"id": 40,
+					"path": "/Spongebob Squarepants S09E40 Karen 2.0.mkv",
+					"bytes": 66040534,
+					"selected": 1
+				},
+				{
+					"id": 41,
+					"path": "/Spongebob Squarepants S09E41 Demolition Doofus.mkv",
+					"bytes": 96567496,
+					"selected": 1
+				},
+				{
+					"id": 42,
+					"path": "/Spongebob Squarepants S09E42 Face Freeze.mkv",
+					"bytes": 79759592,
+					"selected": 1
+				}
+			]
+		},
+		"HM5WI7JFU7HRQ": {
+			"filename": "Weeds.S01-08.1080p.TrueHD.5.1.AVC.REMUX-FraMeSToR",
+			"hash": "4a1d3730948b1cdb008ca3148babed9265abee44",
+			"status": "downloaded",
+			"links": 101,
+			"files": [
+				{
+					"id": 1,
+					"path": "/Weeds.S01.1080p.TrueHD.5.1.AVC.REMUX-FraMeSToR/Weeds.S01E01.You.Can't.Miss.the.Bear.1080p.TrueHD.5.1.AVC.REMUX-FraMeSToR.mkv",
+					"bytes": 7246998581,
+					"selected": 1
+				},
+				{
+					"id": 2,
+					"path": "/Weeds.S01.1080p.TrueHD.5.1.AVC.REMUX-FraMeSToR/Weeds.S01E02.Free.Goat.1080p.TrueHD.5.1.AVC.REMUX-FraMeSToR.mkv",
+					"bytes": 6845065071,
+					"selected": 1
+				},
+				{
+					"id": 3,
+					"path": "/Weeds.S01.1080p.TrueHD.5.1.AVC.REMUX-FraMeSToR/Weeds.S01E03.Good.Shit.Lollipop.1080p.TrueHD.5.1.AVC.REMUX-FraMeSToR.mkv",
+					"bytes": 6859612117,
+					"selected": 1
+				},
+				{
+					"id": 99,
+					"path": "/Weeds.S08.1080p.TrueHD.5.1.AVC.REMUX-FraMeSToR/Weeds.S08E10.Threshold.1080p.DTS-HD.MA.7.1.AVC.REMUX-FraMeSToR.mkv",
+					"bytes": 6060636373,
+					"selected": 1
+				},
+				{
+					"id": 100,
+					"path": "/Weeds.S08.1080p.TrueHD.5.1.AVC.REMUX-FraMeSToR/Weeds.S08E11.God.Willing.and.the.Creek.Don't.Rise.1080p.DTS-HD.MA.7.1.AVC.REMUX-FraMeSToR.mkv",
+					"bytes": 6378122319,
+					"selected": 1
+				},
+				{
+					"id": 101,
+					"path": "/Weeds.S08.1080p.TrueHD.5.1.AVC.REMUX-FraMeSToR/Weeds.S08E12-E13.It's.Time.1080p.DTS-HD.MA.7.1.AVC.REMUX-FraMeSToR.mkv",
+					"bytes": 12322978708,
+					"selected": 1
+				}
+			]
+		},
+		"HURTOGA6FV5TW": {
+			"filename": "All.Creatures.Great.And.Small.2020.S01.1080p.BluRay.REMUX.AVC.FLAC.2.0-NOGRP[rartv]",
+			"hash": "42f37c8ec2f0606dd3a31ef7712c487336394679",
+			"status": "downloaded",
+			"links": 7,
+			"files": [
+				{
+					"id": 1,
+					"path": "/All.Creatures.Great.And.Small.2020.S01E01.1080p.BluRay.REMUX.AVC.FLAC.2.0-NOGRP.mkv",
+					"bytes": 10017170745,
+					"selected": 1
+				},
+				{
+					"id": 2,
+					"path": "/All.Creatures.Great.And.Small.2020.S01E02.1080p.BluRay.REMUX.AVC.FLAC.2.0-NOGRP.mkv",
+					"bytes": 9990442168,
+					"selected": 1
+				},
+				{
+					"id": 3,
+					"path": "/All.Creatures.Great.And.Small.2020.S01E03.1080p.BluRay.REMUX.AVC.FLAC.2.0-NOGRP.mkv",
+					"bytes": 10034927044,
+					"selected": 1
+				},
+				{
+					"id": 4,
+					"path": "/All.Creatures.Great.And.Small.2020.S01E04.1080p.BluRay.REMUX.AVC.FLAC.2.0-NOGRP.mkv",
+					"bytes": 9995034392,
+					"selected": 1
+				},
+				{
+					"id": 5,
+					"path": "/All.Creatures.Great.And.Small.2020.S01E05.1080p.BluRay.REMUX.AVC.FLAC.2.0-NOGRP.mkv",
+					"bytes": 11198667806,
+					"selected": 1
+				},
+				{
+					"id": 6,
+					"path": "/All.Creatures.Great.And.Small.2020.S01E06.1080p.BluRay.REMUX.AVC.FLAC.2.0-NOGRP.mkv",
+					"bytes": 11130097849,
+					"selected": 1
+				},
+				{
+					"id": 7,
+					"path": "/All.Creatures.Great.And.Small.2020.S01E07.1080p.BluRay.REMUX.AVC.FLAC.2.0-NOGRP.mkv",
+					"bytes": 13148224140,
+					"selected": 1
+				},
+				{
+					"id": 8,
+					"path": "/RARBG.txt",
+					"bytes": 31,
+					"selected": 0
+				}
+			]
+		},
+		"INVZ4PTLLTNKQ": {
+			"filename": "The Electric Company - 1970s (Childrens TV series in MP4 format)",
+			"hash": "3fba53b6adaf34ef7a36d94effaf42b92dbe11d4",
+			"status": "downloaded",
+			"links": 40,
+			"files": [
+				{
+					"id": 1,
+					"path": "/The Electric Company - 1970s - DVD Collection/2. The Best of the Electric Company - (Eps 109, 131, 181, 285, 321).mp4",
+					"bytes": 1205249104,
+					"selected": 1
+				},
+				{
+					"id": 2,
+					"path": "/The Electric Company - the series very first segment.mp4",
+					"bytes": 14982470,
+					"selected": 1
+				},
+				{
+					"id": 3,
+					"path": "/The Electric Company - the series very last segment.mp4",
+					"bytes": 12173416,
+					"selected": 1
+				},
+				{
+					"id": 4,
+					"path": "/The Electric Company - unaired pilot intro.mp4",
+					"bytes": 12846123,
+					"selected": 1
+				},
+				{
+					"id": 5,
+					"path": "/The Electric Company - 1970s - Digital Collection/The Electric Company - E2 (Shake Your Jelly Belly).mp4",
+					"bytes": 251179947,
+					"selected": 1
+				},
+				{
+					"id": 6,
+					"path": "/The Electric Company - 1970s - Digital Collection/The Electric Company - E5 (Meet The Wolf Man!).mp4",
+					"bytes": 207347965,
+					"selected": 1
+				},
+				{
+					"id": 7,
+					"path": "/The Electric Company - 1970s - Digital Collection/The Electric Company - E13 (Have You Seen My Canta-Antelope).mp4",
+					"bytes": 218630222,
+					"selected": 1
+				},
+				{
+					"id": 8,
+					"path": "/The Electric Company - 1970s - Digital Collection/The Electric Company - E23 (It’S A Walrus, It’S A Bathtub, It’S Sprayman!).mp4",
+					"bytes": 214551944,
+					"selected": 1
+				},
+				{
+					"id": 39,
+					"path": "/The Electric Company - 1970s - DVD Collection/6. The Best of the Electric Company - (Eps 223, 227, 230, 232, 253).mp4",
+					"bytes": 1077622403,
+					"selected": 1
+				},
+				{
+					"id": 40,
+					"path": "/The Electric Company - 1970s - DVD Collection/7. The Best of the Electric Company - (Eps 332, 375, 502, 27A, 35A).mp4",
+					"bytes": 1024366736,
+					"selected": 1
+				},
+				{
+					"id": 41,
+					"path": "/The Electric Company - 1970s - DVD Collection/8. The Best of the Electric Company - (Eps 57A, 60A, 77A, 105A, 122A).mp4",
+					"bytes": 1017462106,
+					"selected": 1
+				}
+			]
+		},
+		"KFAKB2SGUTDAO": {
+			"filename": "[Erai-raws] Jujutsu Kaisen 2nd Season - 01 ~ 23 [1080p][Multiple Subtitle]",
+			"hash": "48fff3c728bd4f9101a311a66f7f3277863c32e0",
+			"status": "downloaded",
+			"links": 23,
+			"files": [
+				{
+					"id": 1,
+					"path": "/[Erai-raws] Jujutsu Kaisen 2nd Season - 01 [1080p][Multiple Subtitle][D4D202DA].mkv",
+					"bytes": 1487398411,
+					"selected": 1
+				},
+				{
+					"id": 2,
+					"path": "/[Erai-raws] Jujutsu Kaisen 2nd Season - 02 [1080p][Multiple Subtitle][82D2EC2D].mkv",
+					"bytes": 1488866220,
+					"selected": 1
+				},
+				{
+					"id": 3,
+					"path": "/[Erai-raws] Jujutsu Kaisen 2nd Season - 03 [1080p][Multiple Subtitle][656840C4].mkv",
+					"bytes": 1484162227,
+					"selected": 1
+				},
+				{
+					"id": 4,
+					"path": "/[Erai-raws] Jujutsu Kaisen 2nd Season - 04 [1080p][Multiple Subtitle][B96771A0].mkv",
+					"bytes": 1483235800,
+					"selected": 1
+				},
+				{
+					"id": 5,
+					"path": "/[Erai-raws] Jujutsu Kaisen 2nd Season - 05 [1080p][Multiple Subtitle][EE788DC6].mkv",
+					"bytes": 1489489950,
+					"selected": 1
+				},
+				{
+					"id": 6,
+					"path": "/[Erai-raws] Jujutsu Kaisen 2nd Season - 06 [1080p][Multiple Subtitle][9F70D1B5].mkv",
+					"bytes": 1487866582,
+					"selected": 1
+				},
+				{
+					"id": 7,
+					"path": "/[Erai-raws] Jujutsu Kaisen 2nd Season - 07 [1080p][Multiple Subtitle][061ABD41].mkv",
+					"bytes": 1483969499,
+					"selected": 1
+				},
+				{
+					"id": 8,
+					"path": "/[Erai-raws] Jujutsu Kaisen 2nd Season - 08 [1080p][Multiple Subtitle][D5B90188].mkv",
+					"bytes": 1486642587,
+					"selected": 1
+				},
+				{
+					"id": 21,
+					"path": "/[Erai-raws] Jujutsu Kaisen 2nd Season - 21 [1080p][Multiple Subtitle][90BB459F].mkv",
+					"bytes": 1473447485,
+					"selected": 1
+				},
+				{
+					"id": 22,
+					"path": "/[Erai-raws] Jujutsu Kaisen 2nd Season - 22 [1080p][Multiple Subtitle][ADA777B1].mkv",
+					"bytes": 1473225973,
+					"selected": 1
+				},
+				{
+					"id": 23,
+					"path": "/[Erai-raws] Jujutsu Kaisen 2nd Season - 23 [1080p][Multiple Subtitle][291558E2].mkv",
+					"bytes": 1470264524,
+					"selected": 1
+				}
+			]
+		},
+		"M5HBTJEOYPHTE": {
+			"filename": "Fate.Zero.2011.S01.1080p.BluRay.Opus2.0.H.265-LYS1TH3A",
+			"hash": "b7c4496f615255f727dbba831a072eae58fbec0c",
+			"status": "downloaded",
+			"links": 25,
+			"files": [
+				{
+					"id": 1,
+					"path": "/Fate.Zero.2011.S01E01.1080p.BluRay.Opus2.0.H.265-LYS1TH3A.mkv",
+					"bytes": 6424767714,
+					"selected": 1
+				},
+				{
+					"id": 2,
+					"path": "/Fate.Zero.2011.S01E02.1080p.BluRay.Opus2.0.H.265-LYS1TH3A.mkv",
+					"bytes": 4085072729,
+					"selected": 1
+				},
+				{
+					"id": 3,
+					"path": "/Fate.Zero.2011.S01E03.1080p.BluRay.Opus2.0.H.265-LYS1TH3A.mkv",
+					"bytes": 3793320356,
+					"selected": 1
+				},
+				{
+					"id": 4,
+					"path": "/Fate.Zero.2011.S01E04.1080p.BluRay.Opus2.0.H.265-LYS1TH3A.mkv",
+					"bytes": 4604015106,
+					"selected": 1
+				},
+				{
+					"id": 5,
+					"path": "/Fate.Zero.2011.S01E05.1080p.BluRay.Opus2.0.H.265-LYS1TH3A.mkv",
+					"bytes": 4918476684,
+					"selected": 1
+				},
+				{
+					"id": 6,
+					"path": "/Fate.Zero.2011.S01E06.1080p.BluRay.Opus2.0.H.265-LYS1TH3A.mkv",
+					"bytes": 3819353958,
+					"selected": 1
+				},
+				{
+					"id": 7,
+					"path": "/Fate.Zero.2011.S01E07.1080p.BluRay.Opus2.0.H.265-LYS1TH3A.mkv",
+					"bytes": 4399125595,
+					"selected": 1
+				},
+				{
+					"id": 8,
+					"path": "/Fate.Zero.2011.S01E08.1080p.BluRay.Opus2.0.H.265-LYS1TH3A.mkv",
+					"bytes": 4623675989,
+					"selected": 1
+				},
+				{
+					"id": 23,
+					"path": "/Fate.Zero.2011.S01E23.1080p.BluRay.Opus2.0.H.265-LYS1TH3A.mkv",
+					"bytes": 4223577875,
+					"selected": 1
+				},
+				{
+					"id": 24,
+					"path": "/Fate.Zero.2011.S01E24.1080p.BluRay.Opus2.0.H.265-LYS1TH3A.mkv",
+					"bytes": 3598823945,
+					"selected": 1
+				},
+				{
+					"id": 25,
+					"path": "/Fate.Zero.2011.S01E25.1080p.BluRay.Opus2.0.H.265-LYS1TH3A.mkv",
+					"bytes": 3575530579,
+					"selected": 1
+				}
+			]
+		},
+		"OJAV36AZ5GF22": {
+			"filename": "Family.Matters.seasons.01-09.AMZN.1080p.10bit.hevc.x265-bearfish",
+			"hash": "ddd5ba15597e466715ef3196f2305fe67ab73d78",
+			"status": "downloaded",
+			"links": 215,
+			"files": [
+				{
+					"id": 1,
+					"path": "/Season 1/Family Matters S01E01.AMZN.1080p.5.1.HEVC.x265.10bit-Bearfish.mkv",
+					"bytes": 584400582,
+					"selected": 1
+				},
+				{
+					"id": 2,
+					"path": "/Season 1/Family Matters S01E02.AMZN.1080p.5.1.HEVC.x265.10bit-Bearfish.mkv",
+					"bytes": 585660934,
+					"selected": 1
+				},
+				{
+					"id": 3,
+					"path": "/Season 1/Family Matters S01E03.AMZN.1080p.5.1.HEVC.x265.10bit-Bearfish.mkv",
+					"bytes": 584655607,
+					"selected": 1
+				},
+				{
+					"id": 213,
+					"path": "/Season 9/Family Matters S09E20.AMZN.1080p.5.1.HEVC.x265.10bit-Bearfish.mkv",
+					"bytes": 556473111,
+					"selected": 1
+				},
+				{
+					"id": 214,
+					"path": "/Season 9/Family Matters S09E21.AMZN.1080p.5.1.HEVC.x265.10bit-Bearfish.mkv",
+					"bytes": 555161327,
+					"selected": 1
+				},
+				{
+					"id": 215,
+					"path": "/Season 9/Family Matters S09E22.AMZN.1080p.5.1.HEVC.x265.10bit-Bearfish.mkv",
+					"bytes": 560698048,
+					"selected": 1
+				}
+			]
+		},
+		"PXNZHFAWWDCQO": {
+			"filename": "[LostYears] The Rising of the Shield Hero - Season 03 (WEB 1080p x264 AAC) [Dual-Audio]",
+			"hash": "be2c3f25c71958f9954b6b3ae298c87e981de5b9",
+			"status": "downloaded",
+			"links": 12,
+			"files": [
+				{
+					"id": 1,
+					"path": "/[LostYears] The Rising of the Shield Hero - S03E01 (WEB 1080p x264 AAC) [0A6407D1].mkv",
+					"bytes": 1545431860,
+					"selected": 1
+				},
+				{
+					"id": 2,
+					"path": "/[LostYears] The Rising of the Shield Hero - S03E02 (WEB 1080p x264 AAC) [EF258FDD].mkv",
+					"bytes": 1556239428,
+					"selected": 1
+				},
+				{
+					"id": 3,
+					"path": "/[LostYears] The Rising of the Shield Hero - S03E03 (WEB 1080p x264 AAC) [F1F90BE0].mkv",
+					"bytes": 1538651347,
+					"selected": 1
+				},
+				{
+					"id": 4,
+					"path": "/[LostYears] The Rising of the Shield Hero - S03E04 (WEB 1080p x264 AAC) [CE225432].mkv",
+					"bytes": 1534975458,
+					"selected": 1
+				},
+				{
+					"id": 5,
+					"path": "/[LostYears] The Rising of the Shield Hero - S03E05 (WEB 1080p x264 AAC) [949F772C].mkv",
+					"bytes": 1573187388,
+					"selected": 1
+				},
+				{
+					"id": 6,
+					"path": "/[LostYears] The Rising of the Shield Hero - S03E06 (WEB 1080p x264 AAC) [D5155B91].mkv",
+					"bytes": 1558493377,
+					"selected": 1
+				},
+				{
+					"id": 7,
+					"path": "/[LostYears] The Rising of the Shield Hero - S03E07 (WEB 1080p x264 AAC) [6C569647].mkv",
+					"bytes": 1567058992,
+					"selected": 1
+				},
+				{
+					"id": 8,
+					"path": "/[LostYears] The Rising of the Shield Hero - S03E08 (WEB 1080p x264 AAC) [BBB589B9].mkv",
+					"bytes": 1574627798,
+					"selected": 1
+				},
+				{
+					"id": 9,
+					"path": "/[LostYears] The Rising of the Shield Hero - S03E09 (WEB 1080p x264 AAC) [DB7BE479].mkv",
+					"bytes": 1560951159,
+					"selected": 1
+				},
+				{
+					"id": 10,
+					"path": "/[LostYears] The Rising of the Shield Hero - S03E10 (WEB 1080p x264 AAC) [68B918F9].mkv",
+					"bytes": 1559756798,
+					"selected": 1
+				},
+				{
+					"id": 11,
+					"path": "/[LostYears] The Rising of the Shield Hero - S03E11 (WEB 1080p x264 AAC) [C3FEA7EF].mkv",
+					"bytes": 1576975917,
+					"selected": 1
+				},
+				{
+					"id": 12,
+					"path": "/[LostYears] The Rising of the Shield Hero - S03E12 (WEB 1080p x264 AAC) [702717B5].mkv",
+					"bytes": 1553605588,
+					"selected": 1
+				}
+			]
+		},
+		"PZV6JHKCK4ZPM": {
+			"filename": "Star Wars Rebels Complete Season 3",
+			"hash": "96255f65a5f31efba49f60fd889efdd9ba96c6d9",
+			"status": "downloaded",
+			"links": 21,
+			"files": [
+				{
+					"id": 1,
+					"path": "/Star Wars Rebels S03E16 Through Imperial Eyes.mkv",
+					"bytes": 922645591,
+					"selected": 1
+				},
+				{
+					"id": 2,
+					"path": "/Star Wars Rebels S03E15 Legacy of Mandalore.mkv",
+					"bytes": 945293325,
+					"selected": 1
+				},
+				{
+					"id": 3,
+					"path": "/Star Wars Rebels S03E14 Trials of the Darksaber.mkv",
+					"bytes": 920735812,
+					"selected": 1
+				},
+				{
+					"id": 4,
+					"path": "/Star Wars Rebels S03E13 Warhead.mkv",
+					"bytes": 918398566,
+					"selected": 1
+				},
+				{
+					"id": 5,
+					"path": "/Star Wars Rebels S03E17 Secret Cargo.mkv",
+					"bytes": 945321817,
+					"selected": 1
+				},
+				{
+					"id": 6,
+					"path": "/Star Wars Rebels S03E18 Double Agent Droid.mkv",
+					"bytes": 922152951,
+					"selected": 1
+				},
+				{
+					"id": 7,
+					"path": "/Star Wars Rebels S03E21 Zero Hour Part 2.mkv",
+					"bytes": 920891051,
+					"selected": 1
+				},
+				{
+					"id": 8,
+					"path": "/Star Wars Rebels S03E20 Zero Hour Part 1.mkv",
+					"bytes": 916532305,
+					"selected": 1
+				},
+				{
+					"id": 19,
+					"path": "/Star Wars Rebels S03E09 An Inside Man.mkv",
+					"bytes": 948993553,
+					"selected": 1
+				},
+				{
+					"id": 20,
+					"path": "/Star Wars Rebels S03E08 The Wynkahthu Job.mkv",
+					"bytes": 927089230,
+					"selected": 1
+				},
+				{
+					"id": 21,
+					"path": "/Star Wars Rebels S03E01 Steps Into Shadow.mkv",
+					"bytes": 1843501629,
+					"selected": 1
+				}
+			]
+		},
+		"RIXR6H7F4BYTE": {
+			"filename": "Season 01",
+			"hash": "894760d7dd48a1870fbe5ae576b1980a3b6c6c5f",
+			"status": "downloaded",
+			"links": 1,
+			"files": [
+				{
+					"id": 2,
+					"path": "/Bananas In Pyjamas (2011) - S01E59 - Fishy Business.mp4",
+					"bytes": 69583175,
+					"selected": 1
+				},
+				{
+					"id": 3,
+					"path": "/Bananas In Pyjamas (2011) - S01E01 - The Magic Trick.mp4",
+					"bytes": 51387476,
+					"selected": 1
+				},
+				{
+					"id": 9,
+					"path": "/Bananas In Pyjamas (2011) - S01E02 - Moving.mp4",
+					"bytes": 61557305,
+					"selected": 1
+				},
+				{
+					"id": 15,
+					"path": "/Bananas In Pyjamas (2011) - S01E03 - The Little Fish.mp4",
+					"bytes": 58257346,
+					"selected": 1
+				},
+				{
+					"id": 21,
+					"path": "/Bananas In Pyjamas (2011) - S01E04 - Glue.mp4",
+					"bytes": 54575697,
+					"selected": 1
+				},
+				{
+					"id": 27,
+					"path": "/Bananas In Pyjamas (2011) - S01E05 - Prince Rat.mp4",
+					"bytes": 64700562,
+					"selected": 1
+				},
+				{
+					"id": 1,
+					"path": "/Bananas In Pyjamas (2011) - S01E52 - Cuddlestown Records.nfo-orig",
+					"bytes": 0,
+					"selected": 1
+				},
+				{
+					"id": 4,
+					"path": "/Bananas In Pyjamas (2011) - S01E01 - The Magic Trick.nfo",
+					"bytes": 1225,
+					"selected": 1
+				}
+			]
+		},
+		"UEANL4UCXDW6O": {
+			"filename": "Season 3",
+			"hash": "8016aaf87e3d8b7bcd55af9ed159b4d02e485ac0",
+			"status": "downloaded",
+			"links": 25,
+			"files": [
+				{
+					"id": 1,
+					"path": "/Chihayafuru S03E15 As helpless autumn leaves are caught against the flow.mkv",
+					"bytes": 1806975521,
+					"selected": 1
+				},
+				{
+					"id": 2,
+					"path": "/Chihayafuru S03E01 May it be that I find.mkv",
+					"bytes": 1654230254,
+					"selected": 1
+				},
+				{
+					"id": 3,
+					"path": "/Chihayafuru S03E02 The hazed early dawn light comes not from the moon.mkv",
+					"bytes": 1619820350,
+					"selected": 1
+				},
+				{
+					"id": 4,
+					"path": "/Chihayafuru S03E03 But from the crystal white snow of Yoshino.mkv",
+					"bytes": 1630512620,
+					"selected": 1
+				},
+				{
+					"id": 5,
+					"path": "/Chihayafuru S03E04 Nobody wishes to see.mkv",
+					"bytes": 1729964240,
+					"selected": 1
+				},
+				{
+					"id": 6,
+					"path": "/Chihayafuru S03E05 Mount Amanokagu.mkv",
+					"bytes": 1662750876,
+					"selected": 1
+				},
+				{
+					"id": 7,
+					"path": "/Chihayafuru S03E06 Tatsuta River ablaze.mkv",
+					"bytes": 1796863454,
+					"selected": 1
+				},
+				{
+					"id": 8,
+					"path": "/Chihayafuru S03E07 The storm blasts.mkv",
+					"bytes": 1696455760,
+					"selected": 1
+				},
+				{
+					"id": 23,
+					"path": "/Chihayafuru S03E22 Just as my beauty has faded.mkv",
+					"bytes": 1544445233,
+					"selected": 1
+				},
+				{
+					"id": 24,
+					"path": "/Chihayafuru S03E23 Like a boatsman adrift.mkv",
+					"bytes": 1564377079,
+					"selected": 1
+				},
+				{
+					"id": 25,
+					"path": "/Chihayafuru S03E24 When winds send waves crashing.mkv",
+					"bytes": 1494707862,
+					"selected": 1
+				}
+			]
+		},
+		"VYFNODUYKM2NY": {
+			"filename": "Tensei Shitara Slime Datta Ken Season 2 Part 1 (BD 1080p HEVC 10bit FLAC) [Dual Audio] [FLE]",
+			"hash": "e286dfae9e72677745c137608eda7d7b6f0ea153",
+			"status": "downloaded",
+			"links": 14,
+			"files": [
+				{
+					"id": 1,
+					"path": "/Extras/[FLE] Tensei Shitara Slime Datta Ken (Creditless ED) (BD 1080p HEVC FLAC) [7FE19C55].mkv",
+					"bytes": 333010877,
+					"selected": 1
+				},
+				{
+					"id": 2,
+					"path": "/Extras/[FLE] Tensei Shitara Slime Datta Ken (Creditless OP) (BD 1080p HEVC FLAC) [AF320805].mkv",
+					"bytes": 332497988,
+					"selected": 1
+				},
+				{
+					"id": 3,
+					"path": "/[FLE] Tensei Shitara Slime Datta Ken - S02E01 - Rimuru's Busy Life [E411414C].mkv",
+					"bytes": 2293500991,
+					"selected": 1
+				},
+				{
+					"id": 4,
+					"path": "/[FLE] Tensei Shitara Slime Datta Ken - S02E02 - Trade with the Animal Kingdom [4EE366ED].mkv",
+					"bytes": 2203864563,
+					"selected": 1
+				},
+				{
+					"id": 5,
+					"path": "/[FLE] Tensei Shitara Slime Datta Ken - S02E03 - Paradise, Once More [82B1F43E].mkv",
+					"bytes": 2063827415,
+					"selected": 1
+				},
+				{
+					"id": 6,
+					"path": "/[FLE] Tensei Shitara Slime Datta Ken - S02E04 - The Scheming Kingdom of Falmuth [140270BA].mkv",
+					"bytes": 1773634367,
+					"selected": 1
+				},
+				{
+					"id": 7,
+					"path": "/[FLE] Tensei Shitara Slime Datta Ken - S02E05 - Prelude to the Disaster [5672EEC5].mkv",
+					"bytes": 1781988226,
+					"selected": 1
+				},
+				{
+					"id": 8,
+					"path": "/[FLE] Tensei Shitara Slime Datta Ken - S02E06 - The Beauty Makes Her Move [E7B782F6].mkv",
+					"bytes": 2283545263,
+					"selected": 1
+				},
+				{
+					"id": 12,
+					"path": "/[FLE] Tensei Shitara Slime Datta Ken - S02E10 - Megiddo [047E7A38].mkv",
+					"bytes": 2407262651,
+					"selected": 1
+				},
+				{
+					"id": 13,
+					"path": "/[FLE] Tensei Shitara Slime Datta Ken - S02E11 - Birth of a Demon Lord [450E368E].mkv",
+					"bytes": 2595647029,
+					"selected": 1
+				},
+				{
+					"id": 14,
+					"path": "/[FLE] Tensei Shitara Slime Datta Ken - S02E12 - The One Unleashed [2A915FED].mkv",
+					"bytes": 2452708522,
+					"selected": 1
+				}
+			]
+		},
+		"W6K5DHHI5WGBG": {
+			"filename": "Paw Patrol Season 5 HD 1080P S05 Complete 13Aug2018",
+			"hash": "e1832e79311018d5c5084577372304092da96db5",
+			"status": "downloaded",
+			"links": 1,
+			"files": [
+				{
+					"id": 1,
+					"path": "/PAW.Patrol.S05E18.Ultimate.Rescue.Pups.Save.the.Royal.Kitties.1080p.mkv",
+					"bytes": 641833855,
+					"selected": 1
+				},
+				{
+					"id": 2,
+					"path": "/PAW.Patrol.S05E02.Pups.Save.an.Ostrich.1080p.mkv",
+					"bytes": 311126786,
+					"selected": 1
+				},
+				{
+					"id": 3,
+					"path": "/PAW.Patrol.S05E03.Pups.Save.Big.Paw.1080p.mkv",
+					"bytes": 345269356,
+					"selected": 1
+				},
+				{
+					"id": 4,
+					"path": "/PAW.Patrol.S05E04.Pups.Save.a.Hum-Mover.1080p.mkv",
+					"bytes": 315965049,
+					"selected": 1
+				},
+				{
+					"id": 5,
+					"path": "/PAW.Patrol.S05E05.Sea.Patrol.Pups.Save.the.Sunken.Sloop.1080p.mkv",
+					"bytes": 311723745,
+					"selected": 1
+				},
+				{
+					"id": 6,
+					"path": "/PAW.Patrol.S05E06.Sea.Patrol.Pups.Save.a.Wiggly.Whale.1080p.mkv",
+					"bytes": 330901469,
+					"selected": 1
+				},
+				{
+					"id": 7,
+					"path": "/PAW.Patrol.S05E07.Pups.Save.a.High.Flying.Skye.1080p.mkv",
+					"bytes": 289032570,
+					"selected": 1
+				},
+				{
+					"id": 8,
+					"path": "/PAW.Patrol.S05E08.Pups.Go.For.the.Gold.1080p.mkv",
+					"bytes": 328498506,
+					"selected": 1
+				},
+				{
+					"id": 24,
+					"path": "/PAW.Patrol.S05E24.Pups.Save.an.Upset.Elephant.1080p.mkv",
+					"bytes": 365388090,
+					"selected": 1
+				},
+				{
+					"id": 25,
+					"path": "/PAW.Patrol.S05E25.Ultimate.Rescue.Pups.Save.the.Tigers.1080p.mkv",
+					"bytes": 607782347,
+					"selected": 1
+				},
+				{
+					"id": 26,
+					"path": "/Torrent_downloaded_from_Demonoid_-_www.demonoid.pw_.txt",
+					"bytes": 59,
+					"selected": 1
+				}
+			]
+		},
+		"WORTBUDQ6V6OG": {
+			"filename": "[nyadex] Reincarnated as a Sword - S01 (BDremux 1080p PCM AAC Dual Audio)",
+			"hash": "e7c93d4873db805188f21ce362d3d89e315567d6",
+			"status": "downloaded",
+			"links": 12,
+			"files": [
+				{
+					"id": 1,
+					"path": "/[nyadex] Reincarnated as a Sword - S01E08 (BDremux 1080p PCM AAC Dual Audio).mkv",
+					"bytes": 5264831501,
+					"selected": 1
+				},
+				{
+					"id": 2,
+					"path": "/[nyadex] Reincarnated as a Sword - S01E02 (BDremux 1080p PCM AAC Dual Audio).mkv",
+					"bytes": 5263050755,
+					"selected": 1
+				},
+				{
+					"id": 3,
+					"path": "/[nyadex] Reincarnated as a Sword - S01E03 (BDremux 1080p PCM AAC Dual Audio).mkv",
+					"bytes": 5264273874,
+					"selected": 1
+				},
+				{
+					"id": 4,
+					"path": "/[nyadex] Reincarnated as a Sword - S01E04 (BDremux 1080p PCM AAC Dual Audio).mkv",
+					"bytes": 5263385561,
+					"selected": 1
+				},
+				{
+					"id": 5,
+					"path": "/[nyadex] Reincarnated as a Sword - S01E05 (BDremux 1080p PCM AAC Dual Audio).mkv",
+					"bytes": 5263416802,
+					"selected": 1
+				},
+				{
+					"id": 6,
+					"path": "/[nyadex] Reincarnated as a Sword - S01E06 (BDremux 1080p PCM AAC Dual Audio).mkv",
+					"bytes": 5264635677,
+					"selected": 1
+				},
+				{
+					"id": 7,
+					"path": "/[nyadex] Reincarnated as a Sword - S01E07 (BDremux 1080p PCM AAC Dual Audio).mkv",
+					"bytes": 5264306055,
+					"selected": 1
+				},
+				{
+					"id": 8,
+					"path": "/[nyadex] Reincarnated as a Sword - S01E01 (BDremux 1080p PCM AAC Dual Audio).mkv",
+					"bytes": 5247380244,
+					"selected": 1
+				},
+				{
+					"id": 9,
+					"path": "/[nyadex] Reincarnated as a Sword - S01E09 (BDremux 1080p PCM AAC Dual Audio).mkv",
+					"bytes": 5255437835,
+					"selected": 1
+				},
+				{
+					"id": 10,
+					"path": "/[nyadex] Reincarnated as a Sword - S01E10 (BDremux 1080p PCM AAC Dual Audio).mkv",
+					"bytes": 5260517046,
+					"selected": 1
+				},
+				{
+					"id": 11,
+					"path": "/[nyadex] Reincarnated as a Sword - S01E11 (BDremux 1080p PCM AAC Dual Audio).mkv",
+					"bytes": 5263756243,
+					"selected": 1
+				},
+				{
+					"id": 12,
+					"path": "/[nyadex] Reincarnated as a Sword - S01E12 (BDremux 1080p PCM AAC Dual Audio).mkv",
+					"bytes": 5263447418,
+					"selected": 1
+				}
+			]
+		},
+		"ZUT2TSJVPQAWU": {
+			"filename": "[Judas] Heidi Girl of the Alps (Alps no Shoujo Heidi) (Season 1) [BD 1080p][HEVC x265 10bit][Eng-Subs]",
+			"hash": "201cfcae2f20161480f4500fb6e1cf02ec8b928e",
+			"status": "downloaded",
+			"links": 52,
+			"files": [
+				{
+					"id": 1,
+					"path": "/[Judas] Alps No Shoujo Heidi - 01.mkv",
+					"bytes": 186573615,
+					"selected": 1
+				},
+				{
+					"id": 2,
+					"path": "/[Judas] Alps No Shoujo Heidi - 02.mkv",
+					"bytes": 166399777,
+					"selected": 1
+				},
+				{
+					"id": 3,
+					"path": "/[Judas] Alps No Shoujo Heidi - 03.mkv",
+					"bytes": 188211866,
+					"selected": 1
+				},
+				{
+					"id": 4,
+					"path": "/[Judas] Alps No Shoujo Heidi - 04.mkv",
+					"bytes": 205328217,
+					"selected": 1
+				},
+				{
+					"id": 5,
+					"path": "/[Judas] Alps No Shoujo Heidi - 05.mkv",
+					"bytes": 167934595,
+					"selected": 1
+				},
+				{
+					"id": 6,
+					"path": "/[Judas] Alps No Shoujo Heidi - 06.mkv",
+					"bytes": 169464026,
+					"selected": 1
+				},
+				{
+					"id": 7,
+					"path": "/[Judas] Alps No Shoujo Heidi - 07.mkv",
+					"bytes": 186860829,
+					"selected": 1
+				},
+				{
+					"id": 8,
+					"path": "/[Judas] Alps No Shoujo Heidi - 08.mkv",
+					"bytes": 183438488,
+					"selected": 1
+				},
+				{
+					"id": 50,
+					"path": "/[Judas] Alps No Shoujo Heidi - 50.mkv",
+					"bytes": 209347135,
+					"selected": 1
+				},
+				{
+					"id": 51,
+					"path": "/[Judas] Alps No Shoujo Heidi - 51.mkv",
+					"bytes": 205097005,
+					"selected": 1
+				},
+				{
+					"id": 52,
+					"path": "/[Judas] Alps No Shoujo Heidi - 52.mkv",
+					"bytes": 213848597,
+					"selected": 1
+				}
+			]
+		}
+	}
+}
