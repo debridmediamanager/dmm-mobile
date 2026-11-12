@@ -1,5 +1,5 @@
 {
-	"captured": "2026-11-12, RD /torrents/info of testacct123 (read-only), links dropped; long packs trimmed to a few real entries",
+	"captured": "2026-11-12, RD /torrents/info of testacct123 (read-only), links dropped; long packs trimmed to a few real entries; South Park's same-named extras (Season Preview, Deleted Scenes per season) added from a second read the same day",
 	"torrents": {
 		"2CHSZZUOPVH3Q": {
 			"filename": "South Park - Seasons 1 to 25 (S01-S25) Master Collection, The Movie & Extras [1080p-2160p NVEnc 10Bit HEVC][TrueHD+DDP 5.1Ch][English Subs]",
@@ -47,6 +47,84 @@
 					"id": 361,
 					"path": "/South Park Bigger, Longer and Uncut (1992)[2160p]/South Park Bigger, Longer and Uncut (1992).mkv",
 					"bytes": 4984134108,
+					"selected": 1
+				},
+				{
+					"id": 9,
+					"path": "/Extras/S12 Extras/Season Preview.mkv",
+					"bytes": 99642161,
+					"selected": 1
+				},
+				{
+					"id": 10,
+					"path": "/Extras/S13 Extras/Deleted Scenes.mkv",
+					"bytes": 49674965,
+					"selected": 1
+				},
+				{
+					"id": 11,
+					"path": "/Extras/S13 Extras/Season Preview.mkv",
+					"bytes": 34638554,
+					"selected": 1
+				},
+				{
+					"id": 12,
+					"path": "/Extras/S14 Extras/Deleted Scenes.mkv",
+					"bytes": 37656447,
+					"selected": 1
+				},
+				{
+					"id": 13,
+					"path": "/Extras/S14 Extras/Season Preview.mkv",
+					"bytes": 29727345,
+					"selected": 1
+				},
+				{
+					"id": 15,
+					"path": "/Extras/S15 Extras/Season Preview.mkv",
+					"bytes": 33917670,
+					"selected": 1
+				},
+				{
+					"id": 23,
+					"path": "/Extras/S16 Extras/Season Preview.mkv",
+					"bytes": 31395346,
+					"selected": 1
+				},
+				{
+					"id": 28,
+					"path": "/Extras/S17 Extras/Deleted Scenes.mkv",
+					"bytes": 40658436,
+					"selected": 1
+				},
+				{
+					"id": 29,
+					"path": "/Extras/S18 Extras/Deleted Scenes.mkv",
+					"bytes": 54199439,
+					"selected": 1
+				},
+				{
+					"id": 30,
+					"path": "/Extras/S19 Extras/Deleted Scenes.mkv",
+					"bytes": 40202588,
+					"selected": 1
+				},
+				{
+					"id": 34,
+					"path": "/Extras/S20 Extras/Deleted Scenes.mkv",
+					"bytes": 92247998,
+					"selected": 1
+				},
+				{
+					"id": 36,
+					"path": "/Extras/S20 Extras/Season Preview.mkv",
+					"bytes": 18362156,
+					"selected": 1
+				},
+				{
+					"id": 37,
+					"path": "/Extras/S22 Extras/Season Preview.mkv",
+					"bytes": 42051805,
 					"selected": 1
 				}
 			]

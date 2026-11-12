@@ -54,7 +54,7 @@ describe('episodeOf on real Real-Debrid file lists (testacct123, 2026-11-12)', (
 		expect(episodeOf(torrents['3YIR44MQ7572Y'].files[0].path, releaseSeason(torrents['3YIR44MQ7572Y'].filename))).toBeNull();
 		expect(episodeOf('/[SubsPlease] Boku no Hero Academia - 168 (1080p) [68B2000A].mkv', releaseSeason('[SubsPlease] Boku no Hero Academia - 168 (1080p) [68B2000A].mkv'))).toBeNull();
 		const southPark = placed('2CHSZZUOPVH3Q', releaseSeason(torrents['2CHSZZUOPVH3Q'].filename));
-		expect(southPark.filter(([, ref]) => ref === null).map(([name]) => name)).toEqual([
+		expect(southPark.filter(([, ref]) => ref === null).map(([name]) => name).filter((name) => !/^(Season Preview|Deleted Scenes)\.mkv$/.test(String(name)))).toEqual([
 			'6 Days to Air - The Making of South Park (2011).mkv',
 			"Jay Leno's Appearance on South Park.mkv",
 			'O Holy Night - Cartman Music Video.mkv',
@@ -164,6 +164,20 @@ describe('showEpisodes', () => {
 		const episodes = showEpisodes([{ item: bananas, files }]);
 		const placedCount = [...episodes.seasons.values()].reduce((total, season) => total + season.size, 0);
 		expect(placedCount + episodes.unplaced.length).toBe(files.filter((file) => /\.(mp4|mkv)$/.test(file.name) && file.selected).length);
+	});
+
+	// Found on Ben's iPhone 2026-11-12: South Park's Not placed list read "Season Preview.mkv" seven times, one per extras folder.
+	it('labels a file by its folder too, so same-named extras stay apart', () => {
+		const southPark = torrents['2CHSZZUOPVH3Q'];
+		const { unplaced } = showEpisodes([{ item: row('rd:2CHSZZUOPVH3Q', southPark.filename, southPark.hash), files: filesOf('2CHSZZUOPVH3Q') }]);
+		const previews = unplaced.filter((copy) => copy.file.name.endsWith('/Season Preview.mkv')).map((copy) => copy.label);
+		expect(previews).toHaveLength(7);
+		expect(new Set(previews).size).toBe(7);
+		expect(previews[0]).toBe('S12 Extras/Season Preview.mkv');
+		expect(unplaced.find((copy) => copy.file.name.endsWith('(1992).mkv'))?.label).toBe('South Park Bigger, Longer and Uncut (1992)[2160p]/South Park Bigger, Longer and Uncut (1992).mkv');
+		const tensei = torrents.VYFNODUYKM2NY;
+		const single = showEpisodes([{ item: row('rd:VYFNODUYKM2NY', tensei.filename, tensei.hash), files: filesOf('VYFNODUYKM2NY') }], undefined);
+		expect(single.seasons.get(2)!.get(1)![0].label).toBe('[FLE] Tensei Shitara Slime Datta Ken - S02E01 - Rimuru\'s Busy Life [E411414C].mkv');
 	});
 
 	it("opens a film copy's biggest video", () => {

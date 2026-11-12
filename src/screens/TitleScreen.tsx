@@ -146,8 +146,8 @@ export function TitleScreen({ route, navigation }: Props) {
 							{shownSeason === 'unplaced'
 								? episodes?.unplaced.map((copy) => (
 										<View key={`${copy.item.id}/${copy.file.id}`} style={[{ paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: theme.border }]}>
-											<Text numberOfLines={2} style={{ color: theme.text, fontSize: 13.5 }}>{fileBase(copy.file.name)}</Text>
-											{episodeCopy(copy, fileBase(copy.file.name))}
+											<Text numberOfLines={2} style={{ color: theme.text, fontSize: 13.5 }}>{copy.label}</Text>
+											{episodeCopy(copy, copy.label)}
 										</View>
 									))
 								: [...(shownSeason === null ? [] : episodes?.seasons.get(shownSeason) ?? new Map<number, EpisodeCopy[]>())].map(([number, list]) => {

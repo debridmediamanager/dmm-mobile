@@ -266,6 +266,8 @@ export interface EpisodeCopy {
 	file: LibraryFile;
 	quality: string;
 	ref: EpisodeRef | null;
+	/** The file's name and its folder: a pack's extras repeat names ("S12 Extras/Season Preview.mkv"). */
+	label: string;
 }
 
 export interface ShowEpisodes {
@@ -289,7 +291,7 @@ export function showEpisodes(copies: readonly { item: LibraryItem; files: readon
 			let ref = episodeOf(path, fallback);
 			const count = ref?.inferred ? counts?.[String(ref.season)] : undefined;
 			if (ref && count !== undefined && ref.episode > count) ref = null;
-			const copy: EpisodeCopy = { item, file, quality: qualityOf(path, item.filename), ref };
+			const copy: EpisodeCopy = { item, file, quality: qualityOf(path, item.filename), ref, label: path.split('/').filter(Boolean).slice(-2).join('/') };
 			if (!ref) {
 				unplaced.push(copy);
 				continue;
