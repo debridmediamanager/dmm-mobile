@@ -143,7 +143,8 @@ export interface EpisodeRef {
 }
 
 const SXXEYY = /\bs(\d{1,2})[ ._-]?e(\d{1,3})(?:-?e(\d{1,3})|-(\d{1,3})(?![\dp]))?/i;
-const NXNN = /(?:^|[^\d.])(\d{1,2})x(\d{2,3})(?![\dp])/i;
+// "1x06-07" is a double episode
+const NXNN = /(?:^|[^\d.])(\d{1,2})x(\d{2,3})(?:-(\d{2,3}))?(?![\dp])/i;
 // a fansub's "Chihayafuru S1 - 24"
 const FANSUB = /\bs(\d{1,2}) - (\d{1,3})(?:v\d)?(?![\d])/i;
 const SEASON_WORD = /\bseason[ ._-]?(\d{1,2})\b|\b(\d{1,2})(?:st|nd|rd|th) season\b/i;
@@ -182,7 +183,10 @@ export function episodeOf(path: string, fallbackSeason: number | null = null): E
 			return { season: Number(sxe[1]), episode, ...(end > episode ? { end } : {}) };
 		}
 		const nxn = NXNN.exec(text);
-		if (nxn) return { season: Number(nxn[1]), episode: Number(nxn[2]) };
+		if (nxn) {
+			const episode = Number(nxn[2]);
+			return { season: Number(nxn[1]), episode, ...(Number(nxn[3]) > episode ? { end: Number(nxn[3]) } : {}) };
+		}
 		const fansub = FANSUB.exec(text);
 		return fansub ? { season: Number(fansub[1]), episode: Number(fansub[2]) } : null;
 	};

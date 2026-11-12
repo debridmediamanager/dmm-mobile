@@ -5,6 +5,7 @@ import { TitleIndex, type CacheStore } from './titleIndex';
 import { askDmm, episodeOf, LoginRefused, groupTitles, identificationKey, mainFile, posterUrls, qualityOf, releaseSeason, seasonRange, showEpisodes, type Identification, type Post } from './titles';
 import identifyFixture from './test/fixtures/dmm-identify-testacct123-2026-11-12.json';
 import rdFiles from './test/fixtures/rd-show-files-testacct123-2026-11-12.json';
+import sightings from './test/fixtures/rd-show-files-sightings-2026-11-12.json';
 
 type Torrent = (typeof rdFiles.torrents)[keyof typeof rdFiles.torrents];
 const torrents = rdFiles.torrents as Record<string, Torrent>;
@@ -40,6 +41,13 @@ describe('episodeOf on real Real-Debrid file lists (testacct123, 2026-11-12)', (
 		]);
 		expect(episodeOf('/Rick and Morty  S3E01 - The Rickshank Rickdemption.mkv')).toEqual({ season: 3, episode: 1 });
 		expect(episodeOf('/Season 1/Family Matters S01E01.AMZN.1080p.5.1.HEVC.x265.10bit-Bearfish.mkv')).toEqual({ season: 1, episode: 1 });
+	});
+
+	// rd6893c80a7036's "Sightings" (2026-11-12) names its double episodes "1x06-07"; they read as episode 6 alone.
+	it('reads a double episode written 1x06-07 as both', () => {
+		expect(episodeOf(sightings.files.find((file) => file.path.includes('1x06-07'))!.path)).toEqual({ season: 1, episode: 6, end: 7 });
+		expect(episodeOf(sightings.files.find((file) => file.path.includes('3x08-09'))!.path)).toEqual({ season: 3, episode: 8, end: 9 });
+		expect(episodeOf('/The Six Million Dollar Man -- 4x01 -- The Return of Bigfoot (Part 1).mkv')).toEqual({ season: 4, episode: 1 });
 	});
 
 	it('reads fansub numbering when the name or the release gives the season', () => {

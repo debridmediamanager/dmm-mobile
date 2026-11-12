@@ -1,0 +1,651 @@
+{
+	"captured": "2026-11-12, RD /torrents/info of test account rd6893c80a7036, links and host fields dropped",
+	"id": "QP76YYG2XC6P2",
+	"filename": "Sightings",
+	"hash": "f6e55b43df901514478872283996562d17694ed4",
+	"status": "downloaded",
+	"files": [
+		{
+			"id": 1,
+			"path": "/Sightings - 1x01 - The UFO Report.mp4",
+			"bytes": 153937240,
+			"selected": 1
+		},
+		{
+			"id": 2,
+			"path": "/Sightings - 1x02 - Ghosts.mp4",
+			"bytes": 176880211,
+			"selected": 1
+		},
+		{
+			"id": 3,
+			"path": "/Sightings - 1x04 - Psychic Experience.mp4",
+			"bytes": 149107767,
+			"selected": 1
+		},
+		{
+			"id": 4,
+			"path": "/Sightings - 1x05 - Psychic Healing.mp4",
+			"bytes": 151571167,
+			"selected": 1
+		},
+		{
+			"id": 5,
+			"path": "/Sightings - 1x06-07 - Mysteries of the Earth & UFO Contact.mp4",
+			"bytes": 97775981,
+			"selected": 1
+		},
+		{
+			"id": 6,
+			"path": "/Sightings - 1x07 - UFO Contact.mp4",
+			"bytes": 86407416,
+			"selected": 1
+		},
+		{
+			"id": 7,
+			"path": "/Sightings - 1x08 - Monsters.mp4",
+			"bytes": 103671968,
+			"selected": 1
+		},
+		{
+			"id": 8,
+			"path": "/Sightings - 1x09 - Vampires, Visions of Death, Bermuda Triangle.mp4",
+			"bytes": 79317287,
+			"selected": 1
+		},
+		{
+			"id": 9,
+			"path": "/Sightings - 1x10 - Vision of Murder, Men in Black, Awakening.mp4",
+			"bytes": 86826868,
+			"selected": 1
+		},
+		{
+			"id": 10,
+			"path": "/Sightings - 1x11 - Curses, Past Lives, Ghosts.mp4",
+			"bytes": 85884968,
+			"selected": 1
+		},
+		{
+			"id": 11,
+			"path": "/Sightings - 1x12 - Hauntings, Physical Effects, Superstitions.mp4",
+			"bytes": 84305949,
+			"selected": 1
+		},
+		{
+			"id": 12,
+			"path": "/Sightings - 1x13 - Evidence From Beyond, Gateway to Oblivion, Soul Exchange.mp4",
+			"bytes": 76318410,
+			"selected": 1
+		},
+		{
+			"id": 13,
+			"path": "/Sightings - 1x14 - Back From the Dead, Hauntings, Millboro.mp4",
+			"bytes": 82509330,
+			"selected": 1
+		},
+		{
+			"id": 14,
+			"path": "/Sightings - 2x01 - Alcatraz, Mass Sightings, UFO Update.mp4",
+			"bytes": 68344845,
+			"selected": 1
+		},
+		{
+			"id": 15,
+			"path": "/Sightings - 2x02 - Werewolf, Paranormal Photography, Ghost Update.mp4",
+			"bytes": 86285498,
+			"selected": 1
+		},
+		{
+			"id": 16,
+			"path": "/Sightings - 2x02-03 - Werewolf, Paranormal Photography, Ghost Update & Encounter in Space, Marfa Lights, Ghost Update.mp4",
+			"bytes": 83969930,
+			"selected": 1
+		},
+		{
+			"id": 17,
+			"path": "/Sightings - 2x04 - Lizzie Borden, Deliverance, SETI Update.mp4",
+			"bytes": 80365899,
+			"selected": 1
+		},
+		{
+			"id": 18,
+			"path": "/Sightings - 2x05 - The Uninvited, Haunted Family, The Curse of Christopher Columbus.mp4",
+			"bytes": 80059042,
+			"selected": 1
+		},
+		{
+			"id": 19,
+			"path": "/Sightings - 2x06 - Aliens Among Us, Top Secret UFO, Ghost investigation.mp4",
+			"bytes": 77025298,
+			"selected": 1
+		},
+		{
+			"id": 20,
+			"path": "/Sightings - 2x07 - Halloween Special Scotland's House of Horror, Vampires, Witchcraft.mp4",
+			"bytes": 83659220,
+			"selected": 1
+		},
+		{
+			"id": 21,
+			"path": "/Sightings - 2x08 - Epidemic of Evil, Garden Grove Ghost.mp4",
+			"bytes": 71133766,
+			"selected": 1
+		},
+		{
+			"id": 22,
+			"path": "/Sightings - 2x09 - Crop Circles, Royal Curse, Lake Champlain Monster.mp4",
+			"bytes": 84490181,
+			"selected": 1
+		},
+		{
+			"id": 23,
+			"path": "/Sightings - 2x10 - Russian UFO Investigation, Ghost of Whitechapel, Iceman Update.mp4",
+			"bytes": 89984745,
+			"selected": 1
+		},
+		{
+			"id": 24,
+			"path": "/Sightings - 2x11 - Deadly Abduction, Lake Champlain Monster, Royal Curse Update.mp4",
+			"bytes": 86382160,
+			"selected": 1
+		},
+		{
+			"id": 25,
+			"path": "/Sightings - 2x12 - Hell's Gate, Angels, Astrology Update.mp4",
+			"bytes": 82211307,
+			"selected": 1
+		},
+		{
+			"id": 26,
+			"path": "/Sightings - 2x13 - Astrological Predictions, Close Encounters, Spy House Investigation.mp4",
+			"bytes": 72515595,
+			"selected": 1
+		},
+		{
+			"id": 27,
+			"path": "/Sightings - 2x14 - Voodoo, Russian Psychics, Black Hole Update.mp4",
+			"bytes": 84763919,
+			"selected": 1
+		},
+		{
+			"id": 28,
+			"path": "/Sightings - 2x15 - Ghost Writer.mp4",
+			"bytes": 78878027,
+			"selected": 1
+		},
+		{
+			"id": 29,
+			"path": "/Sightings - 2x16 - Searching the Skies, Ouija, Phobos II Update.mp4",
+			"bytes": 76643276,
+			"selected": 1
+		},
+		{
+			"id": 30,
+			"path": "/Sightings - 2x17 - Cults, Super Humans, Mind Control, Ghost Writer Update.mp4",
+			"bytes": 85378475,
+			"selected": 1
+		},
+		{
+			"id": 31,
+			"path": "/Sightings - 2x18 - Scranton UFO Mystery, Ghost Molester, Fire in the Sky.mp4",
+			"bytes": 75083133,
+			"selected": 1
+		},
+		{
+			"id": 32,
+			"path": "/Sightings - 2x19 - Mass Abductions, Seizure Alert Dogs, Prophecies.mp4",
+			"bytes": 77879106,
+			"selected": 1
+		},
+		{
+			"id": 33,
+			"path": "/Sightings - 2x20 - Countdown to Doomsday, Russian Top Gun, Ghost Molester Update.mp4",
+			"bytes": 74149191,
+			"selected": 1
+		},
+		{
+			"id": 34,
+			"path": "/Sightings - 2x21 - UFO Cover up, Missing Link, Wisconsin UFOs.mp4",
+			"bytes": 85037111,
+			"selected": 1
+		},
+		{
+			"id": 35,
+			"path": "/Sightings - 2x23 - Ghosts Special Manressa Castle, Viewer Phone Calls, Anatomy of a Haunting.mp4",
+			"bytes": 72680130,
+			"selected": 1
+		},
+		{
+			"id": 36,
+			"path": "/Sightings - 2x24 - UFO Special UFO Hot Spots, Hoaxing, Cattle Mutilation, Space Growth.mp4",
+			"bytes": 68633023,
+			"selected": 1
+		},
+		{
+			"id": 37,
+			"path": "/Sightings - 3x01 - Heartland Ghost, Gulf Breeze Encounters, A Sculptor's Gift, Black Holes.mp4",
+			"bytes": 147705062,
+			"selected": 1
+		},
+		{
+			"id": 38,
+			"path": "/Sightings - 3x02 - Heartland Ghost Update, Shared Memory Abduction, Watching the Skies, Schoolroom Angel, Colorado Cattle Mutilations, Ancient Creatures.mp4",
+			"bytes": 151745806,
+			"selected": 1
+		},
+		{
+			"id": 39,
+			"path": "/Sightings - 3x03 - Patterns of Denial, Pet Interpreter, Ice Circles, A Vision of Murder, True Believers, Mars Mission Cover-Up.mp4",
+			"bytes": 153483437,
+			"selected": 1
+		},
+		{
+			"id": 40,
+			"path": "/Sightings - 3x04 - Sasquatch, A Gift From the Light, Intuition, Abduction Horror or Hype, Future Life Progression, Crop Circle Math Mystery.mp4",
+			"bytes": 149882083,
+			"selected": 1
+		},
+		{
+			"id": 41,
+			"path": "/Sightings - 3x05 - Tunguska, Embracing the Light, Human Candles, Crop Circles, Whaley House, Haunted High.mp4",
+			"bytes": 146356696,
+			"selected": 1
+		},
+		{
+			"id": 42,
+			"path": "/Sightings - 3x06 - Psychic Eye, Prediction Update, Dragon Project, Making of a Hoax, Power of Prayer, S.E.T.I. Resurrected.mp4",
+			"bytes": 146506269,
+			"selected": 1
+		},
+		{
+			"id": 43,
+			"path": "/Sightings - 3x07 - Ghost of Berry Pomeroy Castle, It came From Outer Space, Ghost Hunt, Santeria, Moon Madness, Water Witches.mp4",
+			"bytes": 134616069,
+			"selected": 1
+		},
+		{
+			"id": 44,
+			"path": "/Sightings - 3x08 - UFO Confrontation Iran, Death in the Desert, Heartland Ghost Investigation, Gift of Life.mp4",
+			"bytes": 148505178,
+			"selected": 1
+		},
+		{
+			"id": 45,
+			"path": "/Sightings - 3x08-09 - UFO Confrontation Iran, Death in the Desert, Heartland Ghost Investigation, Gift of Life & Heartland Ghost Investigation, Nessie, Height 611, To Swim.mp4",
+			"bytes": 151386267,
+			"selected": 1
+		},
+		{
+			"id": 46,
+			"path": "/Sightings - 3x10 - UFO Confrontation Mansfield, Bodega Bay Ghost, Prophecy of Hope, Dream Murder, Power to Heal, Encounters in Space.mp4",
+			"bytes": 152019702,
+			"selected": 1
+		},
+		{
+			"id": 47,
+			"path": "/Sightings - 3x11 - Apocalypse Now, A Mother's Love, Montreal Mass Sighting, Baby Jane Doe, Ishii.mp4",
+			"bytes": 146450779,
+			"selected": 1
+		},
+		{
+			"id": 48,
+			"path": "/Sightings - 3x12 - Ghost of Brookdale Lodge, Gulf Breeze Update, Spontaneous Recall, Murder on Route 2, Message From Stephen, Sci-Fi Prophets.mp4",
+			"bytes": 145178302,
+			"selected": 1
+		},
+		{
+			"id": 49,
+			"path": "/Sightings - 3x13 - Avebury Mystery Lights, Alien Evolution, A Sculptor's Gift Update, Miner's Revenge, A Child's Premonition, The Big Wow.mp4",
+			"bytes": 141923641,
+			"selected": 1
+		},
+		{
+			"id": 50,
+			"path": "/Sightings - 3x14 - Disinformation, Russian Psychics, Crop Circle Update, Trail of Death, Guided Imagery, Quake Sense.mp4",
+			"bytes": 142849148,
+			"selected": 1
+		},
+		{
+			"id": 51,
+			"path": "/Sightings - 3x15 - Time Warp, Healing Mind, New Mexico UFO Mystery, Murder in Nags Head, Seventh Sense, Cattle Mutilation Update.mp4",
+			"bytes": 139628003,
+			"selected": 1
+		},
+		{
+			"id": 52,
+			"path": "/Sightings - 3x16 - Heartland Aftermath, Curses, Sprites and Blue Jets, Gaia's Revenge, Outback Abduction, Heartland Online.mp4",
+			"bytes": 140092963,
+			"selected": 1
+		},
+		{
+			"id": 53,
+			"path": "/Sightings - 3x17 - UFOs Over FDR, Heartland Aftermath, Multiple Mystery, Never Forget, Hyperspace, Dream Murder Update.mp4",
+			"bytes": 133004507,
+			"selected": 1
+		},
+		{
+			"id": 54,
+			"path": "/Sightings - 3x18 - UFO Confrontation Kentucky, SHC Update, The Final Gift, Psychic Evidence, Restless Spirits.mp4",
+			"bytes": 161610249,
+			"selected": 1
+		},
+		{
+			"id": 55,
+			"path": "/Sightings - 3x19 - Mexico Mass Sightings, Twinless Twins, Conspiracy of Silence, Cloning, Animal Communication.mp4",
+			"bytes": 126027170,
+			"selected": 1
+		},
+		{
+			"id": 56,
+			"path": "/Sightings - 3x20 - Idaho UFO Flap, Coma Healer, Perfect Harmony, Search for Danny, Haunted Knickerbocker, Mexico Mass Sightings Update.mp4",
+			"bytes": 115517824,
+			"selected": 1
+		},
+		{
+			"id": 57,
+			"path": "/Sightings - 3x21 - Top Secret Projects, Roswell Revisited, K-911, A Call for Help, Lady in White, Taos Hum.mp4",
+			"bytes": 143807029,
+			"selected": 1
+		},
+		{
+			"id": 58,
+			"path": "/Sightings - 3x22 - Allagash Abduction, Future Shock, Baleroy Ghost, Touched by Angels, UFO Home Videos.mp4",
+			"bytes": 143746732,
+			"selected": 1
+		},
+		{
+			"id": 59,
+			"path": "/Sightings - 3x23 - My Past Life, Heartland Ghost, Clear Intent, Snake Church, Transformed by the Light.mp4",
+			"bytes": 138682982,
+			"selected": 1
+		},
+		{
+			"id": 60,
+			"path": "/Sightings - 3x24 - UFO Contact The Holyland, Saved by Angels, Bigfoot Update, Ghosts of Gettysburg, Gaia's Revenge, UFO Protocols.mp4",
+			"bytes": 141623001,
+			"selected": 1
+		},
+		{
+			"id": 61,
+			"path": "/Sightings - 3x25 - What's Inside Hangar 18, Monticello Murder, Waiting Room of the Soul, Michigan Abduction, Luck, Spark of Life in Space.mp4",
+			"bytes": 123659018,
+			"selected": 1
+		},
+		{
+			"id": 62,
+			"path": "/Sightings - 3x26 - Saucers are Real, Psychic Trauma, Walk Ins, Obeah, Mexico Update, Heal Thyself.mp4",
+			"bytes": 189137434,
+			"selected": 1
+		},
+		{
+			"id": 63,
+			"path": "/Sightings - 4x01 - Intruder on the Range, What Happened to Debbie, In the News, The Roswell Autopsy, A Spirit of Love, Bigfoot in Ohio.mp4",
+			"bytes": 142115680,
+			"selected": 1
+		},
+		{
+			"id": 64,
+			"path": "/Sightings - 4x02 - Psychic Cop, Ica Mystery Stones, In the News, The Shag Harbour Incident, Haunted Queen Mary, Cyberspace.mp4",
+			"bytes": 142773557,
+			"selected": 1
+		},
+		{
+			"id": 65,
+			"path": "/Sightings - 4x03 - Poor Souls, UFO Encounter Shikmona, In the News, The Burning Within, UFO Initiative.mp4",
+			"bytes": 149447157,
+			"selected": 1
+		},
+		{
+			"id": 66,
+			"path": "/Sightings - 4x04 - Black Forest Haunting, The Mars Complex, In the News, Restless Warrior, UFO Confrontation.mp4",
+			"bytes": 152871819,
+			"selected": 1
+		},
+		{
+			"id": 67,
+			"path": "/Sightings - 4x05 - Generational Abduction, Blind Sight, In the News, Amazing Grace, Haunted Catacombs, Saucers are Real Update.mp4",
+			"bytes": 163466369,
+			"selected": 1
+		},
+		{
+			"id": 68,
+			"path": "/Sightings - 4x06 - Silent Intruder, Psychic Constable, In the News, Dream Vision, Stalked by Spirits, Nellis AFB Update.mp4",
+			"bytes": 143626401,
+			"selected": 1
+		},
+		{
+			"id": 69,
+			"path": "/Sightings - 4x07 - Spirit of Oregon, Tesla's Death Ray, In the News, Consumed by Vampires, Anatomy of an Autopsy, Nessie Lives Update.mp4",
+			"bytes": 139631276,
+			"selected": 1
+		},
+		{
+			"id": 70,
+			"path": "/Sightings - 4x08 - UFO Encounter at 30,000 Feet, One Missing Link, In the News, Miracle on I-74, A Vision Through Time, Crop Circles Update.mp4",
+			"bytes": 134434197,
+			"selected": 1
+		},
+		{
+			"id": 71,
+			"path": "/Sightings - 4x09 - Contact in Colorado, Boomtown Ghost, In the News, Miracle at Betania Part 1, Prophecy Update.mp4",
+			"bytes": 147649353,
+			"selected": 1
+		},
+		{
+			"id": 72,
+			"path": "/Sightings - 4x10 - Shag Harbour Investigation, Angel of Fire, In The News, The Curse of H-3, Spiritual Warfare, Sightings On Line Update.mp4",
+			"bytes": 150192732,
+			"selected": 1
+		},
+		{
+			"id": 73,
+			"path": "/Sightings - 4x11 - Return to Black Forest, Coming from the Light, In the News, Shag Harbour Investigation, Gaia Update.mp4",
+			"bytes": 148487605,
+			"selected": 1
+		},
+		{
+			"id": 74,
+			"path": "/Sightings - 4x12 - Attack on Washington, Spiritual Exorcist, In the News, Wandering Souls, Whitley Strieber's Breakthrough, Visions of Mary Update.mp4",
+			"bytes": 149893547,
+			"selected": 1
+		},
+		{
+			"id": 75,
+			"path": "/Sightings - 4x13 - Contact at Socorro, Shaman Healer, In the News, Reclaiming the Farm, Close Encounters of the Fourth Kind, Gaia's Revenge Update.mp4",
+			"bytes": 144736441,
+			"selected": 1
+		},
+		{
+			"id": 76,
+			"path": "/Sightings - 4x14 - Without a Trace, In the News, Vision Quest, The Doomsday Machine, UFO Investigation Update.mp4",
+			"bytes": 142354266,
+			"selected": 1
+		},
+		{
+			"id": 77,
+			"path": "/Sightings - 4x15 - Abducted, In the News, South Bend Mystery, Renovation Haunting, Star is Born update.mp4",
+			"bytes": 138833407,
+			"selected": 1
+		},
+		{
+			"id": 78,
+			"path": "/Sightings - 4x16 - Echoes From the Battlefield, Psychic Espionage, In the News, Crash of '62, Candomble, Black Forest Update.mp4",
+			"bytes": 146404692,
+			"selected": 1
+		},
+		{
+			"id": 79,
+			"path": "/Sightings - 4x17 - A Search for the Truth, Murder on the Interstate, In the News, Voices from Beyond, The Sci-Fi Prophet, Contact in Israel Update.mp4",
+			"bytes": 137977492,
+			"selected": 1
+		},
+		{
+			"id": 80,
+			"path": "/Sightings - 4x18 - Murder for Hire, Healing the Causes of Violence, In the News, Boomtown Revisited, Ancient Visitors, Martian Canals Update.mp4",
+			"bytes": 151106230,
+			"selected": 1
+		},
+		{
+			"id": 81,
+			"path": "/Sightings - 4x19 - Trapped in Time, Miracle Child, In the News, Messengers of Destiny, Sacred Sites, Bigfoot Update.mp4",
+			"bytes": 150385301,
+			"selected": 1
+		},
+		{
+			"id": 82,
+			"path": "/Sightings - 4x20 - Edwards Encounter, My Two Lives, In the News, Paranormal Politics, Spirit Message, Face on Mars Update.mp4",
+			"bytes": 142568746,
+			"selected": 1
+		},
+		{
+			"id": 83,
+			"path": "/Sightings - 4x21 - Messages from Beyond, Cluster UFO, In the News, Psychic Warrior, N.D.E. Update.mp4",
+			"bytes": 134307465,
+			"selected": 1
+		},
+		{
+			"id": 84,
+			"path": "/Sightings - 4x22 - Her Name Was Cathy, The New Area 51, In the News, The Great Gadsden, Master Healer, Lost Civilizations Update.mp4",
+			"bytes": 139149105,
+			"selected": 1
+		},
+		{
+			"id": 85,
+			"path": "/Sightings - 4x23 - Gallows Ghost, Re-Wiring the Brain, In the News, Incident at Exeter, Healing Wisdom, UFOs Japan Update.mp4",
+			"bytes": 157968328,
+			"selected": 1
+		},
+		{
+			"id": 86,
+			"path": "/Sightings - 4x24 - Ruwa Re-Examined, Healing Hands, In the News, Fire from Heaven, Simulated O.B.E., Ghost Investigation Update.mp4",
+			"bytes": 146510278,
+			"selected": 1
+		},
+		{
+			"id": 87,
+			"path": "/Sightings - 5x01 - Hunt House Haunting, Solar Obliteration, In the News, The Message, Love Ties, Altered States Update.mp4",
+			"bytes": 165717991,
+			"selected": 1
+		},
+		{
+			"id": 88,
+			"path": "/Sightings - 5x02 - Deliberate Deception, A Psychic's vision, In the News, Mexico City UFO Flap, Highway 666, Silent Intruder Update.mp4",
+			"bytes": 156083059,
+			"selected": 1
+		},
+		{
+			"id": 89,
+			"path": "/Sightings - 5x03 - Purging the Spirits, In the News, My Brother's Keeper, The Brazilian E.T. Case, Millennium Watch.mp4",
+			"bytes": 153979938,
+			"selected": 1
+		},
+		{
+			"id": 90,
+			"path": "/Sightings - 5x04 - The Iron Woman, The Way of the Explorer, In the News, A Time to Remember, Crop Circles Update.mp4",
+			"bytes": 144451091,
+			"selected": 1
+		},
+		{
+			"id": 91,
+			"path": "/Sightings - 5x05 - Mantell Re-Examined, Hands of Remembrance, In the News, Olivas Haunting, Omen in the Sky, Life on Mars Update.mp4",
+			"bytes": 148717268,
+			"selected": 1
+		},
+		{
+			"id": 92,
+			"path": "/Sightings - 5x06 - Silent Vulcans, The Conversion of Nick Pope, In the News, The Haunted Jerome Grand, Reprogramming the Brain, Curse of H-3 Update.mp4",
+			"bytes": 156635301,
+			"selected": 1
+		},
+		{
+			"id": 93,
+			"path": "/Sightings - 5x07 - Autopsy Exposing a Fake, Red Lion Haunting, In the News, Shadow of Evil, Threat From Space, Missing Soul Boy Update.mp4",
+			"bytes": 150543774,
+			"selected": 1
+		},
+		{
+			"id": 94,
+			"path": "/Sightings - 5x08 - The Watchers, Life Before Life, In the News, Ghosts of Chillingham Castle, Lab of Consciousness, Millennium Watch Mayan Prophecy.mp4",
+			"bytes": 142441734,
+			"selected": 1
+		},
+		{
+			"id": 95,
+			"path": "/Sightings - 5x09 - The Majestic 12 Documents, Sao Paolo Haunting, In the News, Vanished, The Secret of the Sphinx, Cattle Mutilation Update.mp4",
+			"bytes": 143923019,
+			"selected": 1
+		},
+		{
+			"id": 96,
+			"path": "/Sightings - 5x10 - House of Plenty, In the News, 1947, Healing Harps, U.F.Os Holy Land Update.mp4",
+			"bytes": 143968490,
+			"selected": 1
+		},
+		{
+			"id": 97,
+			"path": "/Sightings - 5x11 - UFO Encounter Argentina, Cancer Alert Dogs, In the News, House of Plenty, UFOs Update.mp4",
+			"bytes": 144366987,
+			"selected": 1
+		},
+		{
+			"id": 98,
+			"path": "/Sightings - 5x12 - The Heartland Ghost, Echo Missile Encounter, In the News, Crop Circle Video Mystery, Healing With Music, Millennium Watch Quatrain 72.mp4",
+			"bytes": 145706167,
+			"selected": 1
+		},
+		{
+			"id": 99,
+			"path": "/Sightings - 5x13 - Restless Spirits, In the News, Foo Fighters, Unexpected Visitors, Millennium Watch The Spiritual Quest.mp4",
+			"bytes": 149130517,
+			"selected": 1
+		},
+		{
+			"id": 100,
+			"path": "/Sightings - 5x14 - Case closed, Angel of Death, In the News, Restless Spirits, The Call of Sasquatch, Hubble Discoveries Update.mp4",
+			"bytes": 142112756,
+			"selected": 1
+		},
+		{
+			"id": 101,
+			"path": "/Sightings - 5x15 - Encounter Over England, The Way of the Explorer, In the News, School Spirits, Monster of the Andes, Mars The Next Step,.mp4",
+			"bytes": 159871481,
+			"selected": 1
+		},
+		{
+			"id": 102,
+			"path": "/Sightings - 5x16 - Ohio's Area 51, Anyone Can See the Light, In the News, Chicago's Most Haunted, Mysteries From Above, Lunar Discoveries Update.mp4",
+			"bytes": 137168086,
+			"selected": 1
+		},
+		{
+			"id": 103,
+			"path": "/Sightings - 5x17 - The Oak Ridge Mystery, Sacred Healing, In the News, Exposing Project Blue Book, The Soul Catcher, Angels Update.mp4",
+			"bytes": 141382548,
+			"selected": 1
+		},
+		{
+			"id": 104,
+			"path": "/Sightings - 5x18 - Black Swan Haunting, In the News, Klinger Encounter, Spirits in the Garden, UFOs in Korea Update.mp4",
+			"bytes": 137447160,
+			"selected": 1
+		},
+		{
+			"id": 105,
+			"path": "/Sightings TV Show - Seasons 1 to 5 - 360p.nfo",
+			"bytes": 2146,
+			"selected": 0
+		},
+		{
+			"id": 106,
+			"path": "/Sightings TV Show - Seasons 1 to 5 - 360p.sfv",
+			"bytes": 12667,
+			"selected": 0
+		},
+		{
+			"id": 107,
+			"path": "/Sightings.par2",
+			"bytes": 93808,
+			"selected": 0
+		}
+	]
+}
