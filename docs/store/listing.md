@@ -39,6 +39,7 @@ every file you keep there shows in one fast list, even with thousands of items.
 
 • Play any video in the player you choose, with its subtitles
 • Connect Trakt or Simkl: what you play is scrobbled, and watched marks and resume points follow you
+• See your Trakt and Simkl watchlists and lists, and play what your library holds
 • Search your library by name, filter by service, type or state, and sort it
 • Add downloads to your service and follow their progress
 • Select, delete, reinsert and tidy up duplicates in bulk

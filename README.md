@@ -104,6 +104,8 @@ library holds. Rows with nothing in them are hidden.
 - **Next Up**: for each show with a watched episode, the next episode the library
   holds that is not watched yet (after the one watched last, never a special), from
   the release played before when it has it. A tap plays it.
+- **Watchlist**: with Trakt or Simkl connected, Trakt's watchlist and Simkl's Plan to
+  Watch together, each title once, what the library holds first (Lists, below).
 - **Recently Added**: the newest films and shows.
 
 **Watched** is kept per title, not per copy: a film by its IMDb id, an episode by
@@ -296,6 +298,39 @@ joining both histories with nothing copied across; an episode played past 80% on
 Fire TV, watched on Simkl and Trakt; a season unmarked and marked again from the TV on
 both; a film and a season marked and removed on Simkl showing up on both devices;
 Disconnect. Not yet on an iPhone or Apple TV (same code; the iOS bundle builds).
+
+## Lists
+
+With Trakt or Simkl connected, Home has a list button (on a TV, right of the Home tab)
+that opens **Lists**: Trakt's watchlist, your own lists and the lists you liked, and
+Simkl's Plan to Watch, Watching, On hold, Completed and Dropped, each with how many of
+its titles the library holds. A list opens as posters; what the library lacks is dimmed.
+
+- **In the library** (matched by IMDb id, films and shows alike): the title's page, to
+  play it.
+- **Not in the library**: what it is (poster, year, plot from DMM) and **Open on DMM**,
+  which opens its DMM page in the browser signed in as the app (as Search does). Finding
+  releases stays on DMM web; the app lists none. A TV, which has no browser, shows a QR
+  code of the plain DMM page instead, to open on a phone (never with a sign-in code in
+  it: that would sign the phone in with the TV's logins).
+- **Kept on the device and read only when they change.** Trakt's lists are read again
+  when `/sync/last_activities` says the watchlist or your lists moved (checked at most
+  once a minute: on start, coming back to the app or to Home, and pull to refresh), and
+  once an hour or on pull to refresh for lists you liked, which their owners change. A
+  list's items are downloaded again only when its `updated_at` moved. Simkl's statuses
+  come in the same answer as its watched history, read when its activity stamps move, so
+  they cost no extra requests (Simkl allows free accounts 500 a day). Lists are not
+  read with the demo key, and go when a tracker is disconnected.
+- Simkl's own custom lists are left out: Simkl serves their items to PRO and VIP
+  accounts only (a free account gets `premium_only`). Adding and removing list items is
+  not in the app yet.
+
+Tested on 2026-11-12 with the Trakt and Simkl test accounts (Pixel 6, Fire TV Cube): no
+tracker, then Trakt alone, both (the two watchlists joined, each title once) and Simkl
+alone; Trakt's watchlist, a private list and a liked list, Simkl's statuses; a title the
+library holds played from a list; Open on DMM landed signed in on the Pixel; the Fire TV's
+QR code holds the plain page; a list changed on Trakt and a status moved on Simkl showed
+after pull to refresh. Not yet on an iPhone or Apple TV (same code; the iOS bundle builds).
 
 ## Search
 
