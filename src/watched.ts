@@ -22,7 +22,7 @@ export const watchKey = ({ imdbId, season, episode }: WatchRef): string => (seas
 
 const episodes = (imdbId: string, season: number, from: number, to = from): WatchRef[] => Array.from({ length: Math.max(1, to - from + 1) }, (_, n) => ({ imdbId, season, episode: from + n }));
 
-/** What a playback save marks watched: once a file passes 92%, its film or every episode it holds. Unnamed and unplaced files mark nothing. */
+/** What a playback save marks watched: once a file reaches 80% (FINISHED), its film or every episode it holds. Unnamed and unplaced files mark nothing. */
 export function watchedFrom({ entry, ended }: PlaybackEvent): WatchRef[] {
 	if (!ended || !entry.imdbId) return [];
 	if (entry.kind === 'movie') return [{ imdbId: entry.imdbId }];

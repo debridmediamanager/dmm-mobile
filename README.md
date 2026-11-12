@@ -107,7 +107,7 @@ library holds. Rows with nothing in them are hidden.
 
 **Watched** is kept per title, not per copy: a film by its IMDb id, an episode by
 its show's id, season and number, so any release or provider of it counts. A video
-counts once the built-in player passes 92% of it; films, episodes and whole seasons
+counts once the built-in player reaches 80% of it; films, episodes and whole seasons
 are also marked by hand on the title page (an episode's check mark; press and hold
 it for "Mark watched up to here"). Posters show a check once watched and a bar while
 part watched (a show also says "3 of 10"), episodes the same, and season chips their
@@ -174,8 +174,8 @@ skip 10 seconds while the controls are hidden, and Select shows them.
 
 - **Resume**: where each file was left is kept on the device (provider, release
   hash and file path), saved every 5 seconds and on leaving; opening it again
-  offers to resume or start over. Past 92% a file counts as watched and starts
-  from the beginning (`src/playback.ts`).
+  offers to resume or start over. From 80% a file counts as watched and starts
+  from the beginning (`src/playback.ts`), as on Trakt.
 - **Next episode**: when an episode ends and the library has the next one (the
   next number in the season, else the next season's first), it starts after a
   10-second countdown, from the same release or provider when it can.

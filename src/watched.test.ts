@@ -52,7 +52,7 @@ const marks = (...entries: [number, number, number][]): WatchedEntry[] => entrie
 const code = (up: ReturnType<typeof nextUp>) => (up ? `${up.row.season}x${String(up.row.episode).padStart(2, '0')}` : null);
 
 describe('watched from playback (rd6893c80a7036 "Sightings", testacct123 releases, 2026-11-12)', () => {
-	it('marks an episode once its file passes 92%, at that save, whichever copy played it', async () => {
+	it('marks an episode once its file reaches 80%, at that save, whichever copy played it', async () => {
 		let now = 1000;
 		const plays = new PlaybackStore(memory(), () => now);
 		const store = new WatchStore(memory());

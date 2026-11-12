@@ -39,12 +39,14 @@ describe('PlaybackStore', () => {
 		expect(reopened.get('k')).toEqual({ ...meta, position: 20 * MIN + 10_000, duration: 45 * MIN, finished: false, updatedAt: 1000 });
 	});
 
-	it('marks a file finished past 92% and clears its resume point, telling listeners once', async () => {
+	// Trakt's line (live 2026-11-12): a pause at 79.9% is kept as a resume point, one at 80% refused (422), a stop there scrobbled.
+	it("marks a file finished from 80%, Trakt's line, and clears its resume point, telling listeners once", async () => {
 		const store = new PlaybackStore(memory());
 		const events: PlaybackEvent[] = [];
 		store.subscribe((event) => events.push(event));
-		await store.record('k', 30 * MIN, 45 * MIN, meta);
-		await store.record('k', 41.5 * MIN, 45 * MIN, meta);
+		await store.record('k', 45 * MIN * 0.799, 45 * MIN, meta);
+		expect(store.resumeAt('k')).toBe(45 * MIN * 0.799);
+		await store.record('k', 45 * MIN * 0.8, 45 * MIN, meta);
 		await store.record('k', 45 * MIN, 45 * MIN, meta);
 		expect(store.get('k')).toMatchObject({ position: 0, finished: true });
 		expect(store.resumeAt('k')).toBe(0);

@@ -35,7 +35,12 @@ export interface PlaybackEvent {
 	ended: boolean;
 }
 
-export const FINISHED = 0.92;
+/**
+ * Watched from here on, here and on Trakt alike. Trakt marks a stop at 80% or more watched and refuses a
+ * pause there (422 progress_too_high, live 2026-11-12: 79.9 paused, 80 refused), so 80% is the only line
+ * at which a resume point and a watched mark never disagree between devices.
+ */
+export const FINISHED = 0.8;
 /** Less than this in, there is nothing worth resuming. */
 export const MIN_RESUME_MS = 30_000;
 /** ponytail: the oldest entries go past this many; a bigger history needs an index rather than one JSON text. */
