@@ -38,7 +38,7 @@ Sign in to Real-Debrid, AllDebrid, TorBox, Premiumize, Offcloud or Debrid-Link a
 every file you keep there shows in one fast list, even with thousands of items.
 
 • Play any video in the player you choose, with its subtitles
-• Connect Trakt: what you play is scrobbled, and watched marks and resume points follow you
+• Connect Trakt or Simkl: what you play is scrobbled, and watched marks and resume points follow you
 • Search your library by name, filter by service, type or state, and sort it
 • Add downloads to your service and follow their progress
 • Select, delete, reinsert and tidy up duplicates in bulk
@@ -55,10 +55,14 @@ To look around first, enter dmmdemo as the API key of any service: it opens a
 sample library of open movies.
 
 DMM Mobile uses Trakt but is not endorsed or certified by Trakt.
+DMM Mobile syncs watch history with Simkl (simkl.com) and is not affiliated with Simkl.
 ```
 
-Trakt's API use policy asks for that last sentence in the store description and in
-the app (Settings → Trakt).
+Trakt's API use policy asks for its sentence in the store description and in the app
+(Settings → Trakt). Simkl's API rules ask apps to name Simkl and link to it where its
+data shows, and its terms (9.6) forbid using its name in a way that confuses who owns
+it: the app has the same line with a link to simkl.com (Settings → Simkl) and "View on
+Simkl" on a title's page while Simkl is connected.
 
 **What's new** (1.0.0): `First release.`
 
@@ -102,7 +106,7 @@ access": No (links open in the system browser, not inside the app). Result: 4+.
 
 **Content rights:** "Does your app contain, show, or access third-party content?"
 Yes. It shows the user's own files from their own account and title information
-from Trakt; the user has the rights to their account. The demo library is CC BY 3.0.
+from Trakt, and their own watch history from Trakt or Simkl when they connect them; the user has the rights to their account. The demo library is CC BY 3.0.
 
 **Sign in with Apple:** not required (no third-party social login; the logins are
 the user's own service credentials).

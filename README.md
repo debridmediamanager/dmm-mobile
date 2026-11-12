@@ -98,8 +98,8 @@ The first tab once signed in: rows of posters, like Stremio's board, of what the
 library holds. Rows with nothing in them are hidden.
 
 - **Continue Watching**: files left part way in the built-in player, latest first,
-  one per film or show; with Trakt connected, also what you left part way on another
-  device, when the library holds it. A tap resumes at once; press and hold to remove one, mark it
+  one per film or show; with Trakt or Simkl connected, also what you left part way on
+  another device, when the library holds it. A tap resumes at once; press and hold to remove one, mark it
   watched or go to its page.
 - **Next Up**: for each show with a watched episode, the next episode the library
   holds that is not watched yet (after the one watched last, never a special), from
@@ -112,8 +112,8 @@ counts once the built-in player reaches 80% of it; films, episodes and whole sea
 are also marked by hand on the title page (an episode's check mark; press and hold
 it for "Mark watched up to here"). Posters show a check once watched and a bar while
 part watched (a show also says "3 of 10"), episodes the same, and season chips their
-count. Without Trakt, **watch state stays on this device** (`src/watched.ts`); with
-Trakt connected it follows you (below).
+count. Without Trakt or Simkl, **watch state stays on this device** (`src/watched.ts`);
+with either connected it follows you (below).
 
 ## Library
 
@@ -176,7 +176,7 @@ skip 10 seconds while the controls are hidden, and Select shows them.
 - **Resume**: where each file was left is kept on the device (provider, release
   hash and file path), saved every 5 seconds and on leaving; opening it again
   offers to resume or start over. From 80% a file counts as watched and starts
-  from the beginning (`src/playback.ts`), as on Trakt.
+  from the beginning (`src/playback.ts`), as on Trakt and Simkl.
 - **Next episode**: when an episode ends and the library has the next one (the
   next number in the season, else the next season's first), it starts after a
   10-second countdown, from the same release or provider when it can.
@@ -256,6 +256,46 @@ then watched at 80% with one play); a pause on the Pixel resumed at the same
 place from the iPhone's Continue Watching; a season marked, unmarked and an
 episode unwatched on Trakt, both ways on the Pixel; a renewal on the Fire TV
 written back and taken by the Pixel and a fresh DMM web browser; Disconnect.
+
+## Simkl
+
+Settings → Simkl → Connect, then approve the code on simkl.com/pin (a QR code on a
+TV). Once connected it works like Trakt, with no switch to turn on: scrobbling with
+the same 80% line, marks and unmarks sent to Simkl's history, what other apps marked
+coming back, Simkl's resume points under Continue Watching, and whatever cannot be
+sent kept for later. With Trakt and Simkl both connected, what plays here and every
+mark made here goes to both, and a film or episode either one lists counts as
+watched. Neither one's own history is copied into the other: connecting Simkl sends
+it what this device marked, not what came from Trakt.
+
+- **Its own login on each device.** DMM's Simkl app is a public client, so the app
+  links, renews and calls Simkl itself (`src/simkl.ts`), without DMM. Simkl keeps one
+  live access token per grant and a renewal ends the previous one, so a login shared
+  between devices would sign them out of each other; it stays in this device's
+  secure store and is not part of the "remembered across devices" copy. DMM web's
+  Simkl login (custom lists) lives in DMM's server session and cannot be used here.
+- **Write access.** The app asks for `media:read media:write`. DMM's Kodi link asks
+  for read only, and Simkl refuses every write from such a grant (`403
+  insufficient_scope`). Should Simkl ever grant read only, Settings says so: marks
+  then come from Simkl and nothing is sent until you connect again.
+- **Its rules.** At most one write a second; the app checks Simkl's activity stamps on
+  start and coming back at most every 15 minutes (any time on pull to refresh) and
+  downloads the history only when they moved. No call after a seek (Simkl moves its
+  progress by itself). Free accounts have 500 requests a day (PRO 1,000, VIP 10,000);
+  past that, the app waits until Simkl's allowance resets and then sends what waited. Anime is sent
+  and read by the show's IMDb id and its usual season numbers; Simkl maps them to its
+  own per-season entries. Tokens last 7 days and renew in their last hour; Disconnect
+  revokes the grant. The demo key never reaches Simkl.
+- **Attribution.** Settings names Simkl, links to simkl.com and says DMM Mobile is not
+  affiliated with Simkl, and a title's page has "View on Simkl" while Simkl is
+  connected (not on a TV, which has no browser), as Simkl's API rules and terms ask.
+
+Tested on 2026-11-12 with a Simkl test account, alongside the Trakt one (Fire TV Cube,
+Pixel 6): connect by QR on the Fire TV and by code on the Pixel; the first import
+joining both histories with nothing copied across; an episode played past 80% on the
+Fire TV, watched on Simkl and Trakt; a season unmarked and marked again from the TV on
+both; a film and a season marked and removed on Simkl showing up on both devices;
+Disconnect. Not yet on an iPhone or Apple TV (same code; the iOS bundle builds).
 
 ## Search
 
