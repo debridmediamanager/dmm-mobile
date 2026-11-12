@@ -97,6 +97,7 @@ only (never a real account on a store build under test).
 | 7 | Add the magnet from the notes | Big Buck Bunny shows 2 copies; under Torrents a "Big Buck Bunny" row, queued (demo) | | | | | | |
 | 8 | Search "sintel", tap a result | DMM page opens in the browser, signed out | | | n/a | | | n/a |
 | 9 | Settings, Privacy policy | debridmediamanager.com/privacy opens (TV: address shown) | | | | | | |
+| 9a | Home, calendar button | Calendar opens, empty (the demo films are no shows); Settings → New-episode alerts on asks to allow notifications (not on TVs, which have no such setting) | | | n/a | | | n/a |
 | 10 | Accounts, Disconnect TorBox | Back to sign-in, library empty | | | | | | |
 | 11 | Close and reopen after step 2 | Still signed in, demo library reset to 4 items | | | | | | |
 

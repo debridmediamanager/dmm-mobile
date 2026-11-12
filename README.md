@@ -106,6 +106,7 @@ library holds. Rows with nothing in them are hidden.
   the release played before when it has it. A tap plays it.
 - **Watchlist**: with Trakt or Simkl connected, Trakt's watchlist and Simkl's Plan to
   Watch together, each title once, what the library holds first (Lists, below).
+- **Upcoming**: the next episode of each of your shows (Calendar, below), soonest first.
 - **Recently Added**: the newest films and shows.
 
 **Watched** is kept per title, not per copy: a film by its IMDb id, an episode by
@@ -331,6 +332,56 @@ alone; Trakt's watchlist, a private list and a liked list, Simkl's statuses; a t
 library holds played from a list; Open on DMM landed signed in on the Pixel; the Fire TV's
 QR code holds the plain page; a list changed on Trakt and a status moved on Simkl showed
 after pull to refresh. Not yet on an iPhone or Apple TV (same code; the iOS bundle builds).
+
+## Calendar
+
+Home's calendar button (on a TV, right of the Home tab) opens the episodes of **your shows**: what airs today and
+in the next 30 days, or what aired in the last 7, by day in the device's time zone, each with its time. Your shows
+are the shows in the library, the ones Simkl lists as watching or plan to watch, and, with Trakt connected, the
+ones Trakt's own calendar lists (what you watched, your watchlist and collection).
+
+- **In the library** (any copy whose file names hold that season and episode, a two-episode file too): it plays,
+  with the watched tick as everywhere else.
+- **Aired, not in the library**: **Open on DMM** opens the season's DMM page in the browser signed in as the app (as
+  Search does); a TV shows a QR code of the plain page instead.
+- **Still to come**: its date and time; a tap opens the show.
+
+Where the dates come from, and how often (measured 2026-11-12):
+
+- **Trakt connected**: `/calendars/my/shows` for the whole window, one request, read again after 6 hours or on pull
+  to refresh (at most once a minute). Its answer decides for every show it lists.
+- **Every other show**: DMM's `/api/info/show`, which gives a show's last and next episode, then, when either falls
+  inside the window, those seasons from Trakt's public season list (`/shows/<id>/seasons/<n>?extended=full`, no login),
+  which has every episode's air time. A show airing now is checked again twice a day, one between seasons weekly, an
+  ended one monthly; answers are kept on the device (`calendar-v1.json`), so a start or a pull to refresh reads only
+  what is due. The first look at a big library reads each show once, four at a time.
+- **Simkl**: no requests at all: its watching and plan to watch shows come from the lists already read (Lists,
+  above). Simkl's public calendar files cost no requests either, but its TV file is 2.7 MB (477 kB compressed) and
+  its anime file carries no IMDb ids to match a library by, so the app does not read them.
+- DMM's `/api/calendar` is a global Trakt calendar (about 340 popular shows a month): it misses most libraries' shows,
+  so it is not used.
+- The demo key has no shows (its titles are films) and never reaches a tracker: its calendar is empty.
+
+**New-episode alerts** (phones and tablets; Settings → New-episode alerts, off until switched on, which is when the
+app asks for permission to notify): a local notification when an episode of your shows airs, or at 9:00 on its day
+when only the date is known. Each calendar update schedules the next 60 (iOS keeps 64 per app) and cancels those
+that left or moved; switching alerts off cancels them all. Nothing runs in the background and no server sends
+anything: alerts already scheduled fire with the app closed, and the next ones are scheduled the next time the app
+opens. Android may deliver one up to an hour after the air time: without the exact-alarm permission, which the app
+does not ask for, it batches alarms (measured on the Pixel 6: a window of three quarters of the wait, at most an
+hour). The module is `expo-notifications`, with its push side switched off: no push entitlement on iOS, and the
+Firebase Cloud Messaging, wake-lock, install-referrer and launcher-badge permissions it brings are removed on
+Android (`app.json`), leaving `POST_NOTIFICATIONS` (asked only when alerts are switched on) and
+`RECEIVE_BOOT_COMPLETED` (so scheduled alerts survive a restart). It is native code, so it ships with a store
+release, not over the air.
+
+Tested on 2026-11-12 with the Trakt and Simkl test accounts (Pixel 6, Fire TV Cube, iPhone simulator): a library show
+alone (The Simpsons, from DMM and Trakt's season list), then Trakt's watched and watchlisted shows and Simkl's watching
+and plan to watch ones on the same calendar; an aired episode opened on DMM signed in, added to Real-Debrid there and,
+after a pull to refresh, played from the calendar; the watched tick; on the Fire TV the calendar with the remote and a
+QR code holding the plain DMM page; alerts switched on (Android 13's and iOS's permission prompts), 19 scheduled on the
+Pixel, none after switching off; a notification firing on time on the Pixel and the iPhone simulator from a test build
+with an episode faked two minutes ahead (the test change is not in the repository). Not yet on an iPhone or Apple TV.
 
 ## Search
 

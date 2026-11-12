@@ -40,6 +40,7 @@ every file you keep there shows in one fast list, even with thousands of items.
 • Play any video in the player you choose, with its subtitles
 • Connect Trakt or Simkl: what you play is scrobbled, and watched marks and resume points follow you
 • See your Trakt and Simkl watchlists and lists, and play what your library holds
+• A calendar of your shows' new episodes, with an optional alert when one airs
 • Search your library by name, filter by service, type or state, and sort it
 • Add downloads to your service and follow their progress
 • Select, delete, reinsert and tidy up duplicates in bulk
@@ -152,5 +153,11 @@ Result: ESRB Teen, PEGI Parental guidance, USK 12, ClassInd 14, IARC 12+.
 | Personal info → Other info (debrid logins and settings in the remembered copy) | Yes | No | No | Yes (always on) | App functionality |
 | App activity → In-app search history (Search queries, looked up and not kept) | Yes | No | Yes | No | App functionality |
 | Everything else | No | | | | |
+
+**Permissions** (no declaration form needs them, but reviewers see them in the manifest): `POST_NOTIFICATIONS`,
+asked only when the user switches on New-episode alerts in Settings, and `RECEIVE_BOOT_COMPLETED`, so alerts
+already scheduled survive a restart. Both come with `expo-notifications`; the push (Firebase Cloud Messaging),
+wake-lock, Play install-referrer and launcher-badge permissions it also brings are removed in `app.json`. No exact-alarm permission.
+The App Store build has no push entitlement.
 
 **App access:** see `review.md`.
