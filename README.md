@@ -197,6 +197,11 @@ Pro), the frameworks sit in this repository's GitHub release `vlckit-3.7.5-trueh
 Podfile at them. `vlckit/check.sh` plays the real TrueHD clips in `vlckit/check/` in a simulator and
 fails unless each one makes sound; run it on every new build.
 
+`patches/` changes `@lunarr/vlc-player` (applied by `npm ci`): on iPhone, iPad and Apple TV, React
+Native reused a closed player's view for the next video, and a video left paused kept the next one
+from ever starting. `qa/player-reopen.sh <simulator .app>` pauses and closes one clip, opens another
+and fails unless the second plays; run it when the player package changes.
+
 ## Search
 
 DMM web's quick search on its own tab: the six best movie and show matches,
