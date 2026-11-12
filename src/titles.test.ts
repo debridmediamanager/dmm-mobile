@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { LibraryFile, LibraryItem } from './model';
 import { ProviderApiError } from './providerApi';
 import { TitleIndex, type CacheStore } from './titleIndex';
-import { askDmm, episodeOf, LoginRefused, groupTitles, identificationKey, mainFile, posterUrls, qualityOf, releaseSeason, seasonRange, showEpisodes, type Identification, type Post } from './titles';
+import { askDmm, episodeOf, findEpisode, LoginRefused, groupTitles, identificationKey, mainFile, nextEpisode, posterUrls, qualityOf, releaseSeason, seasonRange, showEpisodes, type EpisodeCopy, type Identification, type Post } from './titles';
 import identifyFixture from './test/fixtures/dmm-identify-testacct123-2026-11-12.json';
 import rdFiles from './test/fixtures/rd-show-files-testacct123-2026-11-12.json';
 import sightings from './test/fixtures/rd-show-files-sightings-2026-11-12.json';
@@ -191,6 +191,46 @@ describe('showEpisodes', () => {
 	it("opens a film copy's biggest video", () => {
 		const film = row('rd:x', 'Film.2020.1080p', '');
 		expect(mainFile(film, [{ id: '1', name: 'Film.sample.mkv', size: 50_000_000 }, { id: '2', name: 'Film.2020.1080p.mkv', size: 9_000_000_000 }, { id: '3', name: 'Film.srt', size: 90_000 }])?.id).toBe('2');
+	});
+});
+
+describe('nextEpisode', () => {
+	const files = (release: { files: { id: number; path: string; bytes: number; selected: number }[] }): LibraryFile[] => release.files.map((file) => ({ id: String(file.id), name: file.path, size: file.bytes, selected: file.selected === 1 }));
+	const sightingsRow = row('rd:QP76YYG2XC6P2', sightings.filename, sightings.hash);
+	const fileId = (path: string) => String(sightings.files.find((file) => file.path.includes(path))!.id);
+	const after = (copies: Parameters<typeof showEpisodes>[0], itemId: string, id: string): EpisodeCopy | null => {
+		const episodes = showEpisodes(copies);
+		return nextEpisode(episodes, findEpisode(episodes, itemId, id)!);
+	};
+	const name = (copy: EpisodeCopy | null) => copy?.file.name.split('/').pop()?.split(' - ').slice(1, 2)[0];
+	const one = [{ item: sightingsRow, files: files(sightings) }];
+
+	// rd6893c80a7036's "Sightings" (2026-11-12): 1x03 is missing, and double episodes come as "1x06-07" beside a "1x07".
+	it('plays the next episode the library holds, past a gap and a double episode, then the next season', () => {
+		expect(name(after(one, sightingsRow.id, fileId('1x01')))).toBe('1x02');
+		expect(name(after(one, sightingsRow.id, fileId('1x02')))).toBe('1x04');
+		expect(name(after(one, sightingsRow.id, fileId('1x06-07')))).toBe('1x08');
+		expect(name(after(one, sightingsRow.id, fileId('2x02-03')))).toBe('2x04');
+		expect(name(after(one, sightingsRow.id, fileId('1x14')))).toBe('2x01');
+		expect(after(one, sightingsRow.id, fileId('5x18'))).toBeNull();
+	});
+
+	it('stays on the same release, then the same provider', () => {
+		// The same release on TorBox too, and the next episode only on TorBox.
+		const torbox = { ...sightingsRow, id: 'tb:42', provider: 'tb' as const };
+		const both = [...one, { item: torbox, files: files(sightings) }];
+		expect(after(both, sightingsRow.id, fileId('1x01'))?.item.id).toBe(sightingsRow.id);
+		expect(after(both, torbox.id, fileId('1x01'))?.item.id).toBe('tb:42');
+		const rdWithout2 = files(sightings).filter((file) => !file.name.includes('1x02'));
+		const split = [{ item: sightingsRow, files: rdWithout2 }, { item: { ...sightingsRow, id: 'rd:OTHER' }, files: files(sightings) }, { item: torbox, files: files(sightings) }];
+		expect(after(split, sightingsRow.id, fileId('1x01'))?.item.id).toBe('rd:OTHER');
+	});
+
+	it('has none for a film or an unplaced file', () => {
+		const southPark = torrents['2CHSZZUOPVH3Q'];
+		const episodes = showEpisodes([{ item: row('rd:2CHSZZUOPVH3Q', southPark.filename, southPark.hash), files: filesOf('2CHSZZUOPVH3Q') }]);
+		expect(findEpisode(episodes, 'rd:2CHSZZUOPVH3Q', '2')).toBeUndefined();
+		expect(nextEpisode(episodes, episodes.unplaced[0])).toBeNull();
 	});
 });
 

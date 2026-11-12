@@ -8,6 +8,7 @@ import type { MainTabParamList, RootStackParamList } from './navigation';
 import { AccountsScreen } from './screens/AccountsScreen';
 import { DetailScreen } from './screens/DetailScreen';
 import { TitleScreen } from './screens/TitleScreen';
+import { PlayerScreen } from './screens/PlayerScreen';
 import { LibraryScreen } from './screens/LibraryScreen';
 import { SearchScreen } from './screens/SearchScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
@@ -79,6 +80,8 @@ export function AppNavigation() {
 						{/* TVs go back with the remote; the native header would also be drawn twice its size by the Apple TV scale. */}
 						<Stack.Screen name="Detail" component={DetailScreen} options={{ title: 'Library item', headerShown: !Platform.isTV }} />
 						<Stack.Screen name="Title" component={TitleScreen} options={{ title: '', headerShown: !Platform.isTV }} />
+						{/* Full screen, landscape on phones and tablets (TVs are), the remote's Back or Menu leaves. */}
+						<Stack.Screen name="Player" component={PlayerScreen} options={{ headerShown: false, orientation: 'landscape', statusBarHidden: true, navigationBarHidden: true, autoHideHomeIndicator: true, contentStyle: { backgroundColor: '#000' } }} />
 					</>
 				)}
 			</Stack.Navigator>

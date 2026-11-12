@@ -12,7 +12,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useApp } from '../AppContext';
 import { formatBytes, isVideoName } from '../core';
 import { hashlistUrl } from '../share';
-import { openFileLink } from '../player';
+import { openFileLink, playsBuiltIn } from '../player';
 import type { LibraryFile, LibraryItem } from '../model';
 import { PROVIDER_META, statusLabel } from '../model';
 import { isSafeExternalUrl, magnetForHash } from '../validation';
@@ -97,7 +97,8 @@ export function DetailScreen({ route, navigation }: Props) {
 			const url = await openFile(item.provider, item, file.id);
 			if (!mountedRef.current || connectionKeyRef.current !== expectedConnection) throw new Error('Connection changed while opening this file.');
 			if (!isSafeExternalUrl(url)) throw new Error('The provider returned an unsafe file URL.');
-			await openFileLink(url, file.name);
+			if (await playsBuiltIn(file.name)) navigation.navigate('Player', { url, item, fileId: file.id });
+			else await openFileLink(url, file.name);
 		} catch (caught) {
 			// An alert, not the banner: the banner sits above the file list, off screen once it is scrolled (always, on a TV).
 			if (mountedRef.current) Alert.alert('Could not open the file', caught instanceof Error ? caught.message : 'Could not open this file.');

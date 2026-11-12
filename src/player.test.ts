@@ -7,7 +7,7 @@ vi.mock('expo-intent-launcher', () => ({ startActivityAsync: vi.fn(async () => (
 
 import { Linking } from 'react-native';
 import * as IntentLauncher from 'expo-intent-launcher';
-import { iosPlayerUrl, loadPlayer, openFileLink, playersForPlatform } from './player';
+import { iosPlayerUrl, loadPlayer, openFileLink, playersForPlatform, playsBuiltIn } from './player';
 import { _resetSettingsCache } from './settings';
 
 const TB = 'https://store-024.weur.tb-cdn.st/zip/1?token=abc&x=1';
@@ -37,14 +37,15 @@ describe('external players', () => {
 		expect(Linking.openURL).toHaveBeenCalledWith(TB);
 	});
 
-	it('asks Android for any video app when the chooser is set, and opens normally by default', async () => {
+	it('asks Android for any video app when the chooser is set', async () => {
 		native.saved = 'android/chooser';
 		await openFileLink(TB, 'a.mp4');
 		expect(IntentLauncher.startActivityAsync).toHaveBeenCalledWith('android.intent.action.VIEW', { data: TB, type: 'video/*' });
-		native.saved = null;
-		_resetSettingsCache();
-		await openFileLink(TB, 'a.mp4');
-		expect(Linking.openURL).toHaveBeenCalledWith(TB);
+	});
+
+	it('opens in another app the player asks for, whatever is chosen (the built-in player\'s fallback)', async () => {
+		await openFileLink(TB, 'a.mkv', 'android/org.videolan.vlc');
+		expect(IntentLauncher.startActivityAsync).toHaveBeenCalledWith('android.intent.action.VIEW', expect.objectContaining({ packageName: 'org.videolan.vlc' }));
 	});
 
 	it('says to pick another player when the chosen one is not installed', async () => {
@@ -55,21 +56,39 @@ describe('external players', () => {
 
 	it('ignores a saved player from the other platform', async () => {
 		native.saved = 'ios/infuse';
-		await openFileLink(TB, 'a.mkv');
-		expect(Linking.openURL).toHaveBeenCalledWith(TB);
+		expect(await loadPlayer()).toBe('builtin');
 		expect(IntentLauncher.startActivityAsync).not.toHaveBeenCalled();
 	});
 });
 
+describe('the built-in player', () => {
+	it('is the default where nothing is chosen, and plays only videos', async () => {
+		expect(playersForPlatform()[0]).toEqual({ id: 'builtin', label: 'Built-in player' });
+		expect(await loadPlayer()).toBe('builtin');
+		expect(await playsBuiltIn('Sightings - 1x01 - The UFO Report.mp4')).toBe(true);
+		expect(await playsBuiltIn('tears_of_steel.en.srt')).toBe(false);
+	});
+
+	it('gives way to a player chosen here or synced from DMM web, but not to one this platform lacks', async () => {
+		native.saved = 'android/org.videolan.vlc';
+		expect(await loadPlayer()).toBe('android/org.videolan.vlc');
+		expect(await playsBuiltIn('a.mkv')).toBe(false);
+		// DMM web's own default, synced from a desktop browser.
+		native.saved = 'web/rd';
+		_resetSettingsCache();
+		expect(await loadPlayer()).toBe('builtin');
+	});
+});
+
 describe('players on Apple TV', () => {
-	it('offers no browser, which tvOS lacks, and starts on a player app', async () => {
+	it('offers no browser, which tvOS lacks, and starts on the built-in player', async () => {
 		native.os = 'ios';
 		native.tv = true;
 		expect(playersForPlatform().map((player) => player.id)).not.toContain('browser');
-		expect(await loadPlayer()).toBe('ios2/open-vidhub');
+		expect(await loadPlayer()).toBe('builtin');
 		native.saved = 'browser';
 		_resetSettingsCache();
-		// A browser choice synced from an iPhone falls back to a player here.
-		expect(await loadPlayer()).toBe('ios2/open-vidhub');
+		// A browser choice synced from an iPhone falls back to the built-in player here.
+		expect(await loadPlayer()).toBe('builtin');
 	});
 });

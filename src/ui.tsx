@@ -346,11 +346,14 @@ export interface SheetAction {
 }
 
 /** A bottom sheet of actions; Android alerts hold three buttons at most. */
-export function ActionSheet({ title, detail, actions, onClose }: { title: string; detail?: string; actions: SheetAction[]; onClose: () => void }) {
+export function ActionSheet({ title, detail, actions, onClose, landscape = false }: { title: string; detail?: string; actions: SheetAction[]; onClose: () => void; landscape?: boolean }) {
 	const theme = useAppTheme();
 	const sheetStyles = useSheetStyles();
+	// A phone in landscape (the player) is about 410 points tall: the list scrolls below the title rather than pushing it off screen.
+	const listHeight = Math.min(460, useWindowDimensions().height / TV_SCALE - 190);
 	return (
-		<Modal visible animationType="slide" transparent onRequestClose={onClose}>
+		// iOS presents a Modal in portrait unless told otherwise, turning the landscape player behind it sideways.
+		<Modal visible animationType="slide" transparent onRequestClose={onClose} supportedOrientations={landscape ? ['landscape'] : undefined}>
 			<TvScale>
 			{/* Neither layer takes a remote's focus: only the actions in the sheet should. */}
 			<RNPressable focusable={false} style={sheetStyles.backdrop} onPress={onClose} accessibilityLabel="Close actions">
@@ -360,7 +363,7 @@ export function ActionSheet({ title, detail, actions, onClose }: { title: string
 						<Pressable accessibilityRole="button" accessibilityLabel="Close actions" onPress={onClose} hitSlop={10}><Icon name="close" size={24} color={theme.muted} /></Pressable>
 					</View>
 					{detail ? <Text style={[styles.subheading, { color: theme.muted }]}>{detail}</Text> : null}
-					<ScrollView style={{ maxHeight: 460 }} contentContainerStyle={{ gap: 8 }}>
+					<ScrollView style={{ maxHeight: listHeight }} contentContainerStyle={{ gap: 8 }}>
 						{actions.map((action) => (
 							<Pressable key={action.label} accessibilityRole="button" accessibilityState={action.checked === undefined ? undefined : { selected: action.checked }} accessibilityLabel={action.label} onPress={() => { onClose(); action.onPress(); }} style={[styles.outlineButton, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderColor: action.checked ? theme.accent : action.destructive ? theme.danger : theme.border, minHeight: 46 }]}>
 								<Text style={[styles.outlineButtonText, { flex: 1, color: action.destructive ? theme.danger : action.checked ? theme.accent : theme.text, fontSize: 15 }]}>{action.label}</Text>

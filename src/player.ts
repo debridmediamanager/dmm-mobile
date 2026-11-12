@@ -5,8 +5,9 @@ import { loadSettings, saveSetting } from './settings';
 
 /**
  * The players DMM web offers in Settings (src/components/SettingsSection.tsx), with the
- * same ids, so a choice means the same app in both. 'browser' is this app's default:
- * hand the link to whatever the system opens for it.
+ * same ids, so a choice means the same app in both, plus two of the app's own: the
+ * built-in player (the default) and 'browser', which hands the link to whatever the system
+ * opens for it. DMM web knows neither, so they stay on the device (sync.ts).
  */
 export interface PlayerOption {
 	id: string;
@@ -15,8 +16,12 @@ export interface PlayerOption {
 	activity?: string;
 }
 
+export const BUILT_IN = 'builtin';
+const BUILT_IN_OPTION: PlayerOption = { id: BUILT_IN, label: 'Built-in player' };
+
 export const PLAYERS: Record<'android' | 'ios', PlayerOption[]> = {
 	android: [
+		BUILT_IN_OPTION,
 		{ id: 'browser', label: 'Browser or default app' },
 		{ id: 'android/chooser', label: 'Ask which video app' },
 		// Read from each app on 2026-11-09: VLC from the Pixel 6 (`cmd package resolve-activity`), Just Player
@@ -27,6 +32,7 @@ export const PLAYERS: Record<'android' | 'ios', PlayerOption[]> = {
 		{ id: 'android/com.brouken.player', label: 'Just Player', activity: 'com.brouken.player.PlayerActivity' },
 	],
 	ios: [
+		BUILT_IN_OPTION,
 		{ id: 'browser', label: 'Safari or default app' },
 		{ id: 'ios2/open-vidhub', label: 'VidHub' },
 		{ id: 'ios/infuse', label: 'Infuse' },
@@ -37,7 +43,7 @@ export const PLAYERS: Record<'android' | 'ios', PlayerOption[]> = {
 	],
 };
 
-// Apple TV has no browser, so a video goes to a player app there.
+// Apple TV has no browser, so a video goes to a player there.
 export const playersForPlatform = (): PlayerOption[] =>
 	Platform.OS === 'ios' ? (Platform.isTV ? PLAYERS.ios.filter((player) => player.id !== 'browser') : PLAYERS.ios) : PLAYERS.android;
 
@@ -51,6 +57,7 @@ export function iosPlayerUrl(playerId: string, url: string): string {
 	return url;
 }
 
+/** The chosen player, or the built-in one when none is chosen or the synced choice is another platform's (DMM web's 'web/rd', an iOS app on Android). */
 export async function loadPlayer(): Promise<string> {
 	const saved = (await loadSettings()).player;
 	return saved && playersForPlatform().some((player) => player.id === saved) ? saved : playersForPlatform()[0].id;
@@ -58,14 +65,17 @@ export async function loadPlayer(): Promise<string> {
 
 export const savePlayer = (id: string): Promise<void> => saveSetting('player', id);
 
+/** Whether a file opens in the built-in player rather than in another app. */
+export const playsBuiltIn = async (fileName: string): Promise<boolean> => isVideoName(fileName) && (await loadPlayer()) === BUILT_IN;
+
 /**
- * Opens a resolved file link: videos go to the chosen player, anything else (subtitles,
- * archives, images) to the system as before. Throws a readable error when the player is
- * not installed.
+ * Opens a resolved file link in another app: videos in the chosen player app (or `player`),
+ * anything else (subtitles, archives, images) in the system. Throws a readable error when the
+ * player is not installed.
  */
-export async function openFileLink(url: string, fileName: string): Promise<void> {
-	const player = await loadPlayer();
-	if (player === 'browser' || !isVideoName(fileName)) {
+export async function openFileLink(url: string, fileName: string, player?: string): Promise<void> {
+	player ??= await loadPlayer();
+	if (player === 'browser' || player === BUILT_IN || !isVideoName(fileName)) {
 		await Linking.openURL(url);
 		return;
 	}

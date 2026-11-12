@@ -6,7 +6,7 @@ import { formatBytes } from '../core';
 import type { LibraryFile, LibraryItem } from '../model';
 import { PROVIDER_META } from '../model';
 import type { RootStackParamList } from '../navigation';
-import { openFileLink } from '../player';
+import { openFileLink, playsBuiltIn } from '../player';
 import { useAppTheme } from '../theme';
 import { mainFile, posterUrls, qualityOf, seasonRange, showEpisodes, smallerTmdb, type EpisodeCopy, type TitleInfo } from '../titles';
 import { isSafeExternalUrl } from '../validation';
@@ -69,7 +69,8 @@ export function TitleScreen({ route, navigation }: Props) {
 			if (!file) throw new Error('This copy has no video to open yet.');
 			const url = await openFile(item.provider, { ...item, files }, file.id);
 			if (!isSafeExternalUrl(url)) throw new Error('The provider returned an unsafe file URL.');
-			await openFileLink(url, fileBase(file.name));
+			if (await playsBuiltIn(file.name)) navigation.navigate('Player', { url, item: { ...item, files }, fileId: file.id });
+			else await openFileLink(url, fileBase(file.name));
 		} catch (caught) {
 			if (mounted.current) Alert.alert('Could not open the file', caught instanceof Error ? caught.message : 'Could not open this file.');
 		} finally {

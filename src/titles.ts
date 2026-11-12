@@ -309,6 +309,31 @@ export function showEpisodes(copies: readonly { item: LibraryItem; files: readon
 	return { seasons: sorted, unplaced };
 }
 
+/** Where a file of a release sits among the show's episodes, if it has a place. */
+export function findEpisode(episodes: ShowEpisodes, itemId: string, fileId: string): EpisodeCopy | undefined {
+	for (const season of episodes.seasons.values()) {
+		for (const copies of season.values()) {
+			const found = copies.find((copy) => copy.item.id === itemId && copy.file.id === fileId);
+			if (found) return found;
+		}
+	}
+	return undefined;
+}
+
+/**
+ * The episode after `current` that the library holds: the next number in its season (after the
+ * last one of a multi-episode file, past any it lacks), else the first of the next season. Its
+ * copy comes from the same release, then the same provider, then the first listed.
+ */
+export function nextEpisode(episodes: ShowEpisodes, current: EpisodeCopy): EpisodeCopy | null {
+	if (!current.ref) return null;
+	const { season, episode, end } = current.ref;
+	const later = [...(episodes.seasons.get(season)?.entries() ?? [])].find(([number]) => number > (end ?? episode))?.[1];
+	const copies = later ?? episodes.seasons.get(season + 1)?.values().next().value;
+	if (!copies) return null;
+	return copies.find((copy) => copy.item.id === current.item.id) ?? copies.find((copy) => copy.item.provider === current.item.provider) ?? copies[0];
+}
+
 /** The file a film copy opens: its biggest playable video. */
 export const mainFile = (item: LibraryItem, files: readonly LibraryFile[]): LibraryFile | undefined =>
 	[...playableFiles(item, files)].sort((a, b) => b.size - a.size)[0];
