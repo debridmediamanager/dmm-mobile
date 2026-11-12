@@ -42,8 +42,8 @@ iPhone and iPad
    field, then tap "Save key".
 2. Home shows the four open movies under Recently Added. Tap "Tears of Steel" for
    its page and tap Open: it plays in the app's own player. Its subtitle button lists
-   the film's English, German and Spanish subtitle files. Leave it part way: back on
-   Home it waits under Continue Watching.
+   the film's English, German and Spanish subtitle files. Leave it after half a
+   minute or more: back on Home it waits under Continue Watching.
 3. Under Releases, tap the release to see its files; tap a subtitle file to open
    it in the browser.
 4. Back in the Library, tap Torrents for the list of releases: the menu (three
@@ -91,7 +91,7 @@ only (never a real account on a store build under test).
 | 1 | Fresh install, open | Sign-in screen (TV: QR code and "Enter an API key instead") | | | | | | |
 | 2 | TorBox API token `dmmdemo`, Save key | Home with 4 film posters under Recently Added; Library the same 4, Torrents 4 items, Cosmos Laundromat at 62 % | | | | | | |
 | 3 | Open Tears of Steel, then its release | Title page with backdrop, plot and one copy; the release has 1 video and 3 subtitle files | | | | | | |
-| 4 | Open (title page) | Plays in the built-in player; Subtitles lists the 3 .srt files and shows one when picked; leaving and opening again offers Resume; Home lists it under Continue Watching | | | | | | |
+| 4 | Open (title page) | Plays in the built-in player; Subtitles lists the 3 .srt files and shows one when picked; leaving after 30 s and opening again offers Resume; Home lists it under Continue Watching | | | | | | |
 | 5 | Open Cosmos Laundromat | "This demo file is still downloading." | | | | | | |
 | 6 | Torrents, row menu, Delete Sintel | Sintel gone until the app is closed | | | | | | |
 | 7 | Add the magnet from the notes | Big Buck Bunny shows 2 copies; under Torrents a "Big Buck Bunny" row, queued (demo) | | | | | | |
