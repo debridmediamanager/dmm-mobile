@@ -1,35 +1,49 @@
 import { NavigationContainer, DarkTheme as NavigationDarkTheme, DefaultTheme as NavigationDefaultTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createNativeStackNavigator, type NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AppProvider, useApp } from './AppContext';
 import type { MainTabParamList, RootStackParamList } from './navigation';
 import { AccountsScreen } from './screens/AccountsScreen';
 import { DetailScreen } from './screens/DetailScreen';
+import { HomeScreen } from './screens/HomeScreen';
 import { TitleScreen } from './screens/TitleScreen';
 import { PlayerScreen } from './screens/PlayerScreen';
 import { LibraryScreen } from './screens/LibraryScreen';
 import { SearchScreen } from './screens/SearchScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { useAppTheme } from './theme';
-import { Platform } from 'react-native';
+import { useEffect } from 'react';
+import { Linking, Platform } from 'react-native';
 import { Icon, Pressable, TvScale, useLayout, type IconName } from './ui';
 import type { LibrarySession } from './session';
 import { PROVIDERS } from './model';
+import { parseIncomingLink } from './share';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tabs = createBottomTabNavigator<MainTabParamList>();
 const TAB_ICONS: Record<keyof MainTabParamList, [IconName, IconName]> = {
+	Home: ['home', 'home-outline'],
 	Library: ['bookshelf', 'bookshelf'],
 	Search: ['magnify', 'magnify'],
 	Accounts: ['account-key', 'account-key-outline'],
 	Settings: ['cog', 'cog-outline'],
 };
 
-function MainTabs() {
+function MainTabs({ navigation }: NativeStackScreenProps<RootStackParamList, 'Main'>) {
 	const theme = useAppTheme();
 	const { wide } = useLayout();
+	// A magnet or .torrent opened from another app goes to Library's Add, which may not be mounted yet: Home comes first.
+	useEffect(() => {
+		const open = (url: string | null | undefined) => {
+			const link = parseIncomingLink(url);
+			if (link) navigation.navigate('Main', { screen: 'Library', params: { incoming: link.kind === 'magnet' ? { text: link.magnet } : { text: '', file: { uri: link.uri, name: link.name } } } });
+		};
+		void Linking.getInitialURL().then(open);
+		const subscription = Linking.addEventListener('url', (event) => open(event.url));
+		return () => subscription.remove();
+	}, [navigation]);
 	return (
 		<Tabs.Navigator
 			screenOptions={({ route }) => ({
@@ -47,6 +61,7 @@ function MainTabs() {
 				freezeOnBlur: true,
 			})}
 		>
+			<Tabs.Screen name="Home" component={HomeScreen} options={{ tabBarLabel: 'Home' }} />
 			<Tabs.Screen name="Library" component={LibraryScreen} options={{ tabBarLabel: 'Library' }} />
 			{/* Its results open in the browser, and a TV has none. */}
 			{Platform.isTV ? null : <Tabs.Screen name="Search" component={SearchScreen} options={{ tabBarLabel: 'Search' }} />}
@@ -75,8 +90,8 @@ export function AppNavigation() {
 					<Stack.Screen name="SignIn" component={AccountsScreen} options={{ headerShown: false }} />
 				) : (
 					<>
-						{/* Its title is the back button's label on iOS pages opened from the library. */}
-						<Stack.Screen name="Main" component={MainTabs} options={{ headerShown: false, title: 'Library' }} />
+						{/* Its title is the back button's label on iOS pages opened from Home or the library. */}
+						<Stack.Screen name="Main" component={MainTabs} options={{ headerShown: false, title: 'Back' }} />
 						{/* TVs go back with the remote; the native header would also be drawn twice its size by the Apple TV scale. */}
 						<Stack.Screen name="Detail" component={DetailScreen} options={{ title: 'Library item', headerShown: !Platform.isTV }} />
 						<Stack.Screen name="Title" component={TitleScreen} options={{ title: '', headerShown: !Platform.isTV }} />

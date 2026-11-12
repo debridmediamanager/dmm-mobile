@@ -6,11 +6,12 @@ import { formatBytes } from '../core';
 import type { LibraryFile, LibraryItem } from '../model';
 import { PROVIDER_META } from '../model';
 import type { RootStackParamList } from '../navigation';
-import { openFileLink, playsBuiltIn } from '../player';
+import { playback } from '../playback';
 import { useAppTheme } from '../theme';
-import { mainFile, posterUrls, qualityOf, seasonRange, showEpisodes, smallerTmdb, type EpisodeCopy, type TitleInfo } from '../titles';
-import { isSafeExternalUrl } from '../validation';
-import { EmptyState, FilterButton, Pressable, Screen, styles, useLayout } from '../ui';
+import { mainFile, posterUrls, qualityOf, seasonRange, smallerTmdb, type EpisodeCopy, type TitleInfo } from '../titles';
+import { ActionSheet, EmptyState, FilterButton, Icon, Pressable, Screen, styles, useLayout, type SheetAction } from '../ui';
+import { progressOf, resumable, rowRefs, rowsUpTo, seasonRows, watched, watchKey, type HeldEpisode } from '../watched';
+import { useOpenCopy, useWatch } from './hooks';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Title'>;
 
@@ -22,7 +23,10 @@ export function TitleScreen({ route, navigation }: Props) {
 	const theme = useAppTheme();
 	const { wide } = useLayout();
 	const edges: Array<'top' | 'bottom'> = Platform.isTV ? ['top', 'bottom'] : ['bottom'];
-	const { snapshot, titles, openFile, detail } = useApp();
+	const { snapshot, titles } = useApp();
+	const openCopy = useOpenCopy();
+	const { playVersion } = useWatch();
+	const [menu, setMenu] = useState<{ title: string; actions: SheetAction[] } | null>(null);
 	const version = useSyncExternalStore(titles.subscribe, titles.getVersion);
 	const { imdbId } = route.params;
 	const copies = useMemo(
@@ -54,23 +58,40 @@ export function TitleScreen({ route, navigation }: Props) {
 		void titles.loadFiles(copies, (done, total) => mounted.current && setReading(done < total ? `Reading files ${done}/${total}…` : ''));
 	}, [copyIds, kind, titles]);
 
-	const episodes = useMemo(
-		() => (kind === 'tv' ? showEpisodes(copies.map((item) => ({ item, files: titles.filesOf(item) ?? [], seasons: titles.identification(item)?.seasons })), info?.season_episode_counts) : null),
-		[copies, info, kind, titles, version]
-	);
+	// `version`: files read and episode counts fetched since
+	const episodes = useMemo(() => (kind === 'tv' ? titles.episodesOf(copies, imdbId) : null), [copies, imdbId, kind, titles, version]);
 	const seasons = episodes ? [...episodes.seasons.keys()] : [];
 	const shownSeason = season ?? seasons[0] ?? (episodes?.unplaced.length ? 'unplaced' : null);
+
+	// Watched is per title: any copy, any provider. Re-rendered by useWatch on every change.
+	const playing = useMemo(() => resumable(playback.list()), [playVersion]);
+	const isWatched = (row: Pick<HeldEpisode, 'season' | 'episode'>) => watched.watchedAt({ imdbId, season: row.season, episode: row.episode }) !== undefined;
+	const seasonState = (number: number) => {
+		const rows = episodes ? seasonRows(episodes, number) : [];
+		return { rows, seen: rows.filter(isWatched).length };
+	};
+	const markSeason = (number: number, watch: boolean) => {
+		const { rows } = seasonState(number);
+		// Unwatching a season also clears its episodes this library no longer holds.
+		const stale = watch ? [] : watched.list().filter((mark) => mark.imdbId === imdbId && mark.season === number);
+		void watched.set([...rows.flatMap((row) => rowRefs(imdbId, row)), ...stale], watch);
+	};
+	const episodeMenu = (row: HeldEpisode, label: string) => {
+		const before = rowsUpTo(episodes!, row);
+		setMenu({
+			title: `${named?.title ?? ''} · ${label}`,
+			actions: [
+				{ label: isWatched(row) ? 'Mark unwatched' : 'Mark watched', onPress: () => void watched.set(rowRefs(imdbId, row), !isWatched(row)) },
+				...(before.length > 1 ? [{ label: 'Mark watched up to here', onPress: () => void watched.set(before.flatMap((other) => rowRefs(imdbId, other)), true) }] : []),
+			],
+		});
+	};
+	const filmWatched = watched.watchedAt({ imdbId }) !== undefined;
 
 	const open = async (key: string, item: LibraryItem, pick: (files: LibraryFile[]) => LibraryFile | undefined) => {
 		setOpening(key);
 		try {
-			const files = titles.filesOf(item) ?? (await detail(item.provider, item.id)).files;
-			const file = pick(files);
-			if (!file) throw new Error('This copy has no video to open yet.');
-			const url = await openFile(item.provider, { ...item, files }, file.id);
-			if (!isSafeExternalUrl(url)) throw new Error('The provider returned an unsafe file URL.');
-			if (await playsBuiltIn(file.name)) navigation.navigate('Player', { url, item: { ...item, files }, fileId: file.id });
-			else await openFileLink(url, fileBase(file.name));
+			await openCopy(item, pick);
 		} catch (caught) {
 			if (mounted.current) Alert.alert('Could not open the file', caught instanceof Error ? caught.message : 'Could not open this file.');
 		} finally {
@@ -119,6 +140,7 @@ export function TitleScreen({ route, navigation }: Props) {
 							<Text style={[styles.detailMeta, { color: theme.muted }]}>
 								{[named?.year ?? info?.year, kind === 'tv' ? 'Show' : 'Film', `${copies.length} ${copies.length === 1 ? 'copy' : 'copies'}`].filter(Boolean).join(' · ')}
 							</Text>
+							{kind === 'movie' ? <View style={{ marginTop: 8, alignSelf: 'flex-start' }}><WatchButton watched={filmWatched} label={filmWatched ? 'Watched' : 'Mark watched'} onPress={() => void watched.set([{ imdbId }], !filmWatched)} /></View> : null}
 						</View>
 					</View>
 					{info?.description ? <Text style={{ color: theme.text, fontSize: 14.5, lineHeight: 21, marginTop: 14 }}>{info.description}</Text> : null}
@@ -138,10 +160,21 @@ export function TitleScreen({ route, navigation }: Props) {
 							<View style={styles.rowBetween}>
 								<Text style={[styles.accountTitle, { color: theme.text }]}>Episodes</Text>
 								{reading ? <View style={styles.row}><ActivityIndicator color={theme.accent} /><Text style={{ color: theme.muted, fontSize: 12 }}>{reading}</Text></View> : null}
+								{typeof shownSeason === 'number' && !reading
+									? (() => {
+											const { rows, seen } = seasonState(shownSeason);
+											const all = rows.length > 0 && seen === rows.length;
+											const name = shownSeason === 0 ? 'specials' : 'season';
+											return <WatchButton watched={all} label={all ? `Mark ${name} unwatched` : `Mark ${name} watched`} onPress={() => markSeason(shownSeason, !all)} />;
+										})()
+									: null}
 							</View>
 							{/* One row however many seasons: South Park's 25 filled a phone's screen. */}
 							<ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 10, marginHorizontal: -16 }} contentContainerStyle={{ gap: 8, paddingHorizontal: 16 }}>
-								{seasons.map((number) => <FilterButton key={number} label={number === 0 ? 'Specials' : `Season ${number}`} active={shownSeason === number} onPress={() => setSeason(number)} />)}
+								{seasons.map((number) => {
+									const { rows, seen } = seasonState(number);
+									return <FilterButton key={number} label={`${number === 0 ? 'Specials' : `Season ${number}`}${seen && seen < rows.length ? ` · ${seen}/${rows.length}` : ''}`} icon={seen && seen === rows.length ? 'check' : undefined} active={shownSeason === number} onPress={() => setSeason(number)} />;
+								})}
 								{episodes?.unplaced.length ? <FilterButton label={`Not placed (${episodes.unplaced.length})`} active={shownSeason === 'unplaced'} onPress={() => setSeason('unplaced')} /> : null}
 							</ScrollView>
 							{shownSeason === 'unplaced'
@@ -151,13 +184,24 @@ export function TitleScreen({ route, navigation }: Props) {
 											{episodeCopy(copy, copy.label)}
 										</View>
 									))
-								: [...(shownSeason === null ? [] : episodes?.seasons.get(shownSeason) ?? new Map<number, EpisodeCopy[]>())].map(([number, list]) => {
-										const end = list.find((copy) => copy.ref?.end)?.ref?.end;
-										const label = `${shownSeason === 0 ? 'Special' : 'Episode'} ${number}${end ? `–${end}` : ''}`;
+								: (shownSeason === null || !episodes ? [] : seasonRows(episodes, shownSeason)).map((row) => {
+										const { episode: number, end, copies: list } = row;
+										const label = `${shownSeason === 0 ? 'Special' : 'Episode'} ${number}${end > number ? `–${end}` : ''}`;
+										const seen = isWatched(row);
+										const progress = progressOf(playing.get(watchKey({ imdbId, season: row.season, episode: number })), watched.watchedAt({ imdbId, season: row.season, episode: number }));
 										return (
 											<View key={number} style={{ paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: theme.border }}>
-												<Text style={{ color: theme.text, fontSize: 15, fontWeight: '700' }}>{label}</Text>
-												<Text numberOfLines={1} style={{ color: theme.muted, fontSize: 12 }}>{fileBase(list[0].file.name)}</Text>
+												<View style={styles.row}>
+													<View style={{ flex: 1 }}>
+														<Text style={{ color: theme.text, fontSize: 15, fontWeight: '700' }}>{label}</Text>
+														<Text numberOfLines={1} style={{ color: theme.muted, fontSize: 12 }}>{fileBase(list[0].file.name)}</Text>
+													</View>
+													{/* A tap marks it, a long press offers "up to here". */}
+													<Pressable accessibilityRole="checkbox" accessibilityState={{ checked: seen }} accessibilityLabel={`${label} watched`} accessibilityHint="Long press for more" onPress={() => void watched.set(rowRefs(imdbId, row), !seen)} onLongPress={() => episodeMenu(row, label)} hitSlop={6} style={{ width: 44, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' }}>
+														<Icon name={seen ? 'check-circle' : 'check-circle-outline'} size={26} color={seen ? theme.accent : theme.muted} />
+													</Pressable>
+												</View>
+												{progress ? <View style={{ height: 3, borderRadius: 2, marginTop: 6, backgroundColor: theme.border }}><View style={{ height: 3, borderRadius: 2, width: `${Math.round(progress * 100)}%`, backgroundColor: theme.accent }} /></View> : null}
 												{list.map((copy) => episodeCopy(copy, label))}
 											</View>
 										);
@@ -177,6 +221,18 @@ export function TitleScreen({ route, navigation }: Props) {
 					</View>
 				</View>
 			</ScrollView>
+			{menu ? <ActionSheet title={menu.title} actions={menu.actions} onClose={() => setMenu(null)} /> : null}
 		</Screen>
+	);
+}
+
+/** A film's or a season's watched mark: outlined until watched, then filled. */
+function WatchButton({ watched: on, label, onPress }: { watched: boolean; label: string; onPress: () => void }) {
+	const theme = useAppTheme();
+	return (
+		<Pressable accessibilityRole="button" accessibilityState={{ checked: on }} accessibilityLabel={label} onPress={onPress} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, height: 34, paddingHorizontal: 12, borderRadius: 17, borderWidth: 1, borderColor: theme.accent, backgroundColor: on ? theme.accent : 'transparent' }}>
+			<Icon name={on ? 'check-circle' : 'check-circle-outline'} size={18} color={on ? theme.onAccent : theme.accent} />
+			<Text style={{ color: on ? theme.onAccent : theme.accent, fontSize: 13.5, fontWeight: '700' }}>{label}</Text>
+		</Pressable>
 	);
 }

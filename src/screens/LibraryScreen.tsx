@@ -5,7 +5,6 @@ import {
 	BackHandler,
 	FlatList,
 	KeyboardAvoidingView,
-	Linking,
 	Modal,
 	Platform,
 	RefreshControl,
@@ -17,7 +16,7 @@ import {
 } from 'react-native';
 import { File, Paths } from 'expo-file-system';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, type RouteProp } from '@react-navigation/native';
 import { useApp } from '../AppContext';
 import {
 	addProviderFor,
@@ -41,9 +40,9 @@ import { PROVIDERS, PROVIDER_META } from '../model';
 import type { BulkResult } from '../session';
 import type { PickedFile } from '../providerApi';
 import { loadSettings, saveSetting } from '../settings';
-import { backupJson, hashlistUrl, parseAddInput, parseBackup, parseIncomingLink, shareableItems } from '../share';
+import { backupJson, hashlistUrl, parseAddInput, parseBackup, shareableItems } from '../share';
 import { magnetForHash } from '../validation';
-import type { RootStackParamList } from '../navigation';
+import type { MainTabParamList, RootStackParamList } from '../navigation';
 import { useAppTheme } from '../theme';
 import { confirmNativeAction } from '../confirmAction';
 import { ActionSheet, DropdownChip, EmptyState, ErrorBanner, FilterButton, Icon, IconButton, LibraryRow, Pressable, ROW_HEIGHT, Screen, SearchField, styles, TextField, TvScale, useSheetStyles, type SheetAction } from '../ui';
@@ -82,7 +81,7 @@ const shareMagnet = (item: LibraryItem) => {
 	}
 };
 
-export function LibraryScreen({ navigation }: { navigation: Navigation }) {
+export function LibraryScreen({ navigation, route }: { navigation: Navigation; route: RouteProp<MainTabParamList, 'Library'> }) {
 	const theme = useAppTheme();
 	const { ready, startupError, snapshot, refreshAll, retryStartup, bulk, remove, reinsert, checkRdUncached, titles } = useApp();
 	useSyncExternalStore(titles.subscribe, titles.getVersion);
@@ -110,16 +109,11 @@ export function LibraryScreen({ navigation }: { navigation: Navigation }) {
 	const targets = selectedItems.length > 0 ? selectedItems : items;
 	const targetLabel = selectedItems.length > 0 ? `${selectedItems.length} selected` : `${items.length} shown`;
 
+	// Links other apps open (App.tsx hands them over).
+	const incoming = route.params?.incoming;
 	useEffect(() => {
-		const open = (url: string | null | undefined) => {
-			const link = parseIncomingLink(url);
-			if (link?.kind === 'magnet') setAdding({ text: link.magnet });
-			else if (link?.kind === 'torrent') setAdding({ text: '', file: { uri: link.uri, name: link.name } });
-		};
-		void Linking.getInitialURL().then(open);
-		const subscription = Linking.addEventListener('url', (event) => open(event.url));
-		return () => subscription.remove();
-	}, []);
+		if (incoming) setAdding(incoming);
+	}, [incoming]);
 
 	// Real-Debrid's list cannot tell cached rows from uncached ones; look them up when that view is opened.
 	const checkingRd = useRef(false);

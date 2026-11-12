@@ -8,7 +8,7 @@ import { filePath, isVideoName } from '../core';
 import type { RootStackParamList } from '../navigation';
 import { FINISHED, playback, playbackKey } from '../playback';
 import { BUILT_IN, openFileLink, playersForPlatform, soundUnplayable } from '../player';
-import { findEpisode, nextEpisode, showEpisodes, type EpisodeCopy } from '../titles';
+import { episodeCode, findEpisode, nextEpisode, showEpisodes, type EpisodeCopy } from '../titles';
 import { isSafeExternalUrl } from '../validation';
 import { ActionSheet, Icon, Pressable, type IconName, type SheetAction } from '../ui';
 
@@ -31,7 +31,7 @@ export const clock = (ms: number): string => {
 	const [h, m, s] = [Math.floor(total / 3600), Math.floor(total / 60) % 60, total % 60];
 	return h ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
 };
-const episodeLabel = (copy: EpisodeCopy) => (copy.ref ? `S${pad(copy.ref.season)}E${pad(copy.ref.episode)}${copy.ref.end ? `-E${pad(copy.ref.end)}` : ''}` : baseName(copy.file.name));
+const episodeLabel = (copy: EpisodeCopy) => (copy.ref ? episodeCode(copy.ref.season, copy.ref.episode, copy.ref.end) : baseName(copy.file.name));
 /** VLC names tracks after their language and title, which repeat; the sheet needs each label once. */
 const uniqueLabels = (names: string[]) => names.map((name, n) => (names.indexOf(name) === n ? name : `${name} (${names.slice(0, n + 1).filter((other) => other === name).length})`));
 
@@ -42,7 +42,7 @@ const uniqueLabels = (names: string[]) => names.map((name, n) => (names.indexOf(
  * up to every seek target (4 GB for one seek on the Pixel 6), where libVLC 3 jumps there.
  */
 export function PlayerScreen({ route, navigation }: Props) {
-	const { url, item, fileId } = route.params;
+	const { url, item, fileId, resume } = route.params;
 	const { titles, snapshot, openFile } = useApp();
 	const file = item.files.find((entry) => entry.id === fileId) ?? { id: fileId, name: 'Video', size: 0 };
 	const key = playbackKey(item, file);
@@ -66,7 +66,7 @@ export function PlayerScreen({ route, navigation }: Props) {
 		return { current: found, next: found ? nextEpisode(episodes, found) : null };
 	}, [counts, fileId, item, named?.imdbId, named?.kind, snapshot.items, titles]);
 	const title = named ? (current ? `${named.title} · ${episodeLabel(current)}` : named.title) : baseName(file.name);
-	const meta = useMemo(() => ({ name: baseName(file.name), imdbId: named?.imdbId, season: current?.ref?.season, episode: current?.ref?.episode }), [current, file.name, named?.imdbId]);
+	const meta = useMemo(() => ({ name: baseName(file.name), imdbId: named?.imdbId, kind: named?.kind, season: current?.ref?.season, episode: current?.ref?.episode, end: current?.ref?.end }), [current, file.name, named?.imdbId, named?.kind]);
 
 	// Subtitle files beside the video: all of a one-video release's, else those named after it.
 	const externalSubs = useMemo(() => {
@@ -103,11 +103,12 @@ export function PlayerScreen({ route, navigation }: Props) {
 		void playback.load().then(() => {
 			if (!mounted.current) return;
 			const at = playback.resumeAt(key);
-			if (at) setResumeAt(at);
-			else setStart(0);
+			// Continue Watching resumes without asking.
+			if (at && !resume) setResumeAt(at);
+			else setStart(at);
 		});
 		return () => void (mounted.current = false);
-	}, [key]);
+	}, [key, resume]);
 
 	// The screen stays on while a video plays, not while one sits paused.
 	useEffect(() => {
