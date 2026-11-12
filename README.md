@@ -92,6 +92,28 @@ Credentials are kept only in the platform secure store. Disconnecting a
 provider deletes its secure-store item and invalidates outstanding requests
 before clearing that provider's library rows.
 
+## Home
+
+The first tab once signed in: rows of posters, like Stremio's board, of what the
+library holds. Rows with nothing in them are hidden.
+
+- **Continue Watching**: files left part way in the built-in player, latest first,
+  one per film or show. A tap resumes at once; press and hold to remove one, mark it
+  watched or go to its page.
+- **Next Up**: for each show with a watched episode, the next episode the library
+  holds that is not watched yet (after the one watched last, never a special), from
+  the release played before when it has it. A tap plays it.
+- **Recently Added**: the newest films and shows.
+
+**Watched** is kept per title, not per copy: a film by its IMDb id, an episode by
+its show's id, season and number, so any release or provider of it counts. A video
+counts once the built-in player passes 92% of it; films, episodes and whole seasons
+are also marked by hand on the title page (an episode's check mark; press and hold
+it for "Mark watched up to here"). Posters show a check once watched and a bar while
+part watched (a show also says "3 of 10"), episodes the same, and season chips their
+count. **Watch state stays on this device** for now (`src/watched.ts`): it is not
+sent to DMM and does not follow you to your other devices.
+
 ## Library
 
 The library opens on **Titles**: your films and shows as posters, each one

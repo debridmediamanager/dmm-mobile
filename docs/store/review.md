@@ -40,9 +40,10 @@ Internet Archive. Changes to it last until the app is closed.
 iPhone and iPad
 1. Open the app. On "Sign in", scroll to TorBox, type dmmdemo in its API token
    field, then tap "Save key".
-2. The Library shows four open movies as posters. Tap "Tears of Steel" for its
-   page and tap Open: it plays in the app's own player. Its subtitle button lists
-   the film's English, German and Spanish subtitle files.
+2. Home shows the four open movies under Recently Added. Tap "Tears of Steel" for
+   its page and tap Open: it plays in the app's own player. Its subtitle button lists
+   the film's English, German and Spanish subtitle files. Leave it part way: back on
+   Home it waits under Continue Watching.
 3. Under Releases, tap the release to see its files; tap a subtitle file to open
    it in the browser.
 4. Back in the Library, tap Torrents for the list of releases: the menu (three
@@ -57,7 +58,7 @@ iPhone and iPad
 Apple TV
 1. Open the app. On "Sign in", choose "Enter an API key instead".
 2. Under TorBox, select the API token field, type dmmdemo, then "Save key".
-3. Browse the Library with the remote; Select opens an item, and its video plays
+3. Browse Home and the Library with the remote; Select opens an item, and its video plays
    in the app's own player (play/pause on the remote; Select shows the controls).
 The QR code on that screen signs a TV in from a phone that is signed in to
 debridmediamanager.com; it needs a real debrid account, so please use the key.
@@ -88,9 +89,9 @@ only (never a real account on a store build under test).
 | # | Step | Expected | iPhone | iPad | Apple TV | Android phone | Android tablet | Android TV |
 |---|---|---|---|---|---|---|---|---|
 | 1 | Fresh install, open | Sign-in screen (TV: QR code and "Enter an API key instead") | | | | | | |
-| 2 | TorBox API token `dmmdemo`, Save key | Library with 4 film posters; Torrents lists 4 items, Cosmos Laundromat at 62 % | | | | | | |
+| 2 | TorBox API token `dmmdemo`, Save key | Home with 4 film posters under Recently Added; Library the same 4, Torrents 4 items, Cosmos Laundromat at 62 % | | | | | | |
 | 3 | Open Tears of Steel, then its release | Title page with backdrop, plot and one copy; the release has 1 video and 3 subtitle files | | | | | | |
-| 4 | Open (title page) | Plays in the built-in player; Subtitles lists the 3 .srt files and shows one when picked; leaving and opening again offers Resume | | | | | | |
+| 4 | Open (title page) | Plays in the built-in player; Subtitles lists the 3 .srt files and shows one when picked; leaving and opening again offers Resume; Home lists it under Continue Watching | | | | | | |
 | 5 | Open Cosmos Laundromat | "This demo file is still downloading." | | | | | | |
 | 6 | Torrents, row menu, Delete Sintel | Sintel gone until the app is closed | | | | | | |
 | 7 | Add the magnet from the notes | Big Buck Bunny shows 2 copies; under Torrents a "Big Buck Bunny" row, queued (demo) | | | | | | |
