@@ -1,0 +1,17 @@
+diff --git a/node_modules/@lunarr/vlc-player/ios/VLCPlayerComponentView.mm b/node_modules/@lunarr/vlc-player/ios/VLCPlayerComponentView.mm
+index f8b3904..5bf10b4 100644
+--- a/node_modules/@lunarr/vlc-player/ios/VLCPlayerComponentView.mm
++++ b/node_modules/@lunarr/vlc-player/ios/VLCPlayerComponentView.mm
+@@ -210,6 +210,12 @@ + (ComponentDescriptorProvider)componentDescriptorProvider
+   return concreteComponentDescriptorProvider<VLCPlayerComponentDescriptor>();
+ }
+ 
++// A recycled view kept the closed player's pause, so the next video never started (stuck at 0:00).
+++ (BOOL)shouldBeRecycled
++{
++  return NO;
++}
++
+ - (void)prepareForRecycle
+ {
+   // Fabric may move a removed component view into a recycling pool. Release

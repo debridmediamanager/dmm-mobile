@@ -14,7 +14,8 @@
     "typecheck": "tsc --noEmit",
     "export:web": "expo export --platform web",
     "export:android": "expo export --platform android",
-    "export:ios": "expo export --platform ios"
+    "export:ios": "expo export --platform ios",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@expo/metro-runtime": "~58.0.17",
@@ -47,6 +48,7 @@
     "@types/react": "~19.3.0",
     "@vitest/coverage-v8": "^4.1.12",
     "babel-preset-expo": "~58.0.24",
+    "patch-package": "^8.0.1",
     "typescript": "~6.0.3",
     "vitest": "^4.1.12"
   },
