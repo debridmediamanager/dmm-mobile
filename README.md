@@ -91,7 +91,19 @@ before clearing that provider's library rows.
 
 ## Library
 
-The library page of DMM web, on the phone. One dense list across every
+The library opens on **Titles**: your films and shows as posters, each one
+once however many releases and providers hold it. DMM names each release (its
+library identification, the answers DMM web's library page uses; the app proves
+one of its provider logins to ask), and the phone remembers the answers, so a
+refresh asks only about new releases. A film's page lists your copies with Open;
+a show's page lists its seasons and the episodes you have, each copy with Open,
+reading episode numbers from the file names (SxxEyy, 1x02, a season folder or
+the release's one season). Files with nothing to go by, such as absolute anime
+numbering or extras, stay on the show's page under "Not placed". Releases DMM
+cannot name stay below the posters as Other. Only what is in your library shows:
+finding new releases stays on DMM web.
+
+**Torrents** is the library page of DMM web, on the phone. One dense list across every
 connected provider, one row per item, built for libraries of thousands
 (measured with 7,205 items on a Pixel 6: a full refresh of six providers in
 about 6 s, smooth scrolling, search under a second per keystroke).
@@ -144,8 +156,7 @@ Settings (video player, the provider adds start on) use DMM web's
 `settings:player` and `settings:addMagnetProvider`.
 
 Not in the app, because they need DMM's servers: casting to Stremio, sending
-to Real-Debrid through DMM's uploader, title identification and the media
-info panel.
+to Real-Debrid through DMM's uploader and the media info panel.
 
 ## Tablets and TVs
 

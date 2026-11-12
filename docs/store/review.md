@@ -40,10 +40,12 @@ Internet Archive. Changes to it last until the app is closed.
 iPhone and iPad
 1. Open the app. On "Sign in", scroll to TorBox, type dmmdemo in its API token
    field, then tap "Save key".
-2. The Library lists four open movies. Tap "Tears of Steel" to see its files.
-3. Tap the video file to play it; tap a subtitle file to open it in the browser.
-4. Back in the Library, tap the menu (three dots) on a row for its actions, or
-   long-press rows to select several.
+2. The Library shows four open movies as posters. Tap "Tears of Steel" for its
+   page and tap Open to play it.
+3. Under Releases, tap the release to see its files; tap a subtitle file to open
+   it in the browser.
+4. Back in the Library, tap Torrents for the list of releases: the menu (three
+   dots) on a row has its actions; long-press rows to select several.
 5. Tap + to add a magnet link, for example:
    magnet:?xt=urn:btih:dd8255ecdc7ca55fb0bbf81323d87062db1f6d1c&dn=Big+Buck+Bunny
    It appears as "queued (demo)".
@@ -85,12 +87,12 @@ only (never a real account on a store build under test).
 | # | Step | Expected | iPhone | iPad | Apple TV | Android phone | Android tablet | Android TV |
 |---|---|---|---|---|---|---|---|---|
 | 1 | Fresh install, open | Sign-in screen (TV: QR code and "Enter an API key instead") | | | | | | |
-| 2 | TorBox API token `dmmdemo`, Save key | Library with 4 items, Cosmos Laundromat at 62 % | | | | | | |
-| 3 | Open Tears of Steel | Detail with 1 video and 3 subtitle files | | | | | | |
-| 4 | Open the video | Plays in the chosen player | | | | | | |
-| 5 | Open Cosmos Laundromat's file | "This demo file is still downloading." | | | | | | |
-| 6 | Row menu, Delete Sintel | Sintel gone until the app is closed | | | | | | |
-| 7 | Add the magnet from the notes | "Big Buck Bunny" row, queued (demo) | | | | | | |
+| 2 | TorBox API token `dmmdemo`, Save key | Library with 4 film posters; Torrents lists 4 items, Cosmos Laundromat at 62 % | | | | | | |
+| 3 | Open Tears of Steel, then its release | Title page with backdrop, plot and one copy; the release has 1 video and 3 subtitle files | | | | | | |
+| 4 | Open (title page) | Plays in the chosen player | | | | | | |
+| 5 | Open Cosmos Laundromat | "This demo file is still downloading." | | | | | | |
+| 6 | Torrents, row menu, Delete Sintel | Sintel gone until the app is closed | | | | | | |
+| 7 | Add the magnet from the notes | Big Buck Bunny shows 2 copies; under Torrents a "Big Buck Bunny" row, queued (demo) | | | | | | |
 | 8 | Search "sintel", tap a result | DMM page opens in the browser, signed out | | | n/a | | | n/a |
 | 9 | Settings, Privacy policy | debridmediamanager.com/privacy opens (TV: address shown) | | | | | | |
 | 10 | Accounts, Disconnect TorBox | Back to sign-in, library empty | | | | | | |
