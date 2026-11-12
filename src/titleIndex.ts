@@ -2,7 +2,7 @@ import type { LibraryFile, LibraryItem, ProviderId } from './model';
 import { ProviderApiError } from './providerApi';
 import type { SyncIdentity } from './sync';
 import { demoIdentification } from './demo';
-import { askDmm, fetchTitleInfo, identifiable, identificationKey, LoginRefused, type Identification, type Post, type TitleInfo } from './titles';
+import { askDmm, fetchTitleInfo, identifiable, identificationKey, LoginRefused, showEpisodes, type Identification, type Post, type ShowEpisodes, type TitleInfo } from './titles';
 
 /** Where the index keeps itself between launches: one JSON text. */
 export interface CacheStore {
@@ -193,6 +193,11 @@ export class TitleIndex {
 			})(),
 			Promise.all(rest.map(read)),
 		]);
+	}
+
+	/** A show's episodes from the file lists read so far, placed with the episode counts once DMM gave them. */
+	episodesOf(copies: readonly LibraryItem[], imdbId: string): ShowEpisodes {
+		return showEpisodes(copies.map((item) => ({ item, files: this.filesOf(item) ?? [], seasons: this.identification(item)?.seasons })), this.cached.info[imdbId]?.[1].season_episode_counts);
 	}
 
 	/** Plot, art and episode counts from DMM, kept for a month. */

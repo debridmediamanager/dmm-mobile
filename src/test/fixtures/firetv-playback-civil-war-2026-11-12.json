@@ -1,0 +1,70 @@
+{
+	"captured": "2026-11-12, DMM Mobile's playback-v1.json and watched-v1.json on the Fire TV Cube (rd6893c80a7036 library) after S01E02 of The Civil War was played to the end and the S01E03 it started was left at 5 s; S01E01 was left at 1:30 by the step-2 test. Release names from the app's title cache.",
+	"releases": [
+		{
+			"provider": "rd",
+			"hash": "8bb8c05851c497513757d0ef70f167f2fd9adaa8",
+			"filename": "The.Civil.War.S01.1080p.BluRay.REMUX.AVC.DTS-HD.MA.5.1-EPSiLON"
+		},
+		{
+			"provider": "rd",
+			"hash": "2967018e386b79cacdec0a892247bd7bea93fc30",
+			"filename": "Birds.of.Prey.2020.2160p.BluRay.REMUX.HEVC.DTS-HD.MA.TrueHD.7.1.Atmos-FGT"
+		}
+	],
+	"playback": {
+		"rd:8bb8c05851c497513757d0ef70f167f2fd9adaa8:/The.Civil.War.S01E01.The.Cause.1861.1080p.BluRay.REMUX.AVC.DTS-HD.MA.5.1-EPSiLON.mkv": {
+			"name": "The.Civil.War.S01E01.The.Cause.1861.1080p.BluRay.REMUX.AVC.DTS-HD.MA.5.1-EPSiLON.mkv",
+			"imdbId": "tt0098769",
+			"season": 1,
+			"episode": 1,
+			"position": 90827,
+			"duration": 6058560,
+			"finished": false,
+			"updatedAt": 1794449080276
+		},
+		"rd:8bb8c05851c497513757d0ef70f167f2fd9adaa8:/The.Civil.War.S01E02.A.Very.Bloody.Affair.1862.1080p.BluRay.REMUX.AVC.DTS-HD.MA.5.1-EPSiLON.mkv": {
+			"name": "The.Civil.War.S01E02.A.Very.Bloody.Affair.1862.1080p.BluRay.REMUX.AVC.DTS-HD.MA.5.1-EPSiLON.mkv",
+			"imdbId": "tt0098769",
+			"kind": "tv",
+			"season": 1,
+			"episode": 2,
+			"position": 0,
+			"duration": 4186272,
+			"finished": true,
+			"updatedAt": 1794480462581
+		},
+		"rd:2967018e386b79cacdec0a892247bd7bea93fc30:/Birds.of.Prey.2020.2160p.BluRay.REMUX.HEVC.DTS-HD.MA.TrueHD.7.1.Atmos-FGT.mkv": {
+			"name": "Birds.of.Prey.2020.2160p.BluRay.REMUX.HEVC.DTS-HD.MA.TrueHD.7.1.Atmos-FGT.mkv",
+			"imdbId": "tt7713068",
+			"kind": "movie",
+			"position": 0,
+			"duration": 6534262,
+			"finished": true,
+			"updatedAt": 1794480296862
+		},
+		"rd:8bb8c05851c497513757d0ef70f167f2fd9adaa8:/The.Civil.War.S01E03.Forever.Free.1862.1080p.BluRay.REMUX.AVC.DTS-HD.MA.5.1-EPSiLON.mkv": {
+			"name": "The.Civil.War.S01E03.Forever.Free.1862.1080p.BluRay.REMUX.AVC.DTS-HD.MA.5.1-EPSiLON.mkv",
+			"imdbId": "tt0098769",
+			"kind": "tv",
+			"season": 1,
+			"episode": 3,
+			"position": 5824,
+			"duration": 4654112,
+			"finished": false,
+			"updatedAt": 1794480470383
+		}
+	},
+	"watched": {
+		"tt7713068": {
+			"imdbId": "tt7713068",
+			"watchedAt": 1794480250851
+		},
+		"tt0098769:1:2": {
+			"imdbId": "tt0098769",
+			"season": 1,
+			"episode": 2,
+			"watchedAt": 1794480416784
+		}
+	}
+}

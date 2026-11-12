@@ -61,6 +61,19 @@ describe('PlaybackStore', () => {
 		expect(store.resumeAt('k')).toBe(10 * MIN);
 	});
 
+	it('lists what was played and forgets a file for good (Continue Watching\'s Remove)', async () => {
+		const file = memory();
+		const store = new PlaybackStore(file, () => 1000);
+		await store.record('k', 20 * MIN, 45 * MIN, meta);
+		expect(store.list()).toEqual([['k', { ...meta, position: 20 * MIN, duration: 45 * MIN, finished: false, updatedAt: 1000 }]]);
+		const version = store.version;
+		await store.forget('k');
+		expect(store.version).toBeGreaterThan(version);
+		const reopened = new PlaybackStore(file);
+		await reopened.load();
+		expect(reopened.list()).toEqual([]);
+	});
+
 	it('starts empty from an unreadable file', async () => {
 		const store = new PlaybackStore({ read: async () => '{not json', write: async () => undefined });
 		await store.load();

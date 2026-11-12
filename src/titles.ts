@@ -258,6 +258,10 @@ export function groupTitles(items: readonly LibraryItem[], identify: (item: Libr
 	return { titles, other };
 }
 
+const pad = (n: number) => String(n).padStart(2, '0');
+/** "S01E03", or "S01E06-E07" for a file holding two. */
+export const episodeCode = (season: number, episode: number, end?: number): string => `S${pad(season)}E${pad(episode)}${end && end > episode ? `-E${pad(end)}` : ''}`;
+
 /** "S1–3", "S2, S5", or "" for none. */
 export function seasonRange(seasons: readonly number[]): string {
 	if (seasons.length === 0) return '';
@@ -330,9 +334,12 @@ export function nextEpisode(episodes: ShowEpisodes, current: EpisodeCopy): Episo
 	const { season, episode, end } = current.ref;
 	const later = [...(episodes.seasons.get(season)?.entries() ?? [])].find(([number]) => number > (end ?? episode))?.[1];
 	const copies = later ?? episodes.seasons.get(season + 1)?.values().next().value;
-	if (!copies) return null;
-	return copies.find((copy) => copy.item.id === current.item.id) ?? copies.find((copy) => copy.item.provider === current.item.provider) ?? copies[0];
+	return copies ? pickCopy(copies, current.item) : null;
 }
+
+/** The copy to play: from the release played before, then its provider, then the first listed. */
+export const pickCopy = (copies: readonly EpisodeCopy[], before?: Pick<LibraryItem, 'id' | 'provider'>): EpisodeCopy =>
+	(before && (copies.find((copy) => copy.item.id === before.id) ?? copies.find((copy) => copy.item.provider === before.provider))) || copies[0];
 
 /** The file a film copy opens: its biggest playable video. */
 export const mainFile = (item: LibraryItem, files: readonly LibraryFile[]): LibraryFile | undefined =>

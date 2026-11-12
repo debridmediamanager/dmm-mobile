@@ -1,0 +1,207 @@
+{
+	"captured": "2026-11-12, RD /torrents/info of testacct123 (read-only), links and host fields dropped; the soundtrack CDs and scans trimmed to four entries (all unselected)",
+	"id": "OBFAX6VHQ3AFI",
+	"filename": "Mushoku.Tensei.S02.1080p.BluRay.REMUX.Dual-Audio.AVC.FLAC2.0-RUDY",
+	"hash": "a07059b60772d988c8cd8460569916fb10b24906",
+	"status": "downloaded",
+	"files": [
+		{
+			"id": 1,
+			"path": "/EXTRAS/CD/Mushoku Tensei II - Jobless Reincarnation Original Soundtrack 1 Special Edition/01. 復活.flac",
+			"bytes": 16496976,
+			"selected": 0
+		},
+		{
+			"id": 2,
+			"path": "/EXTRAS/CD/Mushoku Tensei II - Jobless Reincarnation Original Soundtrack 1 Special Edition/02. Neck And Neck.flac",
+			"bytes": 16902508,
+			"selected": 0
+		},
+		{
+			"id": 35,
+			"path": "/EXTRAS/CD/Mushoku Tensei II - Jobless Reincarnation Original Soundtrack 1 Special Edition/Cover.jpg",
+			"bytes": 801868,
+			"selected": 0
+		},
+		{
+			"id": 66,
+			"path": "/EXTRAS/NCs/NCED.01.mkv",
+			"bytes": 396021778,
+			"selected": 1
+		},
+		{
+			"id": 67,
+			"path": "/EXTRAS/NCs/NCED.02.mkv",
+			"bytes": 361283012,
+			"selected": 1
+		},
+		{
+			"id": 68,
+			"path": "/EXTRAS/NCs/NCOP.01.mkv",
+			"bytes": 396234796,
+			"selected": 1
+		},
+		{
+			"id": 69,
+			"path": "/EXTRAS/NCs/NCOP.02.mkv",
+			"bytes": 409231953,
+			"selected": 1
+		},
+		{
+			"id": 70,
+			"path": "/EXTRAS/SCANS/Disk/Volume 1/01.png",
+			"bytes": 33210410,
+			"selected": 0
+		},
+		{
+			"id": 226,
+			"path": "/Mushoku.Tensei.S00E02.Guardian.Fitz.1080p.BluRay.REMUX.Dual-Audio.AVC.FLAC2.0-RUDY.mkv",
+			"bytes": 5577472023,
+			"selected": 1
+		},
+		{
+			"id": 227,
+			"path": "/Mushoku.Tensei.S02E01.The.Brokenhearted.Mage.1080p.BluRay.REMUX.Dual-Audio.AVC.FLAC2.0-RUDY.mkv",
+			"bytes": 5600780546,
+			"selected": 1
+		},
+		{
+			"id": 228,
+			"path": "/Mushoku.Tensei.S02E02.The.Forest.in.the.Dead.of.Night.1080p.BluRay.REMUX.Dual-Audio.AVC.FLAC2.0-RUDY.mkv",
+			"bytes": 5609723684,
+			"selected": 1
+		},
+		{
+			"id": 229,
+			"path": "/Mushoku.Tensei.S02E03.Abrupt.Approach.1080p.BluRay.REMUX.Dual-Audio.AVC.FLAC2.0-RUDY.mkv",
+			"bytes": 5587143675,
+			"selected": 1
+		},
+		{
+			"id": 230,
+			"path": "/Mushoku.Tensei.S02E04.Letter.of.Invitation.1080p.BluRay.REMUX.Dual-Audio.AVC.FLAC2.0-RUDY.mkv",
+			"bytes": 5595644338,
+			"selected": 1
+		},
+		{
+			"id": 231,
+			"path": "/Mushoku.Tensei.S02E05.Ranoa.University.of.Magic.1080p.BluRay.REMUX.Dual-Audio.AVC.FLAC2.0-RUDY.mkv",
+			"bytes": 5598563879,
+			"selected": 1
+		},
+		{
+			"id": 232,
+			"path": "/Mushoku.Tensei.S02E06.I.Don't.Want.to.Die.1080p.BluRay.REMUX.Dual-Audio.AVC.FLAC2.0-RUDY.mkv",
+			"bytes": 5949361394,
+			"selected": 1
+		},
+		{
+			"id": 233,
+			"path": "/Mushoku.Tensei.S02E07.The.Kidnapping.and.Confinement.of.Beast.Girls.1080p.BluRay.REMUX.Dual-Audio.AVC.FLAC2.0-RUDY.mkv",
+			"bytes": 5948575598,
+			"selected": 1
+		},
+		{
+			"id": 234,
+			"path": "/Mushoku.Tensei.S02E08.The.Fiancé.of.Despair.1080p.BluRay.REMUX.Dual-Audio.AVC.FLAC2.0-RUDY.mkv",
+			"bytes": 5952137414,
+			"selected": 1
+		},
+		{
+			"id": 235,
+			"path": "/Mushoku.Tensei.S02E09.The.White.Mask.1080p.BluRay.REMUX.Dual-Audio.AVC.FLAC2.0-RUDY.mkv",
+			"bytes": 5923927422,
+			"selected": 1
+		},
+		{
+			"id": 236,
+			"path": "/Mushoku.Tensei.S02E10.These.Feelings.1080p.BluRay.REMUX.Dual-Audio.AVC.FLAC2.0-RUDY.mkv",
+			"bytes": 5947178447,
+			"selected": 1
+		},
+		{
+			"id": 237,
+			"path": "/Mushoku.Tensei.S02E11.To.You.1080p.BluRay.REMUX.Dual-Audio.AVC.FLAC2.0-RUDY.mkv",
+			"bytes": 5951277298,
+			"selected": 1
+		},
+		{
+			"id": 238,
+			"path": "/Mushoku.Tensei.S02E12.I.Want.to.Tell.You.1080p.BluRay.REMUX.Dual-Audio.AVC.FLAC2.0-RUDY.mkv",
+			"bytes": 5839361491,
+			"selected": 1
+		},
+		{
+			"id": 239,
+			"path": "/Mushoku.Tensei.S02E13.My.Dream.Home.1080p.BluRay.REMUX.Dual-Audio.AVC.FLAC2.0-RUDY.mkv",
+			"bytes": 5948052703,
+			"selected": 1
+		},
+		{
+			"id": 240,
+			"path": "/Mushoku.Tensei.S02E14.Wedding.Reception.1080p.BluRay.REMUX.Dual-Audio.AVC.FLAC2.0-RUDY.mkv",
+			"bytes": 5957737863,
+			"selected": 1
+		},
+		{
+			"id": 241,
+			"path": "/Mushoku.Tensei.S02E15.Afar.1080p.BluRay.REMUX.Dual-Audio.AVC.FLAC2.0-RUDY.mkv",
+			"bytes": 5946930793,
+			"selected": 1
+		},
+		{
+			"id": 242,
+			"path": "/Mushoku.Tensei.S02E16.Norn.and.Aisha.1080p.BluRay.REMUX.Dual-Audio.AVC.FLAC2.0-RUDY.mkv",
+			"bytes": 5945405314,
+			"selected": 1
+		},
+		{
+			"id": 243,
+			"path": "/Mushoku.Tensei.S02E17.My.Older.Brother's.Feelings.1080p.BluRay.REMUX.Dual-Audio.AVC.FLAC2.0-RUDY.mkv",
+			"bytes": 5926975040,
+			"selected": 1
+		},
+		{
+			"id": 244,
+			"path": "/Mushoku.Tensei.S02E18.Turning.Point.3.1080p.BluRay.REMUX.Dual-Audio.AVC.FLAC2.0-RUDY.mkv",
+			"bytes": 5944722388,
+			"selected": 1
+		},
+		{
+			"id": 245,
+			"path": "/Mushoku.Tensei.S02E19.Desert.Journey.1080p.BluRay.REMUX.Dual-Audio.AVC.FLAC2.0-RUDY.mkv",
+			"bytes": 5952841639,
+			"selected": 1
+		},
+		{
+			"id": 246,
+			"path": "/Mushoku.Tensei.S02E20.Into.the.Labyrinth.1080p.BluRay.REMUX.Dual-Audio.AVC.FLAC2.0-RUDY.mkv",
+			"bytes": 5944247017,
+			"selected": 1
+		},
+		{
+			"id": 247,
+			"path": "/Mushoku.Tensei.S02E21.Magic.Circle.to.the.Sixth.Stratum.1080p.BluRay.REMUX.Dual-Audio.AVC.FLAC2.0-RUDY.mkv",
+			"bytes": 5954060668,
+			"selected": 1
+		},
+		{
+			"id": 248,
+			"path": "/Mushoku.Tensei.S02E22.Parents.1080p.BluRay.REMUX.Dual-Audio.AVC.FLAC2.0-RUDY.mkv",
+			"bytes": 6691247676,
+			"selected": 1
+		},
+		{
+			"id": 249,
+			"path": "/Mushoku.Tensei.S02E23.Let's.Go.Home.1080p.BluRay.REMUX.Dual-Audio.AVC.FLAC2.0-RUDY.mkv",
+			"bytes": 5925389743,
+			"selected": 1
+		},
+		{
+			"id": 250,
+			"path": "/Mushoku.Tensei.S02E24.Succession.1080p.BluRay.REMUX.Dual-Audio.AVC.FLAC2.0-RUDY.mkv",
+			"bytes": 5927462097,
+			"selected": 1
+		}
+	]
+}
