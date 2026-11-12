@@ -74,6 +74,15 @@ describe('DMM web state <-> app', () => {
 		expect(credentialsFromState(state).tb).toEqual({ token: 'TBKEY' });
 	});
 
+	// DMM web knows players as "<os>/<app>": on 2026-11-12 its Watch POSTed /api/watch/resolve/browser and got a 404.
+	it("keeps the app's own players ('builtin', 'browser') off DMM web, whose Watch would fail on them", () => {
+		expect(stateFromApp({}, { player: 'builtin', addProvider: 'rd' })).toEqual({ 'settings:addMagnetProvider': 'rd' });
+		expect(stateFromApp({}, { player: 'browser' })).toEqual({});
+		expect(stateFromApp({}, { player: 'android/chooser' })).toEqual({ 'settings:player': 'android/chooser' });
+		// DMM web's own choice stays as it was.
+		expect(mergeState({ 'settings:player': 'ios/infuse' }, stateFromApp({}, { player: 'builtin' }), [])['settings:player']).toBe('ios/infuse');
+	});
+
 	it('keeps what DMM web saved that the app does not use, drops removed logins, and lets the app login win', () => {
 		const merged = mergeState(
 			{ ...WEB_STATE, 'pm:apiKey': '"OLDPM"' },

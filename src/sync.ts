@@ -77,7 +77,8 @@ export function stateFromApp(all: Credentials, settings: AppSettings): BrowserSt
 	} else if (dl?.token) state['dl:apiKey'] = json(dl.token);
 	for (const name of Object.keys(SETTINGS) as SettingName[]) {
 		const value = settings[name];
-		if (value) state[SETTINGS[name].webKey] = value;
+		// DMM web's players are "<os>/<app>"; it sends the app's own ('builtin', 'browser') to /api/watch/resolve/builtin, a 404.
+		if (value && (name !== 'player' || value.includes('/'))) state[SETTINGS[name].webKey] = value;
 	}
 	return state;
 }
