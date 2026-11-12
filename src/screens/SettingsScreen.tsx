@@ -61,8 +61,9 @@ function TraktRow({ trakt }: { trakt: TraktSync }) {
 	const login = account.login;
 	const shown = error || (login && trakt.error) || '';
 	const page = link?.verifyUrl.replace(/^https?:\/\//, '').replace(/\/[^/]*$/, '');
-	const button = (label: string, color: string, onPress: () => void) => (
-		<Pressable accessibilityRole="button" accessibilityLabel={`${label} Trakt`} onPress={onPress} style={[styles.outlineButton, { borderColor: color }]}>
+	// While a code shows, Cancel takes the remote's focus: Connect is gone, and focus would fall back to the tab rail.
+	const button = (label: string, color: string, onPress: () => void, preferred = false) => (
+		<Pressable accessibilityRole="button" accessibilityLabel={`${label} Trakt`} hasTVPreferredFocus={Platform.isTV && preferred} onPress={onPress} style={[styles.outlineButton, { borderColor: color }]}>
 			<Text style={[styles.outlineButtonText, { color }]}>{label}</Text>
 		</Pressable>
 	);
@@ -94,7 +95,7 @@ function TraktRow({ trakt }: { trakt: TraktSync }) {
 							<ActivityIndicator color={theme.muted} />
 							<Text style={[styles.detailMeta, { color: theme.muted, marginTop: 0 }]}>Waiting for approval…</Text>
 						</View>
-						{button('Cancel', theme.accent, cancel)}
+						{button('Cancel', theme.accent, cancel, true)}
 					</View>
 				</View>
 			) : null}
