@@ -1,0 +1,20 @@
+{
+	"status": 200,
+	"body": {
+		"user": {
+			"name": "DMM Mobile Test",
+			"joined_at": "2026-11-12T17:58:49Z",
+			"gender": "",
+			"avatar": "https://eu.simkl.in/img_tv/ico_profile_guest.png",
+			"bio": "",
+			"loc": null,
+			"age": ""
+		},
+		"account": {
+			"id": 1234567,
+			"timezone": "Europe/Berlin",
+			"type": "free",
+			"anime_title_language": "en"
+		}
+	}
+}

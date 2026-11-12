@@ -1,13 +1,15 @@
 import type { ProviderId } from './model';
 import { documentStore, FINISHED } from './playback';
 import type { CacheStore } from './titleIndex';
-import { TRAKT_API, TRAKT_CLIENT_ID, type TraktAccount } from './trakt';
-import { watchKey, type RemotePlayback, type WatchedEntry, type WatchRef, type WatchStore } from './watched';
+import { TRAKT_API, TRAKT_CLIENT_ID } from './trakt';
+import { watchKey, type RemotePlayback, type Tracker, type WatchedEntry, type WatchRef, type WatchStore } from './watched';
 
 /**
- * Trakt for the built-in player and the watched marks: scrobbling what plays, sending marks made here
- * (/sync/history), reading the watched history and resume points back (/sync/watched, /sync/playback)
- * when /sync/last_activities says they moved. Whatever does not reach Trakt is kept and sent later.
+ * A tracker (Trakt, Simkl) for the built-in player and the watched marks: scrobbling what plays, sending
+ * marks made here (/sync/history), reading the watched history and resume points back (/sync/playback)
+ * when its activity stamps say they moved. Whatever does not reach it is kept and sent later. Both speak
+ * the same scrobble, history and playback shapes; what differs is in a TrackerApi (TRAKT here, SIMKL in
+ * src/simkl.ts).
  */
 export interface TraktReply {
 	status: number;
@@ -33,11 +35,11 @@ export const traktHttp: TraktHttp = async (method, path, token, body) => {
 	return { status: res.status, data, pageCount: Number(res.headers.get('x-pagination-page-count')) || undefined, retryAfter: Number(res.headers.get('retry-after')) || undefined };
 };
 
-/** Trakt takes one write a second per user (AUTHED_API_POST_LIMIT, 2026-10 docs). */
+/** Trakt and Simkl each take one write a second per user (Trakt AUTHED_API_POST_LIMIT, Simkl's rate-limit docs, 2026). */
 const POST_GAP_MS = 1000;
-/** last_activities is read at most this often (app start and coming back to the app). */
-const CHECK_EVERY_MS = 60_000;
 const HISTORY_BATCH = 100;
+/** A 429 asking for a longer wait (Simkl's daily allowance) pauses this tracker instead of holding the queue. */
+const LONGEST_WAIT_MS = 60_000;
 /** Trakt's largest page; it says how many there are (/sync/watched pages since 2026-06-30, DMM's Kodi addon). */
 const PAGE = 250;
 
@@ -95,11 +97,18 @@ export function watchedFromTrakt(movies: readonly any[], shows: readonly any[]):
 	return found;
 }
 
-/** /sync/playback as resume points by watchKey, the newest per film or episode. */
+/**
+ * /sync/playback as resume points by watchKey, the newest per film or episode. Trakt's and Simkl's answers
+ * share a shape; Simkl files anime under `anime` and numbers its episodes per cour, with the IMDb-style
+ * season and number beside them (tvdb_season, tvdb_number; live 2026-11-12).
+ */
 export function playbackFromTrakt(items: readonly any[]): Record<string, RemotePlayback> {
 	const found: Record<string, RemotePlayback> = {};
 	for (const item of items) {
-		const ref = item?.type === 'movie' ? { imdbId: item.movie?.ids?.imdb } : { imdbId: item?.show?.ids?.imdb, season: item?.episode?.season, episode: item?.episode?.number };
+		const ref =
+			item?.type === 'movie'
+				? { imdbId: (item.movie ?? item.anime)?.ids?.imdb }
+				: { imdbId: (item?.show ?? item?.anime)?.ids?.imdb, season: item?.episode?.tvdb_season ?? item?.episode?.season, episode: item?.episode?.tvdb_number ?? item?.episode?.number };
 		const pausedAt = Date.parse(item?.paused_at);
 		if (!ref.imdbId || !pausedAt || typeof item.progress !== 'number' || (item.type !== 'movie' && !Number.isInteger(ref.season))) continue;
 		const key = watchKey(ref);
@@ -110,12 +119,54 @@ export function playbackFromTrakt(items: readonly any[]): Record<string, RemoteP
 
 const retryable = (status: number) => status === 429 || status >= 500;
 
-const REFUSALS: Record<number, string> = {
-	403: 'Trakt refused DMM Mobile (403).',
-	420: 'Trakt says your account is over a limit (420). Trakt VIP raises the limits.',
-	423: 'Trakt locked your account (423); Trakt support can unlock it.',
-	426: 'Trakt asks for VIP for this (426).',
+/** What the sync needs from a tracker's own API, beyond the shapes Trakt and Simkl share. */
+export interface TrackerApi {
+	id: Tracker;
+	name: string;
+	/** The activity stamps are read at most this often, unless forced (a pull to refresh, a new login). */
+	checkEveryMs: number;
+	/** Tell it where playback is after a seek while playing: Trakt ends "watching" at the runtime it expects; Simkl asks for no call. */
+	startAfterSeek: boolean;
+	refusals: Record<number, string>;
+	activities: string;
+	/** Tokens that change whenever the watched history or the resume points may have. */
+	stamps(data: any): { watched: string; paused: string };
+	/** The whole watched history, by watchKey; `get` reads a path (`paged`: all of Trakt's pages). */
+	history(get: (path: string, paged?: boolean) => Promise<any>): Promise<Map<string, WatchedEntry>>;
+	/** Of a history batch it answered, which ones it holds now. */
+	took(reply: TraktReply, batch: readonly WatchedEntry[]): (entry: WatchedEntry) => boolean;
+}
+
+export const TRAKT: TrackerApi = {
+	id: 'trakt',
+	name: 'Trakt',
+	checkEveryMs: 60_000,
+	startAfterSeek: true,
+	refusals: {
+		403: 'Trakt refused DMM Mobile (403).',
+		420: 'Trakt says your account is over a limit (420). Trakt VIP raises the limits.',
+		423: 'Trakt locked your account (423); Trakt support can unlock it.',
+		426: 'Trakt asks for VIP for this (426).',
+	},
+	activities: '/sync/last_activities',
+	stamps: (data) => ({ watched: `${data?.movies?.watched_at}|${data?.episodes?.watched_at}`, paused: `${data?.movies?.paused_at}|${data?.episodes?.paused_at}` }),
+	history: async (get) => watchedFromTrakt(await get('/sync/watched/movies', true), await get('/sync/watched/shows?extended=progress', true)),
+	// Trakt counts what it took. When that is the whole batch, all of it is on Trakt now; otherwise the next import
+	// tells which (not_found cannot: for a show it echoes every episode sent, found or not, live 2026-11-12).
+	took: (reply, batch) => {
+		const taken = ['added', 'updated'].reduce((sum, field) => sum + (Number(reply.data?.[field]?.movies) || 0) + (Number(reply.data?.[field]?.episodes) || 0), 0);
+		return () => taken >= batch.length;
+	},
 };
+
+/** The login a TrackerSync calls with: Trakt's (src/trakt.ts) or Simkl's (src/simkl.ts). */
+export interface TrackerAccount {
+	readonly login: unknown;
+	/** Signed in, but the tracker lets the app read only: nothing is sent. */
+	readonly readOnly?: boolean;
+	token(stale?: boolean): Promise<string | null>;
+	subscribe(listener: () => void): () => void;
+}
 
 interface SyncState {
 	/** The last_activities stamps the watched history and resume points were last read at. */
@@ -133,38 +184,41 @@ interface SyncState {
 const empty = (): SyncState => ({ playback: {}, unsent: {}, drops: [] });
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-export class TraktSync {
+export class TrackerSync<Account extends TrackerAccount = TrackerAccount> {
 	private state = empty();
 	private loaded: Promise<void> | null = null;
 	private tail: Promise<unknown> = Promise.resolve();
 	private lastPost = 0;
 	private checkedAt = 0;
 	private timer: ReturnType<typeof setTimeout> | null = null;
+	/** Until then the tracker refused more calls (its daily allowance). */
+	private restUntil = 0;
 	private readonly listeners = new Set<() => void>();
 	/** Bumped on every change, for useSyncExternalStore. */
 	version = 0;
-	/** What Trakt last refused, for Settings; cleared by a sync that works. */
+	/** What the tracker last refused, for Settings; cleared by a sync that works. */
 	error = '';
 
 	constructor(
-		readonly account: TraktAccount,
+		readonly account: Account,
 		private readonly marks: WatchStore,
-		/** The demo library never reaches Trakt. */
+		/** The demo library never reaches a tracker. */
 		private readonly isDemo: (provider: ProviderId) => boolean = () => false,
 		private readonly store: CacheStore = documentStore('trakt-v1.json'),
 		private readonly http: TraktHttp = traktHttp,
 		private readonly now: () => number = Date.now,
-		private readonly wait: (ms: number) => Promise<unknown> = sleep
+		private readonly wait: (ms: number) => Promise<unknown> = sleep,
+		readonly api: TrackerApi = TRAKT
 	) {
 		let connected = false;
 		account.subscribe(() => {
-			// A login read, adopted at a sign-in or linked: read Trakt now, not at the next start.
+			// A login read, adopted at a sign-in or linked: read the tracker now, not at the next start.
 			if (account.login && !connected) void this.sync(true);
 			// Disconnected: what was read from that account goes, the watched marks stay.
 			if (!account.login && this.state.joined) void this.run(async () => this.reset());
 			connected = Boolean(account.login);
 		});
-		marks.subscribe(() => void (marks.pending().length && this.soon()));
+		marks.subscribe(() => void (marks.pending(api.id).length && this.soon()));
 	}
 
 	load(): Promise<void> {
@@ -202,7 +256,7 @@ export class TraktSync {
 		await this.persist();
 	}
 
-	/** Trakt's resume points, any device's; none while no account is connected. */
+	/** The tracker's resume points, any device's; none while no account is connected. */
 	playback(): RemotePlayback[] {
 		return this.account.login ? Object.values(this.state.playback) : [];
 	}
@@ -216,7 +270,7 @@ export class TraktSync {
 		return this.tail.then(() => undefined);
 	}
 
-	/** One job at a time: Trakt takes a write a second, and an import must not interleave with sends. */
+	/** One job at a time: a tracker takes a write a second, and an import must not interleave with sends. */
 	private run<T>(job: () => Promise<T>): Promise<T | undefined> {
 		const next = this.tail.then(async () => {
 			await this.load();
@@ -226,12 +280,13 @@ export class TraktSync {
 		return next;
 	}
 
-	/** One call as the user: a refused token is renewed once, 429 waits as Trakt asks. Throws when offline or signed out. */
+	/** One call as the user: a refused token is renewed once, 429 waits as the tracker asks. Throws when offline or signed out. */
 	private async call(method: 'GET' | 'POST' | 'DELETE', path: string, body?: unknown): Promise<TraktReply> {
 		let stale = false;
 		for (let attempt = 0; attempt < 4; attempt++) {
+			if (this.now() < this.restUntil) throw new Error(this.error);
 			const token = await this.account.token(stale);
-			if (!token) throw new Error('Trakt is not connected.');
+			if (!token) throw new Error(`${this.api.name} is not connected.`);
 			if (method !== 'GET') {
 				const gap = this.lastPost + POST_GAP_MS - this.now();
 				if (gap > 0) await this.wait(gap);
@@ -239,25 +294,34 @@ export class TraktSync {
 			}
 			const reply = await this.http(method, path, token, body);
 			if (reply.status === 401 && !stale) stale = true;
-			else if (reply.status === 429) await this.wait((reply.retryAfter ?? 2 ** attempt) * 1000);
-			else return reply;
+			else if (reply.status === 429) {
+				const ms = (reply.retryAfter ?? 2 ** attempt) * 1000;
+				if (ms > LONGEST_WAIT_MS) {
+					this.restUntil = this.now() + ms;
+					this.error = `${this.api.name} allows no more requests today; DMM Mobile sends what is waiting once it does.`;
+					throw new Error(this.error);
+				}
+				await this.wait(ms);
+			} else return reply;
 		}
-		throw new Error('Trakt is busy.');
+		throw new Error(`${this.api.name} is busy.`);
 	}
 
 	private refusedWith(reply: TraktReply): void {
-		this.error = REFUSALS[reply.status] ?? (reply.status === 401 ? 'Trakt signed DMM Mobile out: connect again.' : `Trakt answered ${reply.status}.`);
+		const { name, refusals } = this.api;
+		this.error = refusals[reply.status] ?? (reply.status === 401 ? `${name} signed DMM Mobile out: connect again.` : `${name} answered ${reply.status}.`);
 	}
 
 	/**
-	 * What the player reports: start (playing, after a pause or a seek), pause, stop (leaving or the end).
-	 * Trakt and the app share one line, FINISHED (80%): before it a stop goes as a pause (a resume point),
-	 * from it a pause goes as a stop (Trakt refuses pauses there and marks a stop watched). Unsent pauses
-	 * are kept; an unsent finish waits as a watched mark (/sync/history, with its time).
+	 * What the player reports: start (playing, after a pause, or `again` after a seek), pause, stop (leaving
+	 * or the end). The trackers and the app share one line, FINISHED (80%): before it a stop goes as a pause
+	 * (a resume point), from it a pause goes as a stop (Trakt refuses pauses there, both mark a stop watched).
+	 * Unsent pauses are kept; an unsent finish waits as a watched mark (/sync/history, with its time).
 	 */
-	scrobble(meta: ScrobbleMeta, action: ScrobbleAction, progress: number): void {
+	scrobble(meta: ScrobbleMeta, action: ScrobbleAction, progress: number, again = false): void {
 		const ref = refOf(meta);
-		if (!ref || !this.account.login || (meta.provider && this.isDemo(meta.provider))) return;
+		if (!ref || !this.account.login || this.account.readOnly || (meta.provider && this.isDemo(meta.provider))) return;
+		if (again && !this.api.startAfterSeek) return;
 		const call = action === 'start' ? 'start' : progress < FINISHED * 100 ? 'pause' : 'stop';
 		const key = watchKey(ref);
 		const percent = Math.round(Math.min(100, Math.max(0, progress)) * 100) / 100;
@@ -276,17 +340,17 @@ export class TraktSync {
 					delete this.state.unsent[key];
 				} else if (!reply || retryable(reply.status)) this.state.unsent[key] = { ref, progress: percent };
 			} else if (sent) {
-				// Trakt drops the resume point on start and stop.
+				// The tracker drops the resume point on start and stop.
 				delete this.state.playback[key];
 				delete this.state.unsent[key];
-				if (call === 'stop') await this.marks.settle([ref], true);
+				if (call === 'stop') await this.marks.settle([ref], this.api.id, true);
 			}
 			if (reply && !sent && !retryable(reply.status) && reply.status !== 404 && reply.status !== 422) this.refusedWith(reply);
 			await this.persist();
 		});
 	}
 
-	/** Continue Watching's Remove: Trakt's resume point goes here at once and from Trakt with the next send. */
+	/** Continue Watching's Remove: the tracker's resume point goes here at once and from the tracker with the next send. */
 	forget(ref: WatchRef): void {
 		const key = watchKey(ref);
 		const item = this.state.playback[key];
@@ -300,7 +364,7 @@ export class TraktSync {
 
 	/** Marks come in bursts (a whole season): sent a moment after the last. */
 	private soon(): void {
-		if (!this.account.login) return;
+		if (!this.account.login || this.account.readOnly) return;
 		if (this.timer) clearTimeout(this.timer);
 		this.timer = setTimeout(() => {
 			this.timer = null;
@@ -309,22 +373,22 @@ export class TraktSync {
 	}
 
 	/**
-	 * Sends what Trakt missed: marks and removals made here, pauses made offline, resume points removed here.
-	 * Marks wait for the first import, which decides what of this device's history Trakt lacks.
+	 * Sends what the tracker missed: marks and removals made here, pauses made offline, resume points removed
+	 * here. Marks wait for the first import, which decides what of this device's history the tracker lacks.
 	 */
 	private async flush(): Promise<void> {
+		if (this.account.readOnly) return;
 		try {
-			const pending = this.state.joined ? this.marks.pending() : [];
+			const pending = this.state.joined ? this.marks.pending(this.api.id) : [];
 			for (const removal of [false, true]) {
 				const changes = pending.filter((entry) => Boolean(entry.removed) === removal);
 				for (let at = 0; at < changes.length; at += HISTORY_BATCH) {
 					const batch = changes.slice(at, at + HISTORY_BATCH);
 					const reply = await this.call('POST', removal ? '/sync/history/remove' : '/sync/history', historyBody(batch, !removal));
 					if (reply.status !== 200 && reply.status !== 201) return this.refusedWith(reply);
-					// Trakt counts what it took. When that is the whole batch, all of it is on Trakt now; otherwise the next
-					// import tells which (not_found cannot: for a show it echoes every episode sent, found or not, live 2026-11-12).
-					const taken = ['added', 'updated'].reduce((sum, field) => sum + (Number(reply.data?.[field]?.movies) || 0) + (Number(reply.data?.[field]?.episodes) || 0), 0);
-					await this.marks.settle(batch, !removal && taken >= batch.length);
+					const took = this.api.took(reply, batch);
+					await this.marks.settle(batch.filter(took), this.api.id, !removal);
+					await this.marks.settle(batch.filter((entry) => !took(entry)), this.api.id);
 				}
 			}
 			for (const [key, { ref, progress }] of Object.entries(this.state.unsent)) {
@@ -344,27 +408,23 @@ export class TraktSync {
 	}
 
 	/**
-	 * Sends what Trakt missed, then reads the watched history and resume points again when
-	 * last_activities says they changed. At most once a minute unless `force`.
+	 * Sends what the tracker missed, then reads the watched history and resume points again when its
+	 * activity stamps say they changed. At most once per checkEveryMs unless `force`.
 	 */
 	sync(force = false): Promise<void> {
-		if (!this.account.login || (!force && this.now() - this.checkedAt < CHECK_EVERY_MS)) return Promise.resolve();
+		if (!this.account.login || (!force && this.now() - this.checkedAt < this.api.checkEveryMs)) return Promise.resolve();
 		this.checkedAt = this.now();
 		return this.run(async () => {
 			await this.flush();
-			const activity = await this.call('GET', '/sync/last_activities');
+			const activity = await this.call('GET', this.api.activities);
 			if (activity.status !== 200) return this.refusedWith(activity);
-			const stamps = activity.data ?? {};
-			const watched = `${stamps.movies?.watched_at}|${stamps.episodes?.watched_at}`;
-			const paused = `${stamps.movies?.paused_at}|${stamps.episodes?.paused_at}`;
+			const { watched, paused } = this.api.stamps(activity.data ?? {});
 			try {
 				if (!this.state.joined || watched !== this.state.watched) {
-					const movies = await this.pages('/sync/watched/movies');
-					const shows = await this.pages('/sync/watched/shows?extended=progress');
 					const first = !this.state.joined;
-					await this.marks.merge(watchedFromTrakt(movies, shows), first);
+					await this.marks.merge(await this.api.history((path, paged) => (paged ? this.pages(path) : this.get(path))), this.api.id, first);
 					Object.assign(this.state, { joined: true, watched });
-					// What only this device had goes to Trakt now.
+					// What only this device had goes to the tracker now.
 					if (first) await this.flush();
 				}
 				if (paused !== this.state.paused) {
@@ -377,6 +437,15 @@ export class TraktSync {
 				await this.persist();
 			}
 		}).then(() => undefined);
+	}
+
+	private async get(path: string): Promise<any> {
+		const reply = await this.call('GET', path);
+		if (reply.status !== 200) {
+			this.refusedWith(reply);
+			throw new Error(this.error);
+		}
+		return reply.data;
 	}
 
 	private async pages(path: string): Promise<any[]> {

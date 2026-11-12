@@ -1,0 +1,56 @@
+{
+	"status": 201,
+	"body": {
+		"added": {
+			"movies": 0,
+			"shows": 0,
+			"episodes": 1,
+			"statuses": [
+				{
+					"request": {
+						"ids": {
+							"imdb": "tt0439100"
+						},
+						"type": "show",
+						"rating": null
+					},
+					"response": {
+						"status": "watching",
+						"simkl_type": "tv",
+						"anime_type": null
+					}
+				}
+			]
+		},
+		"not_found": {
+			"movies": [],
+			"shows": [],
+			"episodes": [
+				{
+					"ids": {
+						"imdb": "tt0439100"
+					},
+					"seasons": [
+						{
+							"number": 1,
+							"episodes": [
+								{
+									"number": 99
+								}
+							]
+						},
+						{
+							"number": 42,
+							"episodes": [
+								{
+									"number": 1
+								}
+							]
+						}
+					],
+					"rating": null
+				}
+			]
+		}
+	}
+}

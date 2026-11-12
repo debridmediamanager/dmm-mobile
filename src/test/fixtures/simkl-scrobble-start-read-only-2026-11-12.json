@@ -1,0 +1,8 @@
+{
+	"status": 403,
+	"body": {
+		"error": "insufficient_scope",
+		"code": 403,
+		"message": "This action requires the \"media:read media:write\" scope"
+	}
+}

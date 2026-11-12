@@ -69,6 +69,8 @@ export interface TraktLink {
 	deviceCode: string;
 	/** auth.trakt.tv/activate/<code>: the QR, and the page a phone opens. */
 	verifyUrl: string;
+	/** Where to type the code by hand. */
+	page: string;
 	interval: number;
 	expiresIn: number;
 }
@@ -76,7 +78,7 @@ export interface TraktLink {
 export async function startTraktLink(post: Post = dmmPost): Promise<TraktLink> {
 	const { status, data } = await post('/api/kodi/tracker/start', { service: 'trakt' });
 	if (status !== 200 || !text(data?.userCode) || !text(data?.deviceCode) || !text(data?.verifyUrl)) throw new Error(data?.error || `DMM could not start linking Trakt (${status}).`);
-	return { userCode: data.userCode, deviceCode: data.deviceCode, verifyUrl: data.verifyUrl, interval: Math.max(5, Number(data.interval) || 5), expiresIn: Number(data.expiresIn) || 600 };
+	return { userCode: data.userCode, deviceCode: data.deviceCode, verifyUrl: data.verifyUrl, page: data.verifyUrl.replace(/^https?:\/\//, '').replace(/\/[^/]*$/, ''), interval: Math.max(5, Number(data.interval) || 5), expiresIn: Number(data.expiresIn) || 600 };
 }
 
 /** 202 while waiting, 410 once the code expired or was denied, else the tokens and who approved. */

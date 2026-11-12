@@ -1,0 +1,11 @@
+{
+	"status": 200,
+	"body": {
+		"device_code": "DEVICECODE",
+		"user_code": "6KP4-07E7",
+		"verification_uri": "https://simkl.com/pin",
+		"verification_uri_complete": "https://simkl.com/pin?user_code=6KP4-07E7",
+		"expires_in": 900,
+		"interval": 5
+	}
+}

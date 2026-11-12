@@ -52,7 +52,7 @@ describe("DMM web's Trakt login", () => {
 
 describe("DMM's Trakt device link and renewal (/api/kodi/tracker/*, live answers 2026-11-12)", () => {
 	it('starts a link with the code and the approve page holding it', async () => {
-		expect(await startTraktLink(reply(start))).toEqual({ userCode: start.body.userCode, deviceCode: 'DEVICECODE', verifyUrl: start.body.verifyUrl, interval: 6, expiresIn: 600 });
+		expect(await startTraktLink(reply(start))).toEqual({ userCode: start.body.userCode, deviceCode: 'DEVICECODE', verifyUrl: start.body.verifyUrl, page: 'auth.trakt.tv/activate', interval: 6, expiresIn: 600 });
 	});
 
 	it('polls: pending, then the tokens and who approved', async () => {

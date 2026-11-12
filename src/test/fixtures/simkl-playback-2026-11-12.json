@@ -1,0 +1,58 @@
+{
+	"status": 200,
+	"body": [
+		{
+			"id": 70314831,
+			"progress": 33,
+			"paused_at": "2026-11-12T18:04:22Z",
+			"type": "episode",
+			"episode": {
+				"season": 1,
+				"number": 16,
+				"title": "Win Those Kids' Hearts",
+				"tvdb_season": 4,
+				"tvdb_number": 16
+			},
+			"anime": {
+				"title": "My Hero Academia Season 4",
+				"year": 2019,
+				"anime_type": "tv",
+				"ids": {
+					"simkl": 920009,
+					"slug": "boku-no-hero-academia",
+					"mal": "38408",
+					"anilist": "104276",
+					"kitsu": "41971",
+					"anidb": "14416",
+					"imdb": "tt5626028",
+					"tmdb": "65930",
+					"tvdb": "305074"
+				}
+			}
+		},
+		{
+			"id": 70313203,
+			"progress": 40,
+			"paused_at": "2026-11-12T18:01:41Z",
+			"type": "episode",
+			"episode": {
+				"season": 1,
+				"number": 2,
+				"title": "Free Goat"
+			},
+			"show": {
+				"title": "Weeds",
+				"year": 2005,
+				"ids": {
+					"simkl": 4385,
+					"slug": "weeds",
+					"imdb": "tt0439100",
+					"tmdb": "186",
+					"tvdb": "74845",
+					"tvdbslug": "weeds",
+					"traktslug": "weeds"
+				}
+			}
+		}
+	]
+}

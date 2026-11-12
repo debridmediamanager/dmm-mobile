@@ -1,0 +1,86 @@
+{
+	"status": 201,
+	"body": {
+		"added": {
+			"movies": 0,
+			"shows": 0,
+			"episodes": 0,
+			"statuses": [
+				{
+					"request": {
+						"ids": {
+							"imdb": "tt2285752"
+						},
+						"watched_at": "2026-11-10T20:00:00.000Z",
+						"type": "movie",
+						"rating": null
+					},
+					"response": {
+						"status": "completed",
+						"simkl_type": "movie",
+						"anime_type": null
+					}
+				},
+				{
+					"request": {
+						"ids": {
+							"imdb": "tt0439100"
+						},
+						"type": "show",
+						"rating": null
+					},
+					"response": {
+						"status": "watching",
+						"simkl_type": "tv",
+						"anime_type": null
+					}
+				},
+				{
+					"request": {
+						"ids": {
+							"imdb": "tt5626028"
+						},
+						"type": "show",
+						"rating": null
+					},
+					"response": {
+						"status": "watching",
+						"simkl_type": "anime",
+						"anime_type": "tv"
+					}
+				}
+			]
+		},
+		"not_found": {
+			"movies": [
+				{
+					"ids": {
+						"imdb": "tt99999999"
+					},
+					"watched_at": "2026-11-10T20:00:00.000Z",
+					"rating": null
+				}
+			],
+			"shows": [
+				{
+					"ids": {
+						"imdb": "tt0000001x"
+					},
+					"seasons": [
+						{
+							"number": 1,
+							"episodes": [
+								{
+									"number": 1,
+									"watched_at": "2026-11-10T22:00:00.000Z"
+								}
+							]
+						}
+					],
+					"rating": null
+				}
+			],
+			"episodes": []
+		}
+	}
+}

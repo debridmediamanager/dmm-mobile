@@ -6,7 +6,8 @@ import { pickCopy, type EpisodeCopy, type ShowEpisodes, type TitleGroup } from '
 /**
  * What has been watched, per title rather than per copy: a film by its IMDb id, an episode by its
  * show's IMDb id, season and number, so any release or provider of it counts. Each entry is a Trakt
- * history item (ids and when); with Trakt connected it syncs both ways (src/traktSync.ts).
+ * history item (ids and when); with Trakt or Simkl connected it syncs both ways (src/trackerSync.ts),
+ * and what either tracker lists counts as watched.
  */
 export interface WatchRef {
 	imdbId: string;
@@ -14,15 +15,27 @@ export interface WatchRef {
 	episode?: number;
 }
 
+export type Tracker = 'trakt' | 'simkl';
+/** A change made here goes to each of them once it is connected. */
+export const TRACKERS: readonly Tracker[] = ['trakt', 'simkl'];
+
 export interface WatchedEntry extends WatchRef {
 	watchedAt: number;
-	/** Unwatched here: kept, as a removal, until Trakt has it, so a history import cannot bring it back. */
+	/** Unwatched here: kept, as a removal, until the trackers have it, so a history import cannot bring it back. */
 	removed?: true;
-	/** Changed here and not on Trakt yet. */
-	pending?: true;
-	/** Trakt listed it in an import: gone from a later one, it was unwatched there. One Trakt never listed (it
-	 * does not know that film or episode) stays watched here only. */
-	onTrakt?: true;
+	/** Changed here, and not on these trackers yet. */
+	pending?: Tracker[];
+	/** These trackers listed it in an import (or took it): gone from a later one, it was unwatched there. One a
+	 * tracker never listed (it does not know that film or episode) stays watched here only. */
+	on?: Tracker[];
+}
+
+const without = (list: readonly Tracker[] | undefined, tracker: Tracker): Tracker[] => (list ?? []).filter((other) => other !== tracker);
+const adding = (list: readonly Tracker[] | undefined, tracker: Tracker): Tracker[] => [...without(list, tracker), tracker];
+/** Leaves out empty lists, so entries stay as small as Trakt's history items. */
+function tidy(entry: WatchedEntry): WatchedEntry {
+	const { pending, on, ...rest } = entry;
+	return { ...rest, ...(pending?.length ? { pending } : {}), ...(on?.length ? { on } : {}) };
 }
 
 export const watchKey = ({ imdbId, season, episode }: WatchRef): string => (season === undefined ? imdbId : `${imdbId}:${season}:${episode}`);
@@ -50,7 +63,14 @@ export class WatchStore {
 		this.loaded ??= this.store
 			.read()
 			.then((text) => {
-				if (text) this.entries = JSON.parse(text) as Record<string, WatchedEntry>;
+				if (!text) return;
+				this.entries = JSON.parse(text) as Record<string, WatchedEntry>;
+				// Written before Simkl (2026-11-12): `pending: true` meant "not on Trakt yet", `onTrakt` "Trakt listed it".
+				for (const [key, entry] of Object.entries(this.entries) as [string, Omit<WatchedEntry, 'pending'> & { pending?: Tracker[] | true; onTrakt?: true }][]) {
+					if (entry.pending !== true && !entry.onTrakt) continue;
+					const { onTrakt, pending, ...rest } = entry;
+					this.entries[key] = tidy({ ...rest, pending: pending === true ? [...TRACKERS] : pending, on: onTrakt ? adding(entry.on, 'trakt') : entry.on });
+				}
 			})
 			// An unreadable file forgets what was watched; nothing else depends on it.
 			.catch(() => undefined)
@@ -80,9 +100,9 @@ export class WatchStore {
 		return Object.values(this.entries).filter((entry) => !entry.removed);
 	}
 
-	/** Changes made here that Trakt does not have yet: marks and removals. */
-	pending(): WatchedEntry[] {
-		return Object.values(this.entries).filter((entry) => entry.pending);
+	/** Changes made here that this tracker does not have yet: marks and removals. */
+	pending(tracker: Tracker): WatchedEntry[] {
+		return Object.values(this.entries).filter((entry) => entry.pending?.includes(tracker));
 	}
 
 	private async save(): Promise<void> {
@@ -91,9 +111,9 @@ export class WatchStore {
 	}
 
 	/**
-	 * Marks each ref watched (at `at`) or not, and saves; each change waits to be sent to Trakt. Marking
-	 * what is watched already only moves its time: Trakt would count another play (a whole season marked
-	 * again), and a rewatch reaches Trakt through the player's scrobble.
+	 * Marks each ref watched (at `at`) or not, and saves; each change waits to be sent to the trackers.
+	 * Marking what is watched already only moves its time: Trakt would count another play (a whole season
+	 * marked again), and a rewatch reaches the trackers through the player's scrobble.
 	 */
 	async set(refs: readonly WatchRef[], watched: boolean, at = this.now()): Promise<void> {
 		await this.load();
@@ -101,46 +121,54 @@ export class WatchStore {
 			const ref = season === undefined ? { imdbId } : { imdbId, season, episode };
 			const key = watchKey(ref);
 			const was = this.entries[key];
-			if (watched) this.entries[key] = was && !was.removed && !was.pending ? { ...was, watchedAt: at } : { ...ref, watchedAt: at, pending: true };
-			else if (was) this.entries[key] = { ...ref, watchedAt: at, removed: true, pending: true };
+			if (watched) this.entries[key] = was && !was.removed ? { ...was, watchedAt: at } : { ...ref, watchedAt: at, pending: [...TRACKERS] };
+			else if (was) this.entries[key] = { ...ref, watchedAt: at, removed: true, pending: [...TRACKERS] };
 		}
 		await this.save();
 	}
 
 	/**
-	 * Trakt has these changes now. Each one is settled only as it was sent (same time, same removal):
+	 * The tracker has these changes now. Each one is settled only as it was sent (same time, same removal):
 	 * one changed again meanwhile is still to send. Without a time, a mark of the ref is settled.
-	 * `onTrakt`: Trakt took every one of them, so a later import that lacks one means it was unwatched there.
+	 * `took`: the tracker holds them, so a later import that lacks one means it was unwatched there.
 	 */
-	async settle(sent: readonly (WatchRef & { watchedAt?: number; removed?: true })[], onTrakt = false): Promise<void> {
+	async settle(sent: readonly (WatchRef & { watchedAt?: number; removed?: true })[], tracker: Tracker, took = false): Promise<void> {
 		await this.load();
 		for (const change of sent) {
 			const key = watchKey(change);
 			const entry = this.entries[key];
-			if (!entry?.pending) continue;
+			if (!entry?.pending?.includes(tracker)) continue;
 			if (change.watchedAt === undefined ? entry.removed : entry.watchedAt !== change.watchedAt || Boolean(entry.removed) !== Boolean(change.removed)) continue;
-			const { pending: _sent, ...settled } = entry;
-			if (entry.removed) delete this.entries[key];
-			else this.entries[key] = onTrakt ? { ...settled, onTrakt: true } : settled;
+			const pending = without(entry.pending, tracker);
+			// A removal is kept until every tracker has it.
+			if (entry.removed && !pending.length) delete this.entries[key];
+			else this.entries[key] = tidy({ ...entry, pending, on: took && !entry.removed ? adding(entry.on, tracker) : entry.on });
 		}
 		await this.save();
 	}
 
 	/**
-	 * Takes Trakt's whole watched history. A change made here and not sent yet wins over it; a mark
-	 * Trakt listed before and lacks now was unwatched there. The first time, the two histories join
-	 * instead: what only this device had waits to go to Trakt, and nothing on Trakt is removed for a
-	 * removal made here before. ponytail: one JSON file; a history of ~50,000 episodes wants an index.
+	 * Takes a tracker's whole watched history; what any tracker lists counts as watched, at the latest time
+	 * one says. A change made here and not sent to it yet wins over it; a mark it listed before and lacks
+	 * now was unwatched there (watched elsewhere, it stays). The first time, the two histories join
+	 * instead: what this device marked waits to go to it, what another tracker listed does not, and nothing
+	 * on it is removed for a removal made here before. ponytail: one JSON file; ~50,000 episodes want an index.
 	 */
-	async merge(trakt: ReadonlyMap<string, WatchedEntry>, first: boolean): Promise<void> {
+	async merge(list: ReadonlyMap<string, WatchedEntry>, tracker: Tracker, first: boolean): Promise<void> {
 		await this.load();
 		const next: Record<string, WatchedEntry> = {};
-		for (const [key, entry] of trakt) next[key] = { ...entry, onTrakt: true };
 		for (const [key, entry] of Object.entries(this.entries)) {
-			if (first) {
-				if (!entry.removed && !trakt.has(key)) next[key] = { ...entry, pending: true };
-			} else if (entry.pending || (!entry.onTrakt && !trakt.has(key))) next[key] = entry;
+			const listed = list.get(key);
+			const pending = first ? without(entry.pending, tracker) : entry.pending;
+			if (!first && entry.pending?.includes(tracker)) next[key] = entry;
+			// Listed: taken below, as watched there.
+			else if (entry.removed) {
+				if (!listed && pending?.length) next[key] = tidy({ ...entry, pending });
+			} else if (listed) next[key] = tidy({ ...entry, watchedAt: Math.max(entry.watchedAt, listed.watchedAt), pending, on: adding(entry.on, tracker) });
+			else if (first || !entry.on?.includes(tracker)) next[key] = tidy({ ...entry, on: without(entry.on, tracker) });
+			else if (without(entry.on, tracker).length) next[key] = tidy({ ...entry, on: without(entry.on, tracker) });
 		}
+		for (const [key, entry] of list) if (!next[key]) next[key] = { ...entry, on: [tracker] };
 		this.entries = next;
 		await this.save();
 	}
@@ -305,12 +333,12 @@ export function continueWatching(entries: readonly [string, PlaybackEntry][], it
 	return rows;
 }
 
-/** A resume point Trakt holds: a pause on any device signed in to the same Trakt account. */
+/** A resume point a tracker holds: a pause on any device signed in to the same Trakt or Simkl account. */
 export interface RemotePlayback extends WatchRef {
-	/** 0–100, as Trakt keeps it. */
+	/** 0–100, as the trackers keep it. */
 	progress: number;
 	pausedAt: number;
-	/** Trakt's playback id, to remove it. */
+	/** The tracker's playback id, to remove it. */
 	id: number;
 }
 

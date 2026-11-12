@@ -1,0 +1,278 @@
+{
+	"status": 200,
+	"body": {
+		"shows": [
+			{
+				"added_to_watchlist_at": "2026-11-12T18:02:13Z",
+				"last_watched_at": "2026-11-12T18:06:58Z",
+				"user_rated_at": null,
+				"user_rating": null,
+				"status": "watching",
+				"last_watched": "S02E12",
+				"next_to_watch": "S03E01",
+				"watched_episodes_count": 13,
+				"total_episodes_count": 102,
+				"not_aired_episodes_count": 0,
+				"show": {
+					"title": "Weeds",
+					"poster": "32/322667ed1df7f87",
+					"year": 2005,
+					"runtime": 25,
+					"ids": {
+						"simkl": 4385,
+						"slug": "weeds",
+						"imdb": "tt0439100",
+						"tmdb": "186",
+						"tvdb": "74845",
+						"tvdbslug": "weeds",
+						"traktslug": "weeds"
+					}
+				},
+				"seasons": [
+					{
+						"number": 1,
+						"episodes": [
+							{
+								"number": 3,
+								"watched_at": "2026-11-10T21:00:00Z"
+							}
+						]
+					},
+					{
+						"number": 2,
+						"episodes": [
+							{
+								"number": 1,
+								"watched_at": "2026-11-12T18:06:58Z"
+							},
+							{
+								"number": 2,
+								"watched_at": "2026-11-12T18:06:58Z"
+							},
+							{
+								"number": 3,
+								"watched_at": "2026-11-12T18:06:58Z"
+							},
+							{
+								"number": 4,
+								"watched_at": "2026-11-12T18:06:58Z"
+							},
+							{
+								"number": 5,
+								"watched_at": "2026-11-12T18:06:58Z"
+							},
+							{
+								"number": 6,
+								"watched_at": "2026-11-12T18:06:58Z"
+							},
+							{
+								"number": 7,
+								"watched_at": "2026-11-12T18:06:58Z"
+							},
+							{
+								"number": 8,
+								"watched_at": "2026-11-12T18:06:58Z"
+							},
+							{
+								"number": 9,
+								"watched_at": "2026-11-12T18:06:58Z"
+							},
+							{
+								"number": 10,
+								"watched_at": "2026-11-12T18:06:58Z"
+							},
+							{
+								"number": 11,
+								"watched_at": "2026-11-12T18:06:58Z"
+							},
+							{
+								"number": 12,
+								"watched_at": "2026-11-12T18:06:58Z"
+							}
+						]
+					}
+				]
+			},
+			{
+				"added_to_watchlist_at": "2026-11-12T18:06:56Z",
+				"last_watched_at": "2026-11-12T18:06:56Z",
+				"user_rated_at": null,
+				"user_rating": null,
+				"status": "completed",
+				"last_watched": null,
+				"next_to_watch": null,
+				"watched_episodes_count": 5,
+				"total_episodes_count": 5,
+				"not_aired_episodes_count": 0,
+				"show": {
+					"title": "Chernobyl",
+					"poster": "82/8256180eed3f66168",
+					"year": 2019,
+					"runtime": 65,
+					"ids": {
+						"simkl": 1057374,
+						"slug": "chernobyl",
+						"imdb": "tt7366338",
+						"tmdb": "87108",
+						"tvdb": "360893",
+						"tvdbslug": "chernobyl",
+						"traktslug": "chernobyl"
+					}
+				},
+				"seasons": [
+					{
+						"number": 1,
+						"episodes": [
+							{
+								"number": 1,
+								"watched_at": "2026-11-12T18:06:56Z"
+							},
+							{
+								"number": 2,
+								"watched_at": "2026-11-12T18:06:56Z"
+							},
+							{
+								"number": 3,
+								"watched_at": "2026-11-12T18:06:56Z"
+							},
+							{
+								"number": 4,
+								"watched_at": "2026-11-12T18:06:56Z"
+							},
+							{
+								"number": 5,
+								"watched_at": "2026-11-12T18:06:56Z"
+							}
+						]
+					}
+				]
+			}
+		],
+		"movies": [
+			{
+				"added_to_watchlist_at": "2026-11-12T18:01:25Z",
+				"last_watched_at": "2026-11-12T18:01:25Z",
+				"user_rated_at": null,
+				"user_rating": null,
+				"status": "completed",
+				"watched_episodes_count": 0,
+				"total_episodes_count": 0,
+				"not_aired_episodes_count": 0,
+				"movie": {
+					"title": "Sintel",
+					"poster": "20/20746731177fe0e9a9",
+					"year": 2010,
+					"runtime": 14,
+					"ids": {
+						"simkl": 113214,
+						"slug": "sintel",
+						"imdb": "tt1727587",
+						"tmdb": "45745",
+						"tvdb": "9413",
+						"tvdbslug": "sintel",
+						"traktslug": "sintel-2010",
+						"letterboxd": "sintel"
+					}
+				}
+			}
+		],
+		"anime": [
+			{
+				"added_to_watchlist_at": "2026-11-12T18:03:29Z",
+				"last_watched_at": "2026-11-09T20:00:00Z",
+				"user_rated_at": null,
+				"user_rating": null,
+				"status": "completed",
+				"last_watched": null,
+				"next_to_watch": null,
+				"watched_episodes_count": 1,
+				"total_episodes_count": 1,
+				"not_aired_episodes_count": 0,
+				"show": {
+					"title": "Kimi no Na wa.",
+					"poster": "31/3114820930656c5ed",
+					"year": 2016,
+					"runtime": 110,
+					"ids": {
+						"simkl": 543146,
+						"slug": "kimi-no-na-wa",
+						"imdb": "tt5311514",
+						"mal": "32281",
+						"anilist": "21519",
+						"kitsu": "11614",
+						"anidb": "11829",
+						"tmdb": "372058",
+						"tvdb": "197",
+						"tvdbslug": "your-name",
+						"traktslug": "your-name-2016",
+						"letterboxd": "your-name"
+					}
+				},
+				"anime_type": "movie",
+				"seasons": [
+					{
+						"number": 1,
+						"episodes": [
+							{
+								"number": 1,
+								"watched_at": "2026-11-09T20:00:00Z",
+								"tvdb": {
+									"season": 1,
+									"episode": 1
+								}
+							}
+						]
+					}
+				]
+			},
+			{
+				"added_to_watchlist_at": "2026-11-12T18:01:45Z",
+				"last_watched_at": "2026-11-12T18:01:45Z",
+				"user_rated_at": null,
+				"user_rating": null,
+				"status": "watching",
+				"last_watched": "E14",
+				"next_to_watch": "E15",
+				"watched_episodes_count": 1,
+				"total_episodes_count": 25,
+				"not_aired_episodes_count": 0,
+				"show": {
+					"title": "Boku no Hero Academia",
+					"poster": "84/841464130fa9ad1b3",
+					"year": 2019,
+					"runtime": 25,
+					"ids": {
+						"simkl": 920009,
+						"slug": "boku-no-hero-academia",
+						"mal": "38408",
+						"anilist": "104276",
+						"kitsu": "41971",
+						"anidb": "14416",
+						"imdb": "tt5626028",
+						"tmdb": "65930",
+						"tvdb": "305074"
+					}
+				},
+				"anime_type": "tv",
+				"mapped_tvdb_seasons": [
+					4
+				],
+				"seasons": [
+					{
+						"number": 1,
+						"episodes": [
+							{
+								"number": 14,
+								"watched_at": "2026-11-12T18:01:45Z",
+								"tvdb": {
+									"season": 4,
+									"episode": 14
+								}
+							}
+						]
+					}
+				]
+			}
+		]
+	}
+}

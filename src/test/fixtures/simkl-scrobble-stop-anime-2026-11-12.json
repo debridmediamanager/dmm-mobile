@@ -1,0 +1,31 @@
+{
+	"status": 201,
+	"body": {
+		"id": 70313257,
+		"action": "scrobble",
+		"progress": 90,
+		"episode": {
+			"season": 1,
+			"number": 14,
+			"title": "Bright Future",
+			"tvdb_season": 4,
+			"tvdb_number": 14
+		},
+		"anime": {
+			"title": "Boku no Hero Academia",
+			"year": 2019,
+			"anime_type": "tv",
+			"ids": {
+				"simkl": 920009,
+				"slug": "boku-no-hero-academia",
+				"mal": "38408",
+				"anilist": "104276",
+				"kitsu": "41971",
+				"anidb": "14416",
+				"imdb": "tt5626028",
+				"tmdb": "65930",
+				"tvdb": "305074"
+			}
+		}
+	}
+}

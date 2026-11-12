@@ -26,6 +26,7 @@ import type { AddEntry } from './share';
 import { browserStateApi, credentialsFromState, identitiesFor, mergeState, settingsFromState, stateFromApp, type BrowserState, type BrowserStateApi, type SyncIdentity } from './sync';
 import { loadSettings, saveSetting, type SettingName } from './settings';
 import { isDemoToken, withDemo } from './demo';
+import { SimklAccount } from './simkl';
 import { TraktAccount } from './trakt';
 import { runBulk, type BulkResult } from './core';
 
@@ -124,6 +125,8 @@ export class LibrarySession {
 	private readonly sync: BrowserStateApi | null;
 	/** The Trakt login, saved across devices with the others (none where nothing syncs: tests, the QA build). */
 	readonly trakt: TraktAccount | null;
+	/** The Simkl login, this device's own (src/simkl.ts says why it is not saved across devices). */
+	readonly simkl: SimklAccount | null;
 	/** Providers removed in the app since it started: their logins leave the saved state. */
 	private readonly removedLogins = new Set<ProviderId>();
 	private pushTimer: ReturnType<typeof setTimeout> | null = null;
@@ -135,9 +138,10 @@ export class LibrarySession {
 		this.sync = sync;
 		// Saved at once after a renewal: Trakt's refresh tokens work once, and another device may be about to renew.
 		this.trakt = sync ? new TraktAccount({ pull: () => this.pull(), changed: () => this.schedulePush(0) }) : null;
+		this.simkl = sync ? new SimklAccount() : null;
 	}
 
-	/** The demo key's library never reaches DMM or Trakt. */
+	/** The demo key's library never reaches DMM, Trakt or Simkl. */
 	isDemo(provider: ProviderId): boolean {
 		return isDemoToken(this.tokens[provider]);
 	}
@@ -269,8 +273,11 @@ export class LibrarySession {
 		this.failures.delete(provider);
 		this.loading.delete(provider);
 		this.notify();
-		// Signed out of everything: whoever signs in next must not inherit this Trakt login.
-		if (!Object.values(this.tokens).some(Boolean)) void this.trakt?.forget();
+		// Signed out of everything: whoever signs in next must not inherit this Trakt or Simkl login.
+		if (!Object.values(this.tokens).some(Boolean)) {
+			void this.trakt?.forget();
+			void this.simkl?.disconnect();
+		}
 		try {
 			await this.enqueueStorage(provider, () => this.storage.remove(provider));
 		} catch (error) {

@@ -1,0 +1,24 @@
+{
+	"status": 201,
+	"body": {
+		"deleted": {
+			"movies": 1,
+			"shows": 0,
+			"episodes": 3,
+			"rewatches": 0,
+			"rewatch_episodes": 0
+		},
+		"not_found": {
+			"movies": [
+				{
+					"ids": {
+						"imdb": "tt99999999"
+					},
+					"type": "movie"
+				}
+			],
+			"shows": [],
+			"episodes": []
+		}
+	}
+}

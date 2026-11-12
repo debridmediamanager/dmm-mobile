@@ -6,7 +6,7 @@ vi.mock('expo-file-system', () => ({ File: class {}, Paths: {} }));
 
 import type { PlaybackEntry } from './playback';
 import { TraktAccount } from './trakt';
-import { playbackFromTrakt, TraktSync, watchedFromTrakt, type TraktHttp, type TraktReply } from './traktSync';
+import { playbackFromTrakt, TrackerSync, watchedFromTrakt, type TraktHttp, type TraktReply } from './trackerSync';
 import { otherDevice, remoteResumes, WatchStore, watchKey, type WatchRef } from './watched';
 import activities from './test/fixtures/trakt-last-activities-2026-11-09.json';
 import moviesPage1 from './test/fixtures/trakt-watched-movies-p1-2026-11-09.json';
@@ -74,7 +74,7 @@ async function setup(routes: Record<string, TraktReply | TraktReply[]>, options:
 	const gaps: number[] = [];
 	let now = NOW;
 	// 'tb' stands for a provider signed in with the demo key.
-	const sync = new TraktSync(account, marks, (provider) => provider === 'tb', memory(options.state ?? null), http, () => now, async (ms) => {
+	const sync = new TrackerSync(account, marks, (provider) => provider === 'tb', memory(options.state ?? null), http, () => now, async (ms) => {
 		gaps.push(ms);
 		now += ms;
 	});
@@ -105,7 +105,7 @@ describe('scrobbling', () => {
 		sync.scrobble({ ...EPISODE, kind: 'tv' }, 'pause', 80);
 		await sync.settled();
 		expect(calls.map(({ path, body }) => [path, body.progress])).toEqual([['/scrobble/pause', 79.9], ['/scrobble/stop', 80]]);
-		expect(marks.pending()).toEqual([]);
+		expect(marks.pending('trakt')).toEqual([]);
 		expect(marks.watchedAt(EPISODE)).toBe(NOW);
 		// The pause is this device's resume point on Trakt now.
 		expect(sync.resumeFor({ imdbId: BUNNY })).toMatchObject({ progress: 79.9, id: pauseMovie.body.id });
@@ -118,7 +118,7 @@ describe('scrobbling', () => {
 		sync.scrobble({ ...EPISODE, kind: 'tv' }, 'stop', 99);
 		sync.scrobble({ imdbId: BUNNY, kind: 'movie' }, 'pause', 41.5);
 		await sync.settled();
-		expect(marks.pending()).toEqual([]);
+		expect(marks.pending('trakt')).toEqual([]);
 		expect(sync.resumeFor({ imdbId: BUNNY })).toBeDefined();
 		sync.scrobble({ imdbId: BUNNY, kind: 'movie' }, 'start', 41.5);
 		await sync.settled();
@@ -154,7 +154,7 @@ describe('scrobbling', () => {
 		sync.scrobble({ ...EPISODE, kind: 'tv' }, 'stop', 96);
 		sync.scrobble({ imdbId: BUNNY, kind: 'movie' }, 'pause', 41.5);
 		await sync.settled();
-		expect(marks.pending()).toHaveLength(1);
+		expect(marks.pending('trakt')).toHaveLength(1);
 
 		trakt.online = true;
 		await sync.sync(true);
@@ -163,7 +163,7 @@ describe('scrobbling', () => {
 			shows: [{ ids: { imdb: SIGHTINGS }, seasons: [{ number: 1, episodes: [{ number: 2, watched_at: iso(NOW - 5 * MIN) }] }] }],
 		});
 		expect(calls.find((call) => call.path === '/scrobble/pause')!.body).toEqual({ movie: { ids: { imdb: BUNNY } }, progress: 41.5 });
-		expect(marks.pending()).toEqual([]);
+		expect(marks.pending('trakt')).toEqual([]);
 		// last_activities did not move: the history is not downloaded again.
 		expect(calls.some((call) => call.path.startsWith('/sync/watched'))).toBe(false);
 	});
@@ -187,7 +187,8 @@ describe('watched history', () => {
 			'/sync/watched/shows?extended=progress&page=1&limit=250',
 			'/sync/playback',
 		]);
-		expect(marks.watchedAt({ imdbId: ALITA })).toBe(Date.parse('2025-04-13T12:20:00.000Z'));
+		// Watched on Trakt in 2025 and marked here a day ago: the later time stands, as when two trackers both list it.
+		expect(marks.watchedAt({ imdbId: ALITA })).toBe(NOW - DAY);
 		expect(marks.watchedAt(QUEEN_E1)).toBe(Date.parse('2026-01-16T21:30:00.000Z'));
 		// 6 films and 91 episodes from Trakt, and the one film only this device had.
 		expect(marks.list()).toHaveLength(6 + 91 + 1);
@@ -195,13 +196,13 @@ describe('watched history', () => {
 		expect(calls.filter((call) => call.method === 'POST').map((call) => [call.path, call.body])).toEqual([
 			['/sync/history', { movies: [{ ids: { imdb: BUNNY }, watched_at: iso(NOW - DAY) }], shows: [] }],
 		]);
-		expect(marks.pending()).toEqual([]);
+		expect(marks.pending('trakt')).toEqual([]);
 	});
 
 	it('later imports take what was unwatched on Trakt, keep changes not sent yet and episodes Trakt does not know', async () => {
 		const marks = new WatchStore(memory(), () => NOW);
 		// An earlier import listed these.
-		await marks.merge(watchedFromTrakt([...moviesPage1, ...moviesPage2], shows), true);
+		await marks.merge(watchedFromTrakt([...moviesPage1, ...moviesPage2], shows), 'trakt', true);
 		await marks.set([QUEEN_E1], false, NOW - MIN);
 		// tt0103558 is "Sterne des Südens" on Trakt, three episodes long: S01E04 does not exist there (live, 2026-11-12).
 		const UNKNOWN = { imdbId: SIGHTINGS, season: 1, episode: 4 };
@@ -221,14 +222,14 @@ describe('watched history', () => {
 		expect(marks.watchedAt({ imdbId: ALITA })).toBeUndefined();
 		// The removal did not get through (503): still unwatched here, still to send, though Trakt listed it.
 		expect(marks.watchedAt(QUEEN_E1)).toBeUndefined();
-		expect(marks.pending()).toEqual([expect.objectContaining({ ...QUEEN_E1, removed: true })]);
+		expect(marks.pending('trakt')).toEqual([expect.objectContaining({ ...QUEEN_E1, removed: true })]);
 		// Sent, never listed by Trakt (its not_found echoes every episode of the show, so it cannot tell): kept here.
 		expect(marks.watchedAt(UNKNOWN)).toBe(NOW - MIN);
-		expect(marks.pending().some((entry) => entry.episode === 4)).toBe(false);
+		expect(marks.pending('trakt').some((entry) => entry.episode === 4)).toBe(false);
 
 		await sync.sync(true);
 		expect(calls.filter((call) => call.path === '/sync/history/remove').at(-1)!.body).toEqual({ movies: [], shows: [{ ids: { imdb: QUEEN }, seasons: [{ number: 1, episodes: [{ number: 1 }] }] }] });
-		expect(marks.pending()).toEqual([]);
+		expect(marks.pending('trakt')).toEqual([]);
 		expect(marks.watchedAt(QUEEN_E1)).toBeUndefined();
 	});
 
@@ -246,16 +247,16 @@ describe('watched history', () => {
 
 	it('sends no second play when a season is marked again over episodes already watched', async () => {
 		const marks = new WatchStore(memory(), () => NOW);
-		await marks.merge(watchedFromTrakt([], shows), true);
+		await marks.merge(watchedFromTrakt([], shows), 'trakt', true);
 		const season = [1, 2, 3].map((episode) => ({ imdbId: QUEEN, season: 1, episode }));
 		await marks.set(season, true, NOW);
-		expect(marks.pending()).toEqual([]);
+		expect(marks.pending('trakt')).toEqual([]);
 		// Its time moves, so Next Up follows the latest mark.
 		expect(marks.watchedAt(QUEEN_E1)).toBe(NOW);
 		// Unmarked and marked again before Trakt heard: still one change to send.
 		await marks.set([QUEEN_E1], false, NOW);
 		await marks.set([QUEEN_E1], true, NOW + 1);
-		expect(marks.pending()).toEqual([{ ...QUEEN_E1, watchedAt: NOW + 1, pending: true }]);
+		expect(marks.pending('trakt')).toEqual([{ ...QUEEN_E1, watchedAt: NOW + 1, pending: ['trakt', 'simkl'] }]);
 	});
 
 	it('reads films and episodes by IMDb id from the real answers, leaving out what has none', () => {
@@ -268,7 +269,7 @@ describe('watched history', () => {
 	it('reads Trakt as soon as a login arrives, not at the next start', async () => {
 		const account = new TraktAccount({ pull: async () => null, changed: () => undefined }, vi.fn(), memory(), () => NOW);
 		const { trakt, http } = fakeTrakt(IMPORT);
-		const sync = new TraktSync(account, new WatchStore(memory(), () => NOW), () => false, memory(), http, () => NOW, async () => undefined);
+		const sync = new TrackerSync(account, new WatchStore(memory(), () => NOW), () => false, memory(), http, () => NOW, async () => undefined);
 		await account.load();
 		expect(trakt.calls).toEqual([]);
 		await account.adopt({ 'trakt:accessToken': JSON.stringify({ value: 'AT', expiry: NOW + 7 * DAY }), 'trakt:refreshToken': '"RT"' });

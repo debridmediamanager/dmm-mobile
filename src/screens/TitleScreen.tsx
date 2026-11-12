@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
-import { ActivityIndicator, Alert, Image, Platform, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, Linking, Platform, ScrollView, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useApp } from '../AppContext';
+import { simklPage } from '../simkl';
 import { formatBytes } from '../core';
 import type { LibraryFile, LibraryItem } from '../model';
 import { PROVIDER_META } from '../model';
@@ -19,11 +20,14 @@ const SHORT = { rd: 'RD', ad: 'AD', tb: 'TB', pm: 'PM', oc: 'OC', dl: 'DL' } as 
 const fileBase = (name: string) => name.split('/').pop() ?? name;
 
 /** A film's or show's page: what the library holds of it, each copy with Open. Nothing here comes from DMM's search. */
+const idle = () => () => undefined;
+
 export function TitleScreen({ route, navigation }: Props) {
 	const theme = useAppTheme();
 	const { wide } = useLayout();
 	const edges: Array<'top' | 'bottom'> = Platform.isTV ? ['top', 'bottom'] : ['bottom'];
-	const { snapshot, titles } = useApp();
+	const { snapshot, titles, simkl } = useApp();
+	const simklLinked = Boolean(useSyncExternalStore(simkl ? simkl.account.subscribe : idle, () => simkl?.account.login));
 	const openCopy = useOpenCopy();
 	const { playVersion } = useWatch();
 	const [menu, setMenu] = useState<{ title: string; actions: SheetAction[] } | null>(null);
@@ -144,6 +148,12 @@ export function TitleScreen({ route, navigation }: Props) {
 						</View>
 					</View>
 					{info?.description ? <Text style={{ color: theme.text, fontSize: 14.5, lineHeight: 21, marginTop: 14 }}>{info.description}</Text> : null}
+					{/* Simkl's API rules: where its watch history shows, link to the title on Simkl (a TV has no browser). */}
+					{simklLinked && !Platform.isTV ? (
+						<Pressable accessibilityRole="link" accessibilityLabel="View on Simkl" onPress={() => void Linking.openURL(simklPage(imdbId))} style={{ marginTop: 10, alignSelf: 'flex-start' }}>
+							<Text style={{ color: theme.accent, fontSize: 13.5, fontWeight: '700' }}>View on Simkl</Text>
+						</Pressable>
+					) : null}
 
 					{kind === 'movie' ? (
 						<View style={styles.detailSection}>

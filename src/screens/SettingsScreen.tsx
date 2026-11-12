@@ -8,21 +8,40 @@ import { loadSettings, onSettingsChange, saveSetting, type AppSettings, type Set
 import { useAppTheme } from '../theme';
 import { ActionSheet, DropdownChip, FilterButton, Pressable, QrCode, Screen, styles, type SheetAction, useLayout } from '../ui';
 import { DMM_ORIGIN } from '../tvLink';
-import { pollTraktLink, startTraktLink, type TraktLink } from '../trakt';
-import type { TraktSync } from '../traktSync';
+import { pollSimklLink, startSimklLink, type TrackerLink } from '../simkl';
+import { pollTraktLink, startTraktLink } from '../trakt';
+import type { TrackerSync } from '../trackerSync';
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+/** What the row needs of Trakt's and Simkl's logins. */
+interface RowAccount<Login> {
+	readonly login: (Login & { slug?: string; name?: string }) | null;
+	readonly refused: boolean;
+	readonly readOnly?: boolean;
+	connect(login: Login): Promise<void>;
+	disconnect(): Promise<void>;
+	subscribe(listener: () => void): () => void;
+	getVersion(): number;
+}
+
 /**
- * Trakt: who is signed in, or a device code to link one (a QR on a TV, the approve page opened on a phone).
- * DMM web's Trakt login is picked up by itself, so most people never press Connect.
+ * A tracker: who is signed in, or a device code to link one (a QR on a TV, the approve page opened on a phone).
+ * DMM web's Trakt login is picked up by itself, so most people never press Connect there.
  */
-function TraktRow({ trakt }: { trakt: TraktSync }) {
+function TrackerRow<Login>({ tracker, account, start, poll, signedOut, footer }: {
+	tracker: TrackerSync<any>;
+	account: RowAccount<Login>;
+	start(): Promise<TrackerLink>;
+	poll(deviceCode: string): Promise<'pending' | 'slow_down' | 'expired' | Login>;
+	signedOut: string;
+	footer: React.ReactNode;
+}) {
 	const theme = useAppTheme();
-	const { account } = trakt;
+	const { name } = tracker.api;
 	useSyncExternalStore(account.subscribe, account.getVersion);
-	useSyncExternalStore(trakt.subscribe, trakt.getVersion);
-	const [link, setLink] = useState<TraktLink | null>(null);
+	useSyncExternalStore(tracker.subscribe, tracker.getVersion);
+	const [link, setLink] = useState<TrackerLink | null>(null);
 	const [error, setError] = useState('');
 	const waiting = useRef<{ cancelled: boolean } | null>(null);
 	useEffect(() => () => void (waiting.current && (waiting.current.cancelled = true)), []);
@@ -37,55 +56,61 @@ function TraktRow({ trakt }: { trakt: TraktSync }) {
 		waiting.current = attempt;
 		setError('');
 		try {
-			const started = await startTraktLink();
+			const started = await start();
 			if (attempt.cancelled) return;
 			setLink(started);
 			if (!Platform.isTV) void Linking.openURL(started.verifyUrl).catch(() => undefined);
+			let interval = started.interval;
 			for (const deadline = Date.now() + started.expiresIn * 1000; Date.now() < deadline; ) {
-				await wait(started.interval * 1000);
+				await wait(interval * 1000);
 				if (attempt.cancelled) return;
 				// A dropped poll is tried again on the next tick.
-				const result = await pollTraktLink(started.deviceCode).catch(() => 'pending' as const);
+				const result = await poll(started.deviceCode).catch(() => 'pending' as const);
 				if (attempt.cancelled) return;
 				if (result === 'expired') throw new Error('That code expired or was declined. Try again.');
-				if (result !== 'pending') return void (await account.connect(result));
+				// Simkl: polling too fast keeps it refusing; wait 5 seconds more from now on.
+				if (result === 'slow_down') interval += 5;
+				else if (result !== 'pending') return void (await account.connect(result));
 			}
 			throw new Error('That code expired before it was approved. Try again.');
 		} catch (caught) {
-			if (!attempt.cancelled) setError(caught instanceof Error ? caught.message : 'Could not connect Trakt.');
+			if (!attempt.cancelled) setError(caught instanceof Error ? caught.message : `Could not connect ${name}.`);
 		} finally {
 			if (waiting.current === attempt) cancel();
 		}
 	};
 
 	const login = account.login;
-	const shown = error || (login && trakt.error) || '';
-	const page = link?.verifyUrl.replace(/^https?:\/\//, '').replace(/\/[^/]*$/, '');
+	const who = login?.slug ?? login?.name;
+	const shown = error || (login && tracker.error) || '';
+	const page = link?.page;
 	// While a code shows, Cancel takes the remote's focus: Connect is gone, and focus would fall back to the tab rail.
 	const button = (label: string, color: string, onPress: () => void, preferred = false) => (
-		<Pressable accessibilityRole="button" accessibilityLabel={`${label} Trakt`} hasTVPreferredFocus={Platform.isTV && preferred} onPress={onPress} style={[styles.outlineButton, { borderColor: color }]}>
+		<Pressable accessibilityRole="button" accessibilityLabel={`${label} ${name}`} hasTVPreferredFocus={Platform.isTV && preferred} onPress={onPress} style={[styles.outlineButton, { borderColor: color }]}>
 			<Text style={[styles.outlineButtonText, { color }]}>{label}</Text>
 		</Pressable>
 	);
 	return (
 		<View style={[styles.accountCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
 			<View style={styles.rowBetween}>
-				<Text style={[styles.accountTitle, { color: theme.text, flex: 1 }]}>Trakt</Text>
+				<Text style={[styles.accountTitle, { color: theme.text, flex: 1 }]}>{name}</Text>
 				{link ? null : login && !account.refused ? button('Disconnect', theme.danger, () => void account.disconnect()) : button('Connect', theme.accent, () => void connect())}
 			</View>
 			<Text style={[styles.subheading, { color: theme.muted, marginTop: 0 }]}>
-				{login && !account.refused
-					? `Signed in${login.slug ? ` as ${login.slug}` : ''}. What you play is scrobbled to Trakt, and watched marks and resume points follow you to your other devices.`
-					: login
-						? 'Trakt no longer accepts this sign-in. Connect again.'
-						: 'Scrobble what you play and keep watched marks and resume points in step with Trakt and your other devices. A Trakt login made on DMM web is used by itself.'}
+				{login && account.refused
+					? `${name} no longer accepts this sign-in. Connect again.`
+					: login && account.readOnly
+						? `Signed in${who ? ` as ${who}` : ''}, but ${name} lets DMM Mobile only read your library: watched marks come from ${name}, nothing goes to it. Disconnect and connect again to allow updates.`
+						: login
+							? `Signed in${who ? ` as ${who}` : ''}. What you play is scrobbled to ${name}, and watched marks and resume points follow you to your other devices.`
+							: signedOut}
 			</Text>
 			{link ? (
 				<View style={{ flexDirection: Platform.isTV ? 'row' : 'column', alignItems: 'center', gap: 16 }}>
 					{Platform.isTV ? <QrCode value={link.verifyUrl} size={180} /> : null}
 					<View style={{ gap: 8, alignItems: Platform.isTV ? 'flex-start' : 'center', flexShrink: 1 }}>
 						<Text style={[styles.subheading, { color: theme.muted, marginTop: 0 }]}>{Platform.isTV ? `Scan the code with your phone, or open ${page} and enter:` : `Approve this code on ${page}:`}</Text>
-						<Text selectable accessibilityLabel={`Trakt code ${link.userCode}`} style={[styles.deviceCode, { color: theme.text }]}>{link.userCode}</Text>
+						<Text selectable accessibilityLabel={`${name} code ${link.userCode}`} style={[styles.deviceCode, { color: theme.text }]}>{link.userCode}</Text>
 						{Platform.isTV ? null : (
 							<Pressable accessibilityRole="link" accessibilityLabel={`Open ${page}`} onPress={() => void Linking.openURL(link.verifyUrl)} style={[styles.primaryButton, { backgroundColor: theme.accent, alignSelf: 'stretch' }]}>
 								<Text style={[styles.primaryButtonText, { color: theme.onAccent }]}>Open {page}</Text>
@@ -100,7 +125,7 @@ function TraktRow({ trakt }: { trakt: TraktSync }) {
 				</View>
 			) : null}
 			{shown ? <Text style={[styles.inlineError, { color: theme.danger }]}>{shown}</Text> : null}
-			<Text style={[styles.detailMeta, { color: theme.muted, marginTop: 0 }]}>DMM Mobile uses Trakt but is not endorsed or certified by Trakt.</Text>
+			{footer}
 		</View>
 	);
 }
@@ -109,7 +134,7 @@ function TraktRow({ trakt }: { trakt: TraktSync }) {
 export function SettingsScreen() {
 	const theme = useAppTheme();
 	const { wide } = useLayout();
-	const { snapshot, trakt, traktAvailable } = useApp();
+	const { snapshot, trakt, simkl, trackersAvailable } = useApp();
 	const [settings, setSettings] = useState<AppSettings>({});
 	const [picking, setPicking] = useState<SettingName | null>(null);
 	useEffect(() => {
@@ -164,8 +189,36 @@ export function SettingsScreen() {
 				<Text style={[styles.heading, { color: theme.text }]}>Settings</Text>
 				{row('Open videos with', `Built-in plays videos in the app. A player app chosen here is used on DMM web too.${Platform.isTV ? '' : ' Subtitle and other files open in the browser.'}`, <DropdownChip label={player.label} active={player.id !== players[0].id} onPress={() => setPicking('player')} />)}
 				{row('Add to', 'The provider the Add screen and magnet links from other apps start on.', <DropdownChip label={addProvider ? PROVIDER_META[addProvider].label : 'First connected'} active={Boolean(addProvider)} onPress={() => setPicking('addProvider')} />)}
-				{/* The demo key alone never reaches Trakt. */}
-				{trakt && traktAvailable ? <TraktRow trakt={trakt} /> : null}
+				{/* The demo key alone never reaches a tracker. */}
+				{trakt && trackersAvailable ? (
+					<TrackerRow
+						tracker={trakt}
+						account={trakt.account}
+						start={startTraktLink}
+						poll={pollTraktLink}
+						signedOut="Scrobble what you play and keep watched marks and resume points in step with Trakt and your other devices. A Trakt login made on DMM web is used by itself."
+						footer={<Text style={[styles.detailMeta, { color: theme.muted, marginTop: 0 }]}>DMM Mobile uses Trakt but is not endorsed or certified by Trakt.</Text>}
+					/>
+				) : null}
+				{simkl && trackersAvailable ? (
+					<TrackerRow
+						tracker={simkl}
+						account={simkl.account}
+						start={startSimklLink}
+						poll={pollSimklLink}
+						signedOut="Scrobble what you play and keep watched marks and resume points in step with Simkl and your other devices. Each device connects to Simkl on its own."
+						// Simkl's API rules: name Simkl where its data shows and link to it.
+						footer={
+							Platform.isTV ? (
+								<Text style={[styles.detailMeta, { color: theme.muted, marginTop: 0 }]}>Watch history synced with Simkl, simkl.com. DMM Mobile is not affiliated with Simkl.</Text>
+							) : (
+								<Pressable accessibilityRole="link" accessibilityLabel="Open simkl.com" onPress={() => void Linking.openURL('https://simkl.com')}>
+									<Text style={[styles.detailMeta, { color: theme.accent, marginTop: 0 }]}>Watch history synced with Simkl, simkl.com. DMM Mobile is not affiliated with Simkl.</Text>
+								</Pressable>
+							)
+						}
+					/>
+				) : null}
 				{row('Remembered across devices', 'Always on in the app. Sign in to any one provider here or on DMM web with "Remember my logins and settings across devices", and your other logins and these settings come back. Anyone who can sign in to one of those accounts gets all of them, so do not use a shared debrid account.', <Text style={{ color: theme.accent, fontWeight: '700' }}>On</Text>)}
 				{row(`Version ${Updates.runtimeVersion ?? ''}`.trim(), updates.isUpdatePending ? `${versionDetail} An update is ready.` : versionDetail, Updates.isEnabled ? <FilterButton label={updates.isUpdatePending ? 'Restart' : checking ? 'Checking…' : 'Check'} active={updates.isUpdatePending} onPress={() => void (checking ? undefined : updateApp())} /> : null)}
 				{/* A TV has no browser, so it shows where the pages are. */}

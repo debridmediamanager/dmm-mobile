@@ -62,8 +62,8 @@ describe('watched from playback (rd6893c80a7036 "Sightings", testacct123 release
 		expect(store.list()).toEqual([]);
 		now = 2000;
 		await plays.record(tbKey, 42 * MIN, 45 * MIN, metaOf(tbSightings, '1x01', SIGHTINGS, sightingsShow));
-		// Pending: waiting to be sent to Trakt (or settled by the player's scrobble).
-		await vi.waitFor(() => expect(store.list()).toEqual([{ imdbId: SIGHTINGS, season: 1, episode: 1, watchedAt: 2000, pending: true }]));
+		// Pending: waiting to be sent to Trakt and Simkl (or settled by the player's scrobble).
+		await vi.waitFor(() => expect(store.list()).toEqual([{ imdbId: SIGHTINGS, season: 1, episode: 1, watchedAt: 2000, pending: ['trakt', 'simkl'] }]));
 		// Per title, not per copy: the Real-Debrid copy of the same episode is watched too.
 		expect(store.watchedAt({ imdbId: SIGHTINGS, season: 1, episode: 1 })).toBe(2000);
 	});
@@ -94,15 +94,15 @@ describe('WatchStore marks', () => {
 		await store.set([{ imdbId: SIGHTINGS, season: 1, episode: 2 }], false);
 		const relaunched = new WatchStore(file);
 		await relaunched.load();
-		expect(relaunched.list()).toEqual([{ imdbId: 'tt2285752', watchedAt: 7000, pending: true }]);
+		expect(relaunched.list()).toEqual([{ imdbId: 'tt2285752', watchedAt: 7000, pending: ['trakt', 'simkl'] }]);
 		expect(relaunched.watchedAt({ imdbId: SIGHTINGS, season: 1, episode: 2 })).toBeUndefined();
 		expect(JSON.parse(file.text()!)).toEqual({
-			tt2285752: { imdbId: 'tt2285752', watchedAt: 7000, pending: true },
-			[`${SIGHTINGS}:1:2`]: { imdbId: SIGHTINGS, season: 1, episode: 2, watchedAt: 7000, removed: true, pending: true },
+			tt2285752: { imdbId: 'tt2285752', watchedAt: 7000, pending: ['trakt', 'simkl'] },
+			[`${SIGHTINGS}:1:2`]: { imdbId: SIGHTINGS, season: 1, episode: 2, watchedAt: 7000, removed: true, pending: ['trakt', 'simkl'] },
 		});
 		// Unmarking what was never marked leaves nothing to send.
 		await store.set([{ imdbId: SIGHTINGS, season: 9, episode: 9 }], false);
-		expect(store.pending()).toHaveLength(2);
+		expect(store.pending('simkl')).toHaveLength(2);
 	});
 
 	it('marks "up to here" through earlier seasons, and specials only among specials', () => {

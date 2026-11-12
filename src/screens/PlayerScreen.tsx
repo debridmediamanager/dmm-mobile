@@ -9,7 +9,7 @@ import type { RootStackParamList } from '../navigation';
 import { FINISHED, playback, playbackKey } from '../playback';
 import { BUILT_IN, openFileLink, playersForPlatform, soundUnplayable } from '../player';
 import { episodeCode, findEpisode, nextEpisode, showEpisodes, type EpisodeCopy } from '../titles';
-import { refOf, type ScrobbleAction } from '../traktSync';
+import { refOf, type ScrobbleAction } from '../trackerSync';
 import { otherDevice } from '../watched';
 import { isSafeExternalUrl } from '../validation';
 import { ActionSheet, Icon, Pressable, type IconName, type SheetAction } from '../ui';
@@ -45,7 +45,7 @@ const uniqueLabels = (names: string[]) => names.map((name, n) => (names.indexOf(
  */
 export function PlayerScreen({ route, navigation }: Props) {
 	const { url, item, fileId, resume } = route.params;
-	const { titles, snapshot, openFile, trakt } = useApp();
+	const { titles, snapshot, openFile, trackers } = useApp();
 	const file = item.files.find((entry) => entry.id === fileId) ?? { id: fileId, name: 'Video', size: 0 };
 	const key = playbackKey(item, file);
 	const named = titles.identification(item);
@@ -83,11 +83,11 @@ export function PlayerScreen({ route, navigation }: Props) {
 	const soundCheck = useRef<'no' | 'asked' | 'done'>('no');
 	/** Where playback starts; null while asking whether to resume. */
 	const [start, setStart] = useState<number | null>(null);
-	/** The resume offer: milliseconds, or a fraction of a file not played on this device yet (Trakt's progress from another device). */
+	/** The resume offer: milliseconds, or a fraction of a file not played on this device yet (a tracker's progress from another device). */
 	const [resumeAt, setResumeAt] = useState<{ ms: number } | { fraction: number } | null>(null);
 	/** Where to jump once the duration is known, for a fraction. */
 	const jumpTo = useRef<number | null>(null);
-	/** What Trakt was told last: a stop is final, a start is repeated only after a seek. */
+	/** What the trackers were told last: a stop is final, a start is repeated only after a seek. */
 	const scrobbled = useRef<ScrobbleAction | null>(null);
 	const seekTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const [attempt, setAttempt] = useState(0);
@@ -110,10 +110,10 @@ export function PlayerScreen({ route, navigation }: Props) {
 		mounted.current = true;
 		void playback.load().then(() => {
 			if (!mounted.current) return;
-			// Another device's newer pause (through Trakt) wins over this device's own resume point.
+			// Another device's newer pause (through Trakt or Simkl) wins over this device's own resume point.
 			const ref = refOf(meta);
 			const local = playback.get(key);
-			const remote = ref ? trakt?.resumeFor(ref) : undefined;
+			const remote = ref ? trackers.map((tracker) => tracker.resumeFor(ref)).reduce((a, b) => (b && (!a || b.pausedAt > a.pausedAt) ? b : a), undefined) : undefined;
 			const fraction = remote && otherDevice(remote, local) ? remote.progress / 100 : 0;
 			const at = fraction && local?.duration ? Math.round(fraction * local.duration) : fraction ? 0 : playback.resumeAt(key);
 			const offer = at ? { ms: at } : fraction ? { fraction } : null;
@@ -140,18 +140,18 @@ export function PlayerScreen({ route, navigation }: Props) {
 		const { time: at, duration: length } = position.current;
 		if (at > 0 && length > 0) void playback.record(key, at, length, meta);
 	}, [key, meta]);
-	/** Tells Trakt (when connected) what playback does; past FINISHED the first stop marks it watched there. */
+	/** Tells the connected trackers what playback does; past FINISHED the first stop marks it watched there. */
 	const scrobble = useCallback(
 		(action: ScrobbleAction, again = false) => {
 			const { time: at, duration: length } = position.current;
 			if (!length || scrobbled.current === 'stop' || (scrobbled.current === action && !again)) return;
 			scrobbled.current = action;
-			trakt?.scrobble({ ...meta, provider: item.provider }, action, (at / length) * 100);
+			for (const tracker of trackers) tracker.scrobble({ ...meta, provider: item.provider }, action, (at / length) * 100, again);
 		},
-		[item.provider, meta, trakt]
+		[item.provider, meta, trackers]
 	);
 	// On leaving the player, and when the app goes to the background (the player pauses itself). Through a ref:
-	// the episode's name can arrive after opening, and a re-run would tell Trakt it stopped.
+	// the episode's name can arrive after opening, and a re-run would tell the trackers it stopped.
 	const leave = useRef({ save, scrobble });
 	leave.current = { save, scrobble };
 	useEffect(() => {
@@ -356,9 +356,9 @@ export function PlayerScreen({ route, navigation }: Props) {
 							jumpTo.current = null;
 							return player.current?.seek(position.current.time / 1000);
 						}
-						// The clock moving is playback started: Trakt hears it once there is a duration to measure progress by.
+						// The clock moving is playback started: the trackers hear it once there is a duration to measure progress by.
 						if (scrobbled.current === null) scrobble('start');
-						// Watched now: the save marks it here first, so Trakt's answer settles that mark rather than a later one sending it again.
+						// Watched now: the save marks it here first, so a tracker's answer settles that mark rather than a later one sending it again.
 						if (length > 0 && currentTime >= length * FINISHED && scrobbled.current !== 'stop') {
 							position.current.savedAt = Date.now();
 							save();

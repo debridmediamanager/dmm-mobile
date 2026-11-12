@@ -1,0 +1,22 @@
+{
+	"status": 201,
+	"body": {
+		"id": 70312643,
+		"action": "pause",
+		"progress": 85,
+		"movie": {
+			"title": "Sintel",
+			"year": 2010,
+			"ids": {
+				"simkl": 113214,
+				"slug": "sintel",
+				"imdb": "tt1727587",
+				"tmdb": "45745",
+				"tvdb": "9413",
+				"tvdbslug": "sintel",
+				"traktslug": "sintel-2010",
+				"letterboxd": "sintel"
+			}
+		}
+	}
+}

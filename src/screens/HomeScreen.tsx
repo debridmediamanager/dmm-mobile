@@ -45,9 +45,10 @@ export function HomeScreen() {
 	const theme = useAppTheme();
 	const { wide } = useLayout();
 	const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-	const { ready, startupError, snapshot, titles, refreshAll, retryStartup, trakt } = useApp();
+	const { ready, startupError, snapshot, titles, refreshAll, retryStartup, trakt, simkl, trackers } = useApp();
 	const version = useSyncExternalStore(titles.subscribe, titles.getVersion);
 	const traktVersion = useSyncExternalStore(trakt ? trakt.subscribe : idle, trakt ? trakt.getVersion : zero);
+	const simklVersion = useSyncExternalStore(simkl ? simkl.subscribe : idle, simkl ? simkl.getVersion : zero);
 	const { watchVersion, playVersion } = useWatch();
 	const openCopy = useOpenCopy();
 	const [opening, setOpening] = useState('');
@@ -72,9 +73,9 @@ export function HomeScreen() {
 			const found = entry.imdbId ? find(key) : undefined;
 			if (found && entry.imdbId) lastPlayed.set(entry.imdbId, found.item);
 		}
-		// Left part way on another device (Trakt): newer than anything played here, so it replaces this device's row.
+		// Left part way on another device (Trakt, Simkl): newer than anything played here, so it replaces this device's row.
 		const unread: string[] = [];
-		const away = (trakt ? remoteResumes(entries, trakt.playback(), (imdbId) => byId.has(imdbId), (ref) => watched.watchedAt(ref)) : []).flatMap((point) => {
+		const away = remoteResumes(entries, trackers.flatMap((tracker) => tracker.playback()), (imdbId) => byId.has(imdbId), (ref) => watched.watchedAt(ref)).flatMap((point) => {
 			const group = byId.get(point.imdbId)!;
 			const before = lastPlayed.get(point.imdbId);
 			if (point.season === undefined) {
@@ -106,7 +107,7 @@ export function HomeScreen() {
 		const recent = groups.slice(0, RECENT);
 		const states = titleStates(recent, (group) => titles.episodesOf(group.items, group.imdbId), marks, resumable(entries));
 		return { byId, resume, away, unread, next, recent, states };
-	}, [groups, snapshot.items, titles, trakt, version, watchVersion, playVersion, traktVersion]);
+	}, [groups, snapshot.items, titles, trackers, version, watchVersion, playVersion, traktVersion, simklVersion]);
 
 	// Finding another device's episode takes the show's file lists, which Real-Debrid does not list: read them once.
 	const reading = useRef(new Set<string>());
@@ -146,8 +147,9 @@ export function HomeScreen() {
 					label: 'Remove from Continue Watching',
 					onPress: () => {
 						void playback.forget(key);
-						// Trakt has this pause too (it was scrobbled): gone there as well, or it would come back from another device.
-						if (entry.imdbId) trakt?.forget(entry.season !== undefined ? { imdbId: entry.imdbId, season: entry.season, episode: entry.episode } : { imdbId: entry.imdbId });
+						// The trackers have this pause too (it was scrobbled): gone there as well, or it would come back from another device.
+						const ref = entry.season !== undefined ? { imdbId: entry.imdbId!, season: entry.season, episode: entry.episode } : { imdbId: entry.imdbId! };
+						if (entry.imdbId) trackers.forEach((tracker) => tracker.forget(ref));
 					},
 				},
 				...(refs.length ? [{ label: 'Mark watched', onPress: () => void watched.set(refs, true) }] : []),
@@ -158,7 +160,7 @@ export function HomeScreen() {
 	const awayCards: Card[] = board.away.map(({ point, item, pick }: { point: RemotePlayback; item: LibraryItem; pick: (files: LibraryFile[]) => LibraryFile | undefined }) => {
 		const group = board.byId.get(point.imdbId)!;
 		const code = point.season !== undefined ? episodeCode(point.season, point.episode!) : '';
-		const key = `trakt:${watchKey(point)}`;
+		const key = `remote:${watchKey(point)}`;
 		return {
 			key,
 			at: point.pausedAt,
@@ -169,7 +171,7 @@ export function HomeScreen() {
 			progress: point.progress / 100,
 			open: () => run(key, () => openCopy(item, pick, true)),
 			actions: [
-				{ label: 'Remove from Continue Watching', onPress: () => trakt?.forget(point) },
+				{ label: 'Remove from Continue Watching', onPress: () => trackers.forEach((tracker) => tracker.forget(point)) },
 				{ label: 'Mark watched', onPress: () => void watched.set([point], true) },
 				{ label: group.kind === 'tv' ? 'Go to show' : 'Go to film', onPress: () => goTo(group.imdbId) },
 			],
