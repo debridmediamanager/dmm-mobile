@@ -98,7 +98,8 @@ The first tab once signed in: rows of posters, like Stremio's board, of what the
 library holds. Rows with nothing in them are hidden.
 
 - **Continue Watching**: files left part way in the built-in player, latest first,
-  one per film or show. A tap resumes at once; press and hold to remove one, mark it
+  one per film or show; with Trakt connected, also what you left part way on another
+  device, when the library holds it. A tap resumes at once; press and hold to remove one, mark it
   watched or go to its page.
 - **Next Up**: for each show with a watched episode, the next episode the library
   holds that is not watched yet (after the one watched last, never a special), from
@@ -111,8 +112,8 @@ counts once the built-in player reaches 80% of it; films, episodes and whole sea
 are also marked by hand on the title page (an episode's check mark; press and hold
 it for "Mark watched up to here"). Posters show a check once watched and a bar while
 part watched (a show also says "3 of 10"), episodes the same, and season chips their
-count. **Watch state stays on this device** for now (`src/watched.ts`): it is not
-sent to DMM and does not follow you to your other devices.
+count. Without Trakt, **watch state stays on this device** (`src/watched.ts`); with
+Trakt connected it follows you (below).
 
 ## Library
 
@@ -201,6 +202,60 @@ fails unless each one makes sound; run it on every new build.
 Native reused a closed player's view for the next video, and a video left paused kept the next one
 from ever starting. `qa/player-reopen.sh <simulator .app>` pauses and closes one clip, opens another
 and fails unless the second plays; run it when the player package changes.
+
+## Trakt
+
+Settings → Trakt. Someone already signed in to Trakt on DMM web (with "Remember my
+logins and settings across devices") is signed in here too without asking; anyone
+else presses Connect and approves a code on trakt.tv (a QR code on a TV). Once
+connected, all of this is automatic, with no switch to turn on:
+
+- **Scrobbling**: the built-in player tells Trakt what plays, pauses and stops
+  (a film by its IMDb id, an episode by its show's id, season and number), so Trakt
+  shows it as watching.
+- **One threshold, 80%**: a video counts as watched from 80%, in the app and on
+  Trakt alike. Trakt marks a stop from 80% watched and refuses a pause there
+  (`422 progress_too_high`), so the app sends a pause before 80% (Trakt keeps it as
+  a resume point) and a stop from 80%.
+- **Watched history, both ways**: marks made by hand (films, episodes, whole
+  seasons) go to Trakt's history and unmarking removes them there; what other
+  devices and apps marked comes back. The app reads `/sync/last_activities` when
+  it starts and when it comes back to the foreground (at most once a minute), and
+  downloads the history only when that moved. The first time, both histories join:
+  what only this device had goes to Trakt, and nothing is removed from Trakt.
+  Films or episodes Trakt does not know stay watched on the device only.
+- **Resume from another device**: Trakt's resume points (`/sync/playback`) show
+  under Continue Watching for titles the library holds, and opening the file
+  starts there, whichever of this device's and Trakt's is newer.
+- **Offline**: whatever does not reach Trakt is kept on the device and sent later:
+  a finished video as a dated history entry, a pause as a pause. Trakt takes one
+  write a second, so writes queue.
+
+The tokens are DMM's Trakt app's, the same as DMM web's, kept in the secure store
+and in the "remembered across devices" copy under DMM web's `trakt:*` keys. DMM
+holds the app's client secret, so linking and renewing go through DMM
+(`/api/kodi/tracker/*`, as for the Kodi addon). A token lasts 7 days, and Trakt
+accepts each refresh token only once. So the app renews only in a token's last
+hour, first takes a newer login that DMM web or another device saved, and saves
+its new one across devices at once. A renewal leaves the old access token
+working, so a DMM web tab that is already open keeps its own login until it
+expires; a browser that signs in afterwards gets the renewed one. Disconnect
+forgets Trakt here and in the remembered copy, and a login disconnected here is
+not taken back from DMM web's copy (a newer sign-in is). It does not revoke the
+token, which DMM web may be using. The demo key never reaches Trakt. DMM Mobile
+uses Trakt but is not endorsed or certified by Trakt.
+
+Trakt's free accounts can do all of this: none of these endpoints is VIP-only, and
+the account limits (lists, watchlist, collection) do not touch history or
+scrobbling. Trakt allows 500 reads per 5 minutes and one write a second per user.
+
+Tested on 2026-11-12 with a Trakt test account (Pixel 6, Fire TV Cube, iPhone 15 Pro):
+DMM web's login picked up silently on the Pixel and at an iPhone sign-in;
+device-code connect on the Pixel and by QR on the Fire TV; scrobbling (watching,
+then watched at 80% with one play); a pause on the Pixel resumed at the same
+place from the iPhone's Continue Watching; a season marked, unmarked and an
+episode unwatched on Trakt, both ways on the Pixel; a renewal on the Fire TV
+written back and taken by the Pixel and a fresh DMM web browser; Disconnect.
 
 ## Search
 

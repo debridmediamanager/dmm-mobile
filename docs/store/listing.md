@@ -38,6 +38,7 @@ Sign in to Real-Debrid, AllDebrid, TorBox, Premiumize, Offcloud or Debrid-Link a
 every file you keep there shows in one fast list, even with thousands of items.
 
 • Play any video in the player you choose, with its subtitles
+• Connect Trakt: what you play is scrobbled, and watched marks and resume points follow you
 • Search your library by name, filter by service, type or state, and sort it
 • Add downloads to your service and follow their progress
 • Select, delete, reinsert and tidy up duplicates in bulk
@@ -52,7 +53,12 @@ stay in your device's secure storage.
 
 To look around first, enter dmmdemo as the API key of any service: it opens a
 sample library of open movies.
+
+DMM Mobile uses Trakt but is not endorsed or certified by Trakt.
 ```
+
+Trakt's API use policy asks for that last sentence in the store description and in
+the app (Settings → Trakt).
 
 **What's new** (1.0.0): `First release.`
 
