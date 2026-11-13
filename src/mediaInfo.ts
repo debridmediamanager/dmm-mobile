@@ -1,7 +1,7 @@
 import { filePath, formatBytes } from './core';
 import type { LibraryFile } from './model';
 import type { SyncIdentity } from './sync';
-import { LoginRefused, type Post } from './titles';
+import { LoginRefused, qualityOf, type Post } from './titles';
 import { DMM_ORIGIN } from './tvLink';
 
 /**
@@ -334,7 +334,43 @@ const duration = (seconds: number): string => {
 	return minutes >= 60 ? `${Math.floor(minutes / 60)} h ${minutes % 60} min` : `${minutes} min`;
 };
 const rate = (bits: number): string => (bits >= 1e6 ? `${(bits / 1e6).toFixed(1)} Mb/s` : `${Math.round(bits / 1e3)} kb/s`);
-const CONTAINERS: [RegExp, string][] = [[/matroska/, 'MKV'], [/mp4|mov/, 'MP4'], [/avi/, 'AVI'], [/mpegts/, 'MPEG-TS'], [/webm/, 'WebM']];
+const CONTAINERS: [RegExp, string][] = [[/matroska|^mkv$/, 'MKV'], [/mp4|mov|^m4v$/, 'MP4'], [/avi/, 'AVI'], [/mpegts|^m?ts$/, 'MPEG-TS'], [/webm/, 'WebM']];
+const containerOf = (format: string): string | undefined => CONTAINERS.find(([pattern]) => pattern.test(format))?.[1];
+
+export interface Badge {
+	label: string;
+	/** Drawn small beside it: FHD, UHD. */
+	suffix?: string;
+}
+const SIZE_NAMES: Record<string, string> = { '4K': 'UHD', '1080p': 'FHD', '720p': 'HD' };
+const SOURCES: [RegExp, string][] = [[/\bremux\b/i, 'REMUX'], [/\bweb[ ._-]?dl\b/i, 'WEB-DL'], [/\bwebrip\b/i, 'WEBRip'], [/\b(blu-?ray|bdrip)\b/i, 'BluRay']];
+
+/**
+ * The player's badges for the copy that plays: the picture, the sound, where it came from. The probe decides; the
+ * release and file names fill in what only they say (REMUX, the container, HDR on a copy with no probe). `audio` is the
+ * playing track's place among the probe's audio tracks, when the player's list lines up with it: then its codec and
+ * language show, else the copy's best track and no language.
+ */
+export function playerBadges(probe: FileProbe | undefined, name: string, fileName: string, audio?: number): Badge[] {
+	const names = `${fileName} ${name}`;
+	const video = probe?.video;
+	const resolution = video ? resolutionLabel(video) : (qualityOf(fileName, name).match(/^(4K|1080p|720p|SD)\b/)?.[0] ?? '');
+	const playing = audio === undefined ? undefined : probe?.audio[audio];
+	const track = playing ?? bestAudio(probe?.audio ?? []);
+	const languages = new Set((probe?.audio ?? []).map((t) => languageCode(t.language)).filter(Boolean));
+	const labels = [
+		dynamicRange(video, names).label,
+		(video?.bitDepth ?? 0) > 8 ? `${video?.bitDepth}-bit` : '',
+		video ? (VIDEO[video.codec] ?? video.codec.toUpperCase()) : '',
+		track ? audioCodec(track) : '',
+		track ? (channelLabel(track) ?? '') : '',
+		SOURCES.find(([pattern]) => pattern.test(names))?.[1] ?? '',
+		containerOf(probe?.container ?? '') ?? containerOf(/\.([a-z0-9]{2,4})$/i.exec(fileName)?.[1]?.toLowerCase() ?? '') ?? '',
+		languages.size > 1 ? 'MULTI' : '',
+		playing ? (languageCode(playing.language) ?? '') : '',
+	];
+	return [...(resolution ? [{ label: resolution, suffix: SIZE_NAMES[resolution] }] : []), ...labels.filter(Boolean).map((label) => ({ label }))];
+}
 const flags = (track: Track): string[] =>
 	[track.default && 'Default', track.forced && 'Forced', track.sdh && 'SDH', track.commentary && 'Commentary'].filter((value): value is string => Boolean(value));
 
@@ -346,7 +382,7 @@ export interface DetailSection {
 /** Everything the details view lists: the file, the picture, every audio and subtitle track. */
 export function copyDetails(probe: FileProbe, name: string): DetailSection[] {
 	const sections: DetailSection[] = [];
-	const container = CONTAINERS.find(([pattern]) => pattern.test(probe.container ?? ''))?.[1];
+	const container = containerOf(probe.container ?? '');
 	sections.push({
 		title: 'File',
 		rows: [

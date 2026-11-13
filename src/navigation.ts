@@ -15,8 +15,8 @@ export type RootStackParamList = {
 	List: { tracker: Tracker; id: string };
 	/** Your shows' episodes: the last 7 days and the next 30. */
 	Calendar: undefined;
-	/** The built-in player: a resolved link to one file of `item`, whose files are listed. */
-	Player: { url: string; item: LibraryItem; fileId: string; resume?: boolean };
+	/** The built-in player: a resolved link to one file of `item`, whose files are listed. `at` (ms) starts there without asking (another version of what played); `sleep` is a running sleep timer's time. */
+	Player: { url: string; item: LibraryItem; fileId: string; resume?: boolean; at?: number; sleep?: number };
 };
 
 export type MainTabParamList = {

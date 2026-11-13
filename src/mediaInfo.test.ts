@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { askProbes, channelLabel, copyDetails, copyFacts, filmProbe, languageCode, languageName, probeFor, releaseProbes, type FileProbe, type MediaInfoAnswer } from './mediaInfo';
+import { askProbes, channelLabel, copyDetails, copyFacts, filmProbe, languageCode, languageName, playerBadges, probeFor, releaseProbes, type FileProbe, type MediaInfoAnswer } from './mediaInfo';
 import type { LibraryItem } from './model';
 import { TitleIndex, type CacheStore } from './titleIndex';
 import { LoginRefused, showEpisodes, type Post } from './titles';
@@ -224,5 +224,33 @@ describe('TitleIndex probes', () => {
 		await index.loadProbes([row(JUMANJI)]);
 		expect(post).toHaveBeenCalledTimes(2);
 		expect(index.probesOf(row(JUMANJI))).toBeUndefined();
+	});
+});
+
+describe("the player's badges", () => {
+	const shown = (probe: FileProbe | undefined, name: string, fileName: string, audio?: number) => playerBadges(probe, name, fileName, audio).map((badge) => (badge.suffix ? `${badge.label} ${badge.suffix}` : badge.label));
+
+	it('read a UHD remux: Dolby Vision, 10-bit, its TrueHD Atmos 7.1, the source from the name, the container', () => {
+		const devotion = film('cd34df9a44d278f1952926c269ad91b78537da0a');
+		expect(shown(devotion, devotion.path, devotion.path)).toEqual(['4K UHD', 'DV P7 + HDR10', '10-bit', 'HEVC', 'TrueHD Atmos', '7.1', 'REMUX', 'MKV']);
+		// the playing track once the player's list lines up with the probe's: its E-AC3 and its language
+		expect(shown(devotion, devotion.path, devotion.path, 1)).toEqual(['4K UHD', 'DV P7 + HDR10', '10-bit', 'HEVC', 'DD+ Atmos', '5.1', 'REMUX', 'MKV', 'EN']);
+	});
+
+	it('say MULTI for several audio languages, and name the one playing', () => {
+		const heist = film('ed66d20f2c6c53b772d7bfe4b8171d84afd0175b');
+		expect(shown(heist, heist.path, heist.path)).toEqual(['1080p FHD', 'H264', 'DTS-HD MA', '5.1', 'REMUX', 'MKV', 'MULTI']);
+		expect(shown(heist, heist.path, heist.path, 1)).toEqual(['1080p FHD', 'H264', 'DD', '2.0', 'REMUX', 'MKV', 'MULTI', 'ES']);
+		const whisker = film('21d270b6110cdc2d8cba313a1185f48e10be9604');
+		expect(shown(whisker, whisker.path, whisker.path, 0)).toEqual(['1080p FHD', '10-bit', 'HEVC', 'Opus', '5.1', 'BluRay', 'MKV', 'MULTI', 'JA']);
+		// a track the probe does not have: the best one, no language
+		expect(shown(whisker, whisker.path, whisker.path, 7).slice(3, 5)).toEqual(['Opus', '5.1']);
+	});
+
+	it('come from the names alone for a copy with no probe', () => {
+		const name = 'Severance.S02E06.Attila.2160p.ATVP.WEB.DL.DDP5.1.Atmos.DV.H.265-Kitsune';
+		expect(shown(undefined, name, `${name}.mkv`)).toEqual(['4K UHD', 'DV', 'WEB-DL', 'MKV']);
+		// rd6893c80a7036's Sightings (no probe for some of its files): only the container
+		expect(shown(undefined, sightings.filename, sightings.files[1].path)).toEqual(['MP4']);
 	});
 });

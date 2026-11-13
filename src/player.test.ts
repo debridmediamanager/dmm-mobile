@@ -7,7 +7,7 @@ vi.mock('expo-intent-launcher', () => ({ startActivityAsync: vi.fn(async () => (
 
 import { Linking } from 'react-native';
 import * as IntentLauncher from 'expo-intent-launcher';
-import { iosPlayerUrl, loadPlayer, openFileLink, PLAYER_SCREEN, playersForPlatform, playsBuiltIn, soundUnplayable } from './player';
+import { endsAt, iosPlayerUrl, loadPlayer, openFileLink, PLAYER_SCREEN, playersForPlatform, playsBuiltIn, ratioBox, sleepLabel, soundUnplayable } from './player';
 import { _resetSettingsCache } from './settings';
 
 const TB = 'https://store-024.weur.tb-cdn.st/zip/1?token=abc&x=1';
@@ -109,5 +109,33 @@ describe('sound the built-in player cannot decode', () => {
 		expect(soundUnplayable({ audio: [disable, { id: 0, name: 'TrueHD 5.1 - [English]' }], audioIndex: 0 })).toBe(false);
 		expect(soundUnplayable({ audio: [], audioIndex: -1 })).toBe(false);
 		expect(soundUnplayable({ audio: [disable], audioIndex: -1 })).toBe(false);
+	});
+});
+
+describe('player controls', () => {
+	const NOW = Date.parse('2026-11-13T21:00:00Z');
+
+	it('ends at the time left, sooner when played faster', () => {
+		// 50 s into a 24:53 episode
+		expect(endsAt(NOW, 50_000, 1_493_000, 1) - NOW).toBe(1_443_000);
+		expect(endsAt(NOW, 50_000, 1_493_000, 1.5) - NOW).toBe(962_000);
+		expect(endsAt(NOW, 1_500_000, 1_493_000)).toBe(NOW);
+	});
+
+	it('shapes the picture to a ratio inside the screen', () => {
+		// Pixel 6 in landscape
+		expect(ratioBox(2400, 1080, '16:9')).toEqual({ left: 240, top: 0, width: 1920, height: 1080 });
+		expect(ratioBox(2400, 1080, '4:3')).toEqual({ left: 480, top: 0, width: 1440, height: 1080 });
+		// the same phone in portrait
+		expect(ratioBox(1080, 2400, '16:9')).toEqual({ left: 0, top: 896, width: 1080, height: 608 });
+	});
+
+	it('names the sleep timer', () => {
+		expect(sleepLabel(null, NOW)).toBe('Off');
+		expect(sleepLabel('end', NOW, 'tv')).toBe('End of episode');
+		expect(sleepLabel('end', NOW, 'movie')).toBe('End of film');
+		expect(sleepLabel(NOW + 15 * 60_000, NOW)).toBe('15 min left');
+		expect(sleepLabel(NOW + 14 * 60_000 + 1, NOW)).toBe('15 min left');
+		expect(sleepLabel(NOW + 5_000, NOW)).toBe('1 min left');
 	});
 });

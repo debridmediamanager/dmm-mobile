@@ -116,3 +116,33 @@ export async function openFileLink(url: string, fileName: string, player?: strin
 		throw new Error(`${label} is not installed. Choose another player in Settings.`);
 	}
 }
+
+/** When a video ends if it plays on from `time` at `rate` (ms on the device's clock). */
+export const endsAt = (now: number, time: number, duration: number, rate = 1): number => now + Math.max(0, duration - time) / rate;
+
+export const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2];
+
+/** How the picture fills the screen: libVLC's own framing, or the view itself shaped to a ratio the picture is stretched into. */
+export type Fit = 'contain' | 'cover' | 'center' | '16:9' | '4:3';
+export const FITS: { fit: Fit; label: string }[] = [
+	{ fit: 'contain', label: 'Fit' },
+	{ fit: 'cover', label: 'Fill (zoom)' },
+	// The wrapper draws 'center' at the picture's own pixels on Android only; iOS fits it like 'contain'.
+	...(Platform.OS === 'android' ? [{ fit: 'center' as const, label: 'Original size' }] : []),
+	{ fit: '16:9', label: '16:9' },
+	{ fit: '4:3', label: '4:3' },
+];
+
+/** The largest `ratio` ("16:9") box inside a screen, centred. */
+export function ratioBox(width: number, height: number, ratio: string): { left: number; top: number; width: number; height: number } {
+	const [w, h] = ratio.split(':').map(Number);
+	const box = width / height > w / h ? { width: Math.round((height * w) / h), height } : { width, height: Math.round((width * h) / w) };
+	return { ...box, left: Math.round((width - box.width) / 2), top: Math.round((height - box.height) / 2) };
+}
+
+/** The sleep timer: off, at the end of what plays, or at a time (ms). */
+export type Sleep = null | 'end' | number;
+export const SLEEP_MINUTES = [15, 30, 60];
+/** "12 min left", "End of episode", "Off". */
+export const sleepLabel = (sleep: Sleep, now: number, kind?: 'movie' | 'tv'): string =>
+	sleep === null ? 'Off' : sleep === 'end' ? `End of ${kind === 'tv' ? 'episode' : kind === 'movie' ? 'film' : 'video'}` : `${Math.max(1, Math.ceil((sleep - now) / 60_000))} min left`;

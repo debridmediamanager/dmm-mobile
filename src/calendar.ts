@@ -112,6 +112,26 @@ export function heldCopies(show: ShowEpisodes, season: number, episode: number):
 	return [...(show.seasons.get(season) ?? [])].flatMap(([first, copies]) => copies.filter((copy) => first === episode || (first < episode && (copy.ref?.end ?? first) >= episode)));
 }
 
+/** The player's other versions of the episode that plays: the other copies of the same span, since a double episode's clock does not line up with one of its halves. */
+export const otherCopies = (show: ShowEpisodes, current: EpisodeCopy): EpisodeCopy[] =>
+	(current.ref ? (show.seasons.get(current.ref.season)?.get(current.ref.episode) ?? []) : []).filter((copy) => copy.ref?.end === current.ref?.end && (copy.item.id !== current.item.id || copy.file.id !== current.file.id));
+
+/** Trakt's /shows/{id}/seasons?extended=episodes: every episode's title, keyed "season:episode". */
+export const episodeTitles = (seasons: readonly any[]): Map<string, string> =>
+	new Map(seasons.flatMap((season) => (Array.isArray(season?.episodes) ? season.episodes : [])).filter((ep: any) => Number.isInteger(ep?.season) && Number.isInteger(ep?.number) && typeof ep?.title === 'string' && ep.title).map((ep: any) => [`${ep.season}:${ep.number}`, ep.title as string]));
+
+const titleReads = new Map<string, Promise<Map<string, string>>>();
+/** A show's episode titles from Trakt's public list (no login), read once a session; a failed read is tried again next time. */
+export function readEpisodeTitles(imdbId: string, get: GetJson = getJson): Promise<Map<string, string>> {
+	let read = titleReads.get(imdbId);
+	if (!read) {
+		read = get(`${TRAKT_API}/shows/${imdbId}/seasons?extended=episodes`, TRAKT_PUBLIC).then((rows) => episodeTitles(Array.isArray(rows) ? rows : []));
+		read.catch(() => titleReads.delete(imdbId));
+		titleReads.set(imdbId, read);
+	}
+	return read;
+}
+
 /** Your shows: the library's, and Simkl's watching and plan to watch (Trakt's calendar already covers Trakt's). */
 export function yourShows(library: Iterable<{ imdbId: string; title: string; kind: 'movie' | 'tv' }>, trackers: readonly { tracker: { api: { id: Tracker } }; lists: readonly TrackerList[] }[]): CalendarShow[] {
 	const shows = new Map<string, CalendarShow>();

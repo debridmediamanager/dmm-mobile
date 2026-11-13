@@ -4,10 +4,13 @@ vi.mock('react-native', () => ({ Platform: { OS: 'android' } }));
 vi.mock('expo-secure-store', () => ({ getItemAsync: vi.fn(async () => null), setItemAsync: vi.fn(), deleteItemAsync: vi.fn() }));
 vi.mock('expo-file-system', () => ({ File: class {}, Paths: {} }));
 
-import { alertDiff, alertsFor, ALERT_LIMIT, airTime, byDay, calendarOf, CalendarStore, dayLabel, dayStart, fromShowInfo, fromTraktCalendar, fromTraktSeason, heldCopies, yourShows, type CalendarEpisode, type GetJson } from './calendar';
+import { alertDiff, alertsFor, ALERT_LIMIT, airTime, byDay, calendarOf, CalendarStore, dayLabel, dayStart, fromShowInfo, fromTraktCalendar, episodeTitles, fromTraktSeason, heldCopies, otherCopies, readEpisodeTitles, yourShows, type CalendarEpisode, type GetJson } from './calendar';
 import type { TrackerList } from './lists';
 import type { LibraryItem } from './model';
-import { showEpisodes } from './titles';
+import { findEpisode, showEpisodes } from './titles';
+import sightingsFiles from './test/fixtures/rd-show-files-sightings-2026-11-12.json';
+// Trakt's /shows/tt0103549/seasons?extended=episodes, 2026-11-13; ids dropped
+import sightingsTitles from './test/fixtures/trakt-seasons-episodes-sightings-2026-11-13.json';
 import traktCalendar from './test/fixtures/trakt-calendar-my-shows-2026-11-12.json';
 import jojoSeason from './test/fixtures/trakt-season-jojo-s06-2026-11-12.json';
 import abbottSeason from './test/fixtures/trakt-season-abbott-elementary-s06-2026-11-12.json';
@@ -292,5 +295,40 @@ describe('the store', () => {
 		await store.refresh([ABBOTT], null);
 		expect(store.error).toMatch(/Could not reach DMM/);
 		expect(store.episodes([ABBOTT], false)).toEqual(before);
+	});
+});
+
+describe("the player's episode facts", () => {
+	it("names episodes from Trakt's season list, specials included", async () => {
+		const titles = episodeTitles(sightingsTitles);
+		expect(titles.get('1:2')).toBe('Psychic Healing');
+		expect(titles.get('0:1')).toBe('The UFO Report VHS Release');
+		expect(titles.size).toBe(113);
+		expect(episodeTitles([{ number: 1 }, null, { episodes: [{ season: 1, number: 3, title: '' }] }]).size).toBe(0);
+		const get = vi.fn<GetJson>(async () => sightingsTitles);
+		await readEpisodeTitles('tt0103549', get);
+		expect((await readEpisodeTitles('tt0103549', get)).get('5:20')).toBeTruthy();
+		expect(get).toHaveBeenCalledTimes(1);
+		expect(get.mock.calls[0][0]).toBe('https://api.trakt.tv/shows/tt0103549/seasons?extended=episodes');
+	});
+
+	it('a read that failed is tried again', async () => {
+		const get = vi.fn<GetJson>().mockRejectedValueOnce(new Error('503')).mockResolvedValueOnce(sightingsTitles);
+		await expect(readEpisodeTitles('tt-failing', get)).rejects.toThrow('503');
+		expect((await readEpisodeTitles('tt-failing', get)).size).toBe(113);
+	});
+
+	// rd6893c80a7036's Sightings (2026-11-12) on Real-Debrid and the same release on TorBox: "1x06-07" holds episode 7, beside its own "1x07".
+	it('offers the other copies of the episode that plays, never a double episode for one of its halves', () => {
+		const files = sightingsFiles.files.map((file) => ({ id: String(file.id), name: file.path, size: file.bytes, selected: file.selected === 1 }));
+		const rd = { id: 'rd:QP76YYG2XC6P2', provider: 'rd', title: sightingsFiles.filename, filename: sightingsFiles.filename, hash: sightingsFiles.hash, size: 1, progress: 100, status: 'finished', serviceStatus: 'downloaded', added: '2026-11-12T00:00:00Z', files } as LibraryItem;
+		const tb = { ...rd, id: 'tb:42', provider: 'tb' } as LibraryItem;
+		const show = showEpisodes([{ item: rd, files }, { item: tb, files }]);
+		const fileId = (part: string) => files.find((file) => file.name.includes(part))!.id;
+		const versions = (itemId: string, part: string) => otherCopies(show, findEpisode(show, itemId, fileId(part))!).map((copy) => `${copy.item.id} ${copy.file.name.split(' - ')[1]}`);
+		expect(versions(rd.id, '1x02')).toEqual(['tb:42 1x02']);
+		expect(versions(rd.id, '1x07 - ')).toEqual(['tb:42 1x07']);
+		expect(versions(rd.id, '1x06-07')).toEqual(['tb:42 1x06-07']);
+		expect(otherCopies(showEpisodes([{ item: rd, files }]), findEpisode(show, rd.id, fileId('1x02'))!)).toEqual([]);
 	});
 });

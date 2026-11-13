@@ -130,6 +130,9 @@ export function posterUrls(imdbId: string): string[] {
 	return [`https://posters${Math.abs(hash) % 10}.debridmediamanager.com/${imdbId}-small.jpg`, `https://images.metahub.space/poster/small/${imdbId}/img`];
 }
 
+/** A title's logo (its name drawn as artwork) from metahub, the poster's mirror; films and shows, a 404 for one it lacks. */
+export const logoUrl = (imdbId: string): string => `https://images.metahub.space/logo/medium/${imdbId}/img`;
+
 /** TMDB's originals are several megabytes; the page shows a phone-sized copy. */
 export const smallerTmdb = (url: string | undefined, size: string): string | undefined => url?.replace('/t/p/original/', `/t/p/${size}/`);
 
