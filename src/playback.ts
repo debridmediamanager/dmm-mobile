@@ -1,4 +1,5 @@
 import { File, Paths } from 'expo-file-system';
+import { Platform } from 'react-native';
 import { filePath } from './core';
 import type { LibraryFile, LibraryItem } from './model';
 import type { CacheStore } from './titleIndex';
@@ -50,14 +51,21 @@ const MAX_ENTRIES = 1000;
 export const playbackKey = (item: Pick<LibraryItem, 'provider' | 'hash' | 'filename'>, file: Pick<LibraryFile, 'name' | 'path'>): string =>
 	`${item.provider}:${item.hash.toLowerCase() || item.filename}:${filePath(file.name, file.path)}`;
 
-/** A JSON file the OS keeps (documents, not caches). */
+/**
+ * Where the app keeps its own files: documents, which the OS never clears. tvOS gives an app no documents to write
+ * (a real Apple TV refused every save there, so resume points and watched marks lasted until the app quit; its
+ * simulator allows it), only caches, which it clears only when short of space.
+ */
+export const keptFiles = () => (Platform.OS === 'ios' && Platform.isTV ? Paths.cache : Paths.document);
+
+/** A JSON file the OS keeps. */
 export const documentStore = (name: string): CacheStore => ({
 	read: async () => {
-		const file = new File(Paths.document, name);
+		const file = new File(keptFiles(), name);
 		return file.exists ? file.text() : null;
 	},
 	write: async (text) => {
-		const file = new File(Paths.document, name);
+		const file = new File(keptFiles(), name);
 		if (!file.exists) file.create();
 		await file.write(text);
 	},

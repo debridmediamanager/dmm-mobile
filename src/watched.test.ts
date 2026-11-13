@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('expo-file-system', () => ({ File: class {}, Paths: {} }));
+vi.mock('react-native', () => ({ Platform: { OS: 'android' } }));
 
 import { filePath } from './core';
 import type { LibraryFile, LibraryItem } from './model';

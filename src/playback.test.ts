@@ -1,8 +1,37 @@
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('expo-file-system', () => ({ File: class {}, Paths: {} }));
+// The device's file system as a real Apple TV keeps it: an app writes to caches, and documents refuses every save
+// (seen 2026-11-13 on Apple TV 4K, tvOS 26.6: Documents stayed empty after three videos played; titles-v1.json in Caches).
+const device = vi.hoisted(() => ({ os: 'ios', tv: false, disk: new Map<string, string>() }));
+vi.mock('react-native', () => ({ Platform: { get OS() { return device.os; }, get isTV() { return device.tv; } } }));
+vi.mock('expo-file-system', () => ({
+	Paths: { document: 'Documents', cache: 'Library/Caches' },
+	File: class {
+		private readonly path: string;
+		constructor(dir: string, name: string) {
+			this.path = `${dir}/${name}`;
+		}
+		get exists() {
+			return device.disk.has(this.path);
+		}
+		private writable() {
+			if (device.os === 'ios' && device.tv && this.path.startsWith('Documents/')) throw new Error(`You don't have permission to save the file in the folder Documents.`);
+		}
+		create() {
+			this.writable();
+			device.disk.set(this.path, '');
+		}
+		async write(text: string) {
+			this.writable();
+			device.disk.set(this.path, text);
+		}
+		async text() {
+			return device.disk.get(this.path) ?? '';
+		}
+	},
+}));
 
-import { PlaybackStore, playbackKey, type PlaybackEvent } from './playback';
+import { documentStore, PlaybackStore, playbackKey, type PlaybackEvent } from './playback';
 import sightings from './test/fixtures/rd-show-files-sightings-2026-11-12.json';
 
 const memory = () => {
@@ -23,6 +52,21 @@ describe('playbackKey', () => {
 
 	it('uses the release name when the provider gives no hash', () => {
 		expect(playbackKey({ provider: 'pm', hash: '', filename: 'Sightings' }, { name: 'a.mp4', path: '/Season 1/' })).toBe('pm:Sightings:Season 1/a.mp4');
+	});
+});
+
+describe('documentStore', () => {
+	it.each([
+		['an Apple TV', 'ios', true, 'Library/Caches/playback-v1.json'],
+		['an iPhone', 'ios', false, 'Documents/playback-v1.json'],
+		['an Android TV', 'android', true, 'Documents/playback-v1.json'],
+	])('keeps where a video was left after the app quits on %s', async (_, os, tv, path) => {
+		Object.assign(device, { os, tv, disk: new Map() });
+		await new PlaybackStore(documentStore('playback-v1.json')).record('k', 20 * MIN, 45 * MIN, meta);
+		const restarted = new PlaybackStore(documentStore('playback-v1.json'));
+		await restarted.load();
+		expect(restarted.resumeAt('k')).toBe(20 * MIN);
+		expect([...device.disk.keys()]).toEqual([path]);
 	});
 });
 
