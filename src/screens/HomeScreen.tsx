@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
-import { Alert, FlatList, Platform, RefreshControl, ScrollView, Text, View, type ScrollViewInstance } from 'react-native';
+import { Alert, FlatList, Platform, RefreshControl, ScrollView, Text, TVFocusGuideView, View, type ScrollViewInstance } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useApp } from '../AppContext';
@@ -283,7 +283,9 @@ export function HomeScreen() {
 
 	return (
 		<Screen>
-			<View style={[styles.row, { paddingHorizontal: 12, paddingTop: 6 }]}>
+			{/* A focus guide as wide as the page: Apple TV's remote moves Up only into what lies straight above, and the
+			    buttons sit at the right edge, above no poster in a short first row. */}
+			<TVFocusGuideView autoFocus style={[styles.row, { paddingHorizontal: 12, paddingTop: 6 }]}>
 				<View style={{ flex: 1 }}>
 					<Text style={{ color: theme.text, fontSize: 20, fontWeight: '700' }}>Home</Text>
 					<Text numberOfLines={2} style={{ color: titles.progress ? theme.accent : theme.muted, fontSize: 12 }}>
@@ -293,7 +295,7 @@ export function HomeScreen() {
 				<IconButton icon="calendar-month" label="Calendar" color={theme.accent} onPress={() => navigation.navigate('Calendar')} />
 				{/* Trakt's and Simkl's lists, while either is connected. */}
 				{trackerLists.length ? <IconButton icon="format-list-bulleted" label="Lists" color={theme.accent} onPress={() => navigation.navigate('Lists')} /> : null}
-			</View>
+			</TVFocusGuideView>
 			{startupError ? <ErrorBanner message={`Secure account storage: ${startupError}`} actionLabel="Retry secure account load" onAction={() => void retryStartup()} busy={!ready} /> : null}
 			{snapshot.failures.length > 0 ? <ErrorBanner message={snapshot.failures.map((failure) => `${PROVIDER_META[failure.provider].label}: ${failure.message}`).join('\n')} actionLabel="Retry library" onAction={() => void refreshAll()} busy={refreshing} /> : null}
 			{!ready ? (
