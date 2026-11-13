@@ -1,5 +1,5 @@
-import { Fragment, useEffect, useRef, useState, useSyncExternalStore } from 'react';
-import { ActivityIndicator, Alert, AppState, Linking, Platform, ScrollView, Switch, Text, View } from 'react-native';
+import { Fragment, useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { ActivityIndicator, Alert, AppState, Linking, Platform, ScrollView, Switch, Text, View, type ScrollViewInstance } from 'react-native';
 import * as Updates from 'expo-updates';
 import { useApp } from '../AppContext';
 import { alertsAllowed, alertsOn, alertsSupported, setAlerts } from '../alerts';
@@ -30,13 +30,15 @@ interface RowAccount<Login> {
  * A tracker: who is signed in, or a device code to link one (a QR on a TV, the approve page opened on a phone).
  * DMM web's Trakt login is picked up by itself, so most people never press Connect there.
  */
-function TrackerRow<Login>({ tracker, account, start, poll, signedOut, footer }: {
+function TrackerRow<Login>({ tracker, account, start, poll, signedOut, footer, reveal }: {
 	tracker: TrackerSync<any>;
 	account: RowAccount<Login>;
 	start(): Promise<TrackerLink>;
 	poll(deviceCode: string): Promise<'pending' | 'slow_down' | 'expired' | Login>;
 	signedOut: string;
 	footer: React.ReactNode;
+	/** Scrolls the page to this card's top (y in the page). */
+	reveal(y: number): void;
 }) {
 	const theme = useAppTheme();
 	const { name } = tracker.api;
@@ -46,6 +48,9 @@ function TrackerRow<Login>({ tracker, account, start, poll, signedOut, footer }:
 	const [error, setError] = useState('');
 	const waiting = useRef<{ cancelled: boolean } | null>(null);
 	useEffect(() => () => void (waiting.current && (waiting.current.cancelled = true)), []);
+	// A TV's QR sits under the focused Cancel, below the screen's edge for both cards; nothing there can take focus to scroll to it.
+	const top = useRef(0);
+	useEffect(() => void (Platform.isTV && link && reveal(top.current)), [link, reveal]);
 	const cancel = () => {
 		if (waiting.current) waiting.current.cancelled = true;
 		waiting.current = null;
@@ -91,7 +96,7 @@ function TrackerRow<Login>({ tracker, account, start, poll, signedOut, footer }:
 		</Pressable>
 	);
 	return (
-		<View style={[styles.accountCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+		<View onLayout={(event) => (top.current = event.nativeEvent.layout.y)} style={[styles.accountCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
 			<View style={styles.rowBetween}>
 				<Text style={[styles.accountTitle, { color: theme.text, flex: 1 }]}>{name}</Text>
 				{/* One button that changes in place (Connect, Cancel, Disconnect): the TV remote's focus stays on it. A button
@@ -209,9 +214,12 @@ export function SettingsScreen() {
 		</View>
 	);
 
+	const scroller = useRef<ScrollViewInstance>(null);
+	const reveal = useCallback((y: number) => scroller.current?.scrollTo({ y: Math.max(0, y - 12) }), []);
+
 	return (
 		<Screen>
-			<ScrollView contentContainerStyle={[styles.content, wide && styles.contentWide]}>
+			<ScrollView ref={scroller} contentContainerStyle={[styles.content, wide && styles.contentWide]}>
 				<Text style={[styles.heading, { color: theme.text }]}>Settings</Text>
 				{row('Open videos with', `Built-in plays videos in the app. A player app chosen here is used on DMM web too.${Platform.isTV ? '' : ' Subtitle and other files open in the browser.'}`, <DropdownChip label={player.label} active={player.id !== players[0].id} onPress={() => setPicking('player')} />)}
 				{row('Add to', 'The provider the Add screen and magnet links from other apps start on.', <DropdownChip label={addProvider ? PROVIDER_META[addProvider].label : 'First connected'} active={Boolean(addProvider)} onPress={() => setPicking('addProvider')} />)}
@@ -224,6 +232,7 @@ export function SettingsScreen() {
 						poll={pollTraktLink}
 						signedOut="Scrobble what you play and keep watched marks and resume points in step with Trakt and your other devices. A Trakt login made on DMM web is used by itself."
 						footer={<Text style={[styles.detailMeta, { color: theme.muted, marginTop: 0 }]}>DMM Mobile uses Trakt but is not endorsed or certified by Trakt.</Text>}
+						reveal={reveal}
 					/>
 				) : null}
 				{simkl && trackersAvailable ? (
@@ -233,6 +242,7 @@ export function SettingsScreen() {
 						start={startSimklLink}
 						poll={pollSimklLink}
 						signedOut="Scrobble what you play and keep watched marks and resume points in step with Simkl and your other devices. Each device connects to Simkl on its own."
+						reveal={reveal}
 						// Simkl's API rules: name Simkl where its data shows and link to it.
 						footer={
 							Platform.isTV ? (
