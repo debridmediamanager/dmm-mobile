@@ -180,12 +180,27 @@ in the link itself.
 libVLC 3 (through `@lunarr/vlc-player`), so the files debrid services hold play as
 they are: MKV and MP4, H.264 and HEVC (10-bit too; HDR plays but shows as SDR),
 AC3, E-AC3 (Atmos too), DTS (DTS-HD MA and DTS:X too), TrueHD (Atmos too), FLAC,
-Opus and PCM audio, and SRT, ASS and PGS subtitles. Full screen and landscape, with
-play/pause, a seek bar, 10-second skips, and pickers for the audio track and for
-subtitles, which list the tracks inside the video and then subtitle files of the
-same release. On a TV the remote's play/pause and skip keys work, left and right
-skip 10 seconds while the controls are hidden, and Select shows them.
+Opus and PCM audio, and SRT, ASS and PGS subtitles. Full screen and landscape
+(the rotate button turns a phone to portrait and back).
 
+- **Controls**: play/pause and 10-second skips in the middle, the seek bar, and
+  above it the title's logo (metahub; its name when there is none), the episode
+  ("S1 E2 • title", titles from Trakt's public season list) or the film's year,
+  badges for the copy that plays (resolution, HDR or Dolby Vision, bit depth,
+  codecs, channels, REMUX/WEB-DL, container, MULTI and the language playing, from
+  DMM's stored ffprobe data and the release name) and when it ends at the current
+  speed. The toolbar: next episode, subtitles and audio (the tracks inside the
+  video, then subtitle files of the same release), speed (0.5x to 2x), episodes,
+  and behind › picture size (fit, fill, original on Android, 16:9, 4:3), other
+  versions (another copy of the same film or episode, from where this one is),
+  a sleep timer (end of the episode or film, 15, 30 or 60 minutes; it carries on
+  into the next episode) and audio and subtitle delay. Tablets and TVs show the
+  whole toolbar at once.
+- **Lock**: hides everything but one unlock button; touches neither seek nor pause.
+- **TV**: the remote moves from the middle buttons down to the seek bar (left and
+  right skip there) and the toolbar; play/pause and skip keys work, left and
+  right skip 10 seconds while the controls are hidden, and Select shows them. No
+  rotate or lock on a TV.
 - **Resume**: where each file was left is kept on the device (provider, release
   hash and file path), saved every 5 seconds and on leaving; opening it again
   offers to resume or start over. From 80% a file counts as watched and starts
