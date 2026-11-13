@@ -422,22 +422,25 @@ Settings (Infuse, VLC and the rest of DMM web's list).
 
 ## Screenshots
 
-Release builds, full resolution (click one to open it). The libraries show Blender
-open movies (CC BY) from a screenshot fixture of the real screens; search results
-are DMM's live search; the two sign-in screens are the app as it ships.
+Release builds (click one to open it). The libraries show Blender open movies
+(CC BY) from a screenshot fixture of the real screens; the two sign-in screens are
+the app as it ships. There is no Search shot: its results are DMM's live search,
+with commercial posters.
 
 ### Phones
 
 Pixel 6 (Android 16) and iPhone 17 Pro simulator (iOS 26.5).
 
 <p>
-<a href="docs/screenshots/android-phone-library.png"><img src="docs/screenshots/android-phone-library.png" width="200" alt="Library on an Android phone: one dense list across six providers with a download in progress"></a>
-<a href="docs/screenshots/android-phone-search.png"><img src="docs/screenshots/android-phone-search.png" width="200" alt="Search on an Android phone: movie and show matches with posters, then anime"></a>
-<a href="docs/screenshots/android-phone-detail.png"><img src="docs/screenshots/android-phone-detail.png" width="200" alt="Tears of Steel detail with its files and subtitles"></a>
-<a href="docs/screenshots/android-phone-menu.png"><img src="docs/screenshots/android-phone-menu.png" width="200" alt="A row's menu: details, select, share, delete"></a>
-<a href="docs/screenshots/iphone-library.png"><img src="docs/screenshots/iphone-library.png" width="200" alt="Library on an iPhone"></a>
-<a href="docs/screenshots/iphone-search.png"><img src="docs/screenshots/iphone-search.png" width="200" alt="Search on an iPhone"></a>
+<a href="docs/screenshots/android-phone-home.png"><img src="docs/screenshots/android-phone-home.png" width="200" alt="Home on an Android phone: Continue Watching with how much is left of each film, then Recently Added"></a>
+<a href="docs/screenshots/android-phone-library.png"><img src="docs/screenshots/android-phone-library.png" width="200" alt="Library on an Android phone: the films as posters, with how many copies of each"></a>
+<a href="docs/screenshots/android-phone-title.png"><img src="docs/screenshots/android-phone-title.png" width="200" alt="Tears of Steel's page: backdrop, plot, a 4K and a 1080p copy to open, and their releases"></a>
+<a href="docs/screenshots/iphone-title.png"><img src="docs/screenshots/iphone-title.png" width="200" alt="Sintel's page on an iPhone"></a>
 <a href="docs/screenshots/iphone-sign-in.png"><img src="docs/screenshots/iphone-sign-in.png" width="200" alt="Sign-in on an iPhone, one card per provider"></a>
+</p>
+
+<p>
+<a href="docs/screenshots/android-phone-player.png"><img src="docs/screenshots/android-phone-player.png" width="440" alt="The built-in player on an Android phone, playing Sintel"></a>
 </p>
 
 ### Tablets
@@ -446,25 +449,24 @@ Pixel 6 set to a 10-inch tablet's screen (2560×1600) and iPad Pro 13-inch simul
 The tabs become a rail on the left.
 
 <p>
-<a href="docs/screenshots/android-tablet-library.png"><img src="docs/screenshots/android-tablet-library.png" width="560" alt="Library on an Android tablet in landscape with the tab rail"></a>
-<a href="docs/screenshots/android-tablet-search.png"><img src="docs/screenshots/android-tablet-search.png" width="560" alt="Search on an Android tablet"></a>
-<a href="docs/screenshots/ipad-library.png"><img src="docs/screenshots/ipad-library.png" width="300" alt="Library on an iPad"></a>
-<a href="docs/screenshots/ipad-search.png"><img src="docs/screenshots/ipad-search.png" width="300" alt="Search on an iPad"></a>
+<a href="docs/screenshots/android-tablet-home.png"><img src="docs/screenshots/android-tablet-home.png" width="560" alt="Home on an Android tablet in landscape, with the tab rail"></a>
+<a href="docs/screenshots/ipad-library.png"><img src="docs/screenshots/ipad-library.png" width="300" alt="Library on an iPad: the films as posters"></a>
 </p>
 
 ### TVs
 
-Fire TV Cube (Fire OS 7, 1080p) and Apple TV 4K simulator (tvOS 26.5, 4K). The
-focused control is outlined; a TV signs in by scanning a QR code with a phone.
+Fire TV Cube (Fire OS 7, 1080p) and Apple TV 4K simulator (tvOS 26.5, saved at
+1080p). The focused control is outlined; a TV signs in by scanning a QR code with a phone.
 TVs have no Search tab, since a TV has no browser to open results in.
 
 <p>
 <a href="docs/screenshots/firetv-sign-in.png"><img src="docs/screenshots/firetv-sign-in.png" width="440" alt="TV sign-in: a QR code and a short code to approve on debridmediamanager.com/tv"></a>
-<a href="docs/screenshots/firetv-library.png"><img src="docs/screenshots/firetv-library.png" width="440" alt="Library on a Fire TV with a row focused by the remote"></a>
-<a href="docs/screenshots/firetv-detail.png"><img src="docs/screenshots/firetv-detail.png" width="440" alt="Detail on a Fire TV"></a>
-<a href="docs/screenshots/appletv-library.png"><img src="docs/screenshots/appletv-library.png" width="440" alt="Library on an Apple TV in 4K"></a>
-<a href="docs/screenshots/appletv-menu.png"><img src="docs/screenshots/appletv-menu.png" width="440" alt="A row's menu on an Apple TV, opened with the remote"></a>
-<a href="docs/screenshots/appletv-select.png"><img src="docs/screenshots/appletv-select.png" width="440" alt="Selecting rows on an Apple TV for a bulk action"></a>
+<a href="docs/screenshots/firetv-home.png"><img src="docs/screenshots/firetv-home.png" width="440" alt="Home on a Fire TV, a Continue Watching poster focused by the remote"></a>
+<a href="docs/screenshots/firetv-library.png"><img src="docs/screenshots/firetv-library.png" width="440" alt="Library on a Fire TV with the rail focused: the Library tab's name shows beside it"></a>
+<a href="docs/screenshots/firetv-title.png"><img src="docs/screenshots/firetv-title.png" width="440" alt="Sintel's page on a Fire TV, the first copy's Open focused"></a>
+<a href="docs/screenshots/appletv-home.png"><img src="docs/screenshots/appletv-home.png" width="440" alt="Home on an Apple TV with the rail focused: the Home tab's name shows beside it"></a>
+<a href="docs/screenshots/appletv-library.png"><img src="docs/screenshots/appletv-library.png" width="440" alt="Library on an Apple TV, a poster focused by the remote"></a>
+<a href="docs/screenshots/appletv-title.png"><img src="docs/screenshots/appletv-title.png" width="440" alt="Sprite Fright's page on an Apple TV, Mark watched focused above its two copies"></a>
 </p>
 
 ### Tested on the device (2026-11-09)
