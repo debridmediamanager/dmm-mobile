@@ -725,6 +725,8 @@ export function PlayerScreen({ route, navigation }: Props) {
 						soundCheck.current = 'no';
 						setBuffering(true);
 						setStart(position.current.time);
+						// A new player starts at normal speed: the wrapper may set a rate before its player exists.
+						setRate(1);
 						setAttempt((n) => n + 1);
 					}, true)}
 					{otherApps.length ? textButton('Open in another app', () => setSheet('apps')) : null}
