@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
-import { ActivityIndicator, Alert, Image, Linking, Platform, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, Linking, Platform, ScrollView, Text, TVFocusGuideView, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useApp } from '../AppContext';
 import { dmmPageUrl } from '../search';
@@ -98,6 +98,7 @@ export function TitleScreen({ route, navigation }: Props) {
 		});
 	};
 	const filmWatched = watched.watchedAt({ imdbId }) !== undefined;
+	const filmButton = <WatchButton preferred watched={filmWatched} label={filmWatched ? 'Watched' : 'Mark watched'} onPress={() => void watched.set([{ imdbId }], !filmWatched)} />;
 
 	const open = async (key: string, item: LibraryItem, pick: (files: LibraryFile[]) => LibraryFile | undefined) => {
 		setOpening(key);
@@ -150,7 +151,7 @@ export function TitleScreen({ route, navigation }: Props) {
 							<Text style={[styles.detailMeta, { color: theme.muted }]}>
 								{[named?.year ?? info?.year ?? route.params.year, kind === 'tv' ? 'Show' : 'Film', held ? `${copies.length} ${copies.length === 1 ? 'copy' : 'copies'}` : 'Not in your library'].filter(Boolean).join(' · ')}
 							</Text>
-							{held && kind === 'movie' ? <View style={{ marginTop: 8, alignSelf: 'flex-start' }}><WatchButton watched={filmWatched} label={filmWatched ? 'Watched' : 'Mark watched'} onPress={() => void watched.set([{ imdbId }], !filmWatched)} /></View> : null}
+							{held && kind === 'movie' && !Platform.isTV ? <View style={{ marginTop: 8, alignSelf: 'flex-start' }}>{filmButton}</View> : null}
 						</View>
 						{/* A TV's remote cannot scroll a page with nothing to focus: the code sits beside the poster, in view. */}
 						{!held && Platform.isTV ? <OnDmm imdbId={imdbId} kind={kind} /> : null}
@@ -167,7 +168,12 @@ export function TitleScreen({ route, navigation }: Props) {
 						Platform.isTV ? null : <OnDmm imdbId={imdbId} kind={kind} />
 					) : kind === 'movie' ? (
 						<View style={styles.detailSection}>
-							<Text style={[styles.accountTitle, { color: theme.text, marginBottom: 4 }]}>Your copies</Text>
+							{/* On a TV the watched mark sits above the Open buttons, as a show's does above its episodes: the remote moves
+							    only straight down, and from beside the poster Down skipped Open for the full-width Releases. */}
+							<View style={[styles.rowBetween, { marginBottom: 4 }]}>
+								<Text style={[styles.accountTitle, { color: theme.text }]}>Your copies</Text>
+								{Platform.isTV ? filmButton : null}
+							</View>
 							{[...copies].sort((a, b) => b.size - a.size).map((item) => (
 								<View key={item.id} style={[styles.fileRow, { borderBottomColor: theme.border }]}>
 									{copyLine(item, qualityOf(item.filename), item.size)}
@@ -177,7 +183,9 @@ export function TitleScreen({ route, navigation }: Props) {
 						</View>
 					) : (
 						<View style={styles.detailSection}>
-							<View style={styles.rowBetween}>
+							{/* Apple TV moves focus only into what lies straight below or above: the right-hand buttons, the left-hand season row
+							    and the episodes each sit in a page-wide focus guide, so Up and Down reach them all. */}
+							<TVFocusGuideView autoFocus style={styles.rowBetween}>
 								<Text style={[styles.accountTitle, { color: theme.text }]}>Episodes</Text>
 								{reading ? <View style={styles.row}><ActivityIndicator color={theme.accent} /><Text style={{ color: theme.muted, fontSize: 12 }}>{reading}</Text></View> : null}
 								{typeof shownSeason === 'number' && !reading
@@ -185,47 +193,52 @@ export function TitleScreen({ route, navigation }: Props) {
 											const { rows, seen } = seasonState(shownSeason);
 											const all = rows.length > 0 && seen === rows.length;
 											const name = shownSeason === 0 ? 'specials' : 'season';
-											return <WatchButton watched={all} label={all ? `Mark ${name} unwatched` : `Mark ${name} watched`} onPress={() => markSeason(shownSeason, !all)} />;
+											// Apple TV focuses nothing on its own below the fold (a long plot pushes this there), and with nothing focused the remote cannot scroll.
+											return <WatchButton preferred watched={all} label={all ? `Mark ${name} unwatched` : `Mark ${name} watched`} onPress={() => markSeason(shownSeason, !all)} />;
 										})()
 									: null}
-							</View>
+							</TVFocusGuideView>
 							{/* One row however many seasons: South Park's 25 filled a phone's screen. */}
-							<ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 10, marginHorizontal: -16 }} contentContainerStyle={{ gap: 8, paddingHorizontal: 16 }}>
-								{seasons.map((number) => {
-									const { rows, seen } = seasonState(number);
-									return <FilterButton key={number} label={`${number === 0 ? 'Specials' : `Season ${number}`}${seen && seen < rows.length ? ` · ${seen}/${rows.length}` : ''}`} icon={seen && seen === rows.length ? 'check' : undefined} active={shownSeason === number} onPress={() => setSeason(number)} />;
-								})}
-								{episodes?.unplaced.length ? <FilterButton label={`Not placed (${episodes.unplaced.length})`} active={shownSeason === 'unplaced'} onPress={() => setSeason('unplaced')} /> : null}
-							</ScrollView>
-							{shownSeason === 'unplaced'
-								? episodes?.unplaced.map((copy) => (
-										<View key={`${copy.item.id}/${copy.file.id}`} style={[{ paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: theme.border }]}>
-											<Text numberOfLines={2} style={{ color: theme.text, fontSize: 13.5 }}>{copy.label}</Text>
-											{episodeCopy(copy, copy.label)}
-										</View>
-									))
-								: (shownSeason === null || !episodes ? [] : seasonRows(episodes, shownSeason)).map((row) => {
-										const { episode: number, end, copies: list } = row;
-										const label = `${shownSeason === 0 ? 'Special' : 'Episode'} ${number}${end > number ? `–${end}` : ''}`;
-										const seen = isWatched(row);
-										const progress = progressOf(playing.get(watchKey({ imdbId, season: row.season, episode: number })), watched.watchedAt({ imdbId, season: row.season, episode: number }));
-										return (
-											<View key={number} style={{ paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: theme.border }}>
-												<View style={styles.row}>
-													<View style={{ flex: 1 }}>
-														<Text style={{ color: theme.text, fontSize: 15, fontWeight: '700' }}>{label}</Text>
-														<Text numberOfLines={1} style={{ color: theme.muted, fontSize: 12 }}>{fileBase(list[0].file.name)}</Text>
-													</View>
-													{/* A tap marks it, a long press offers "up to here". */}
-													<Pressable accessibilityRole="checkbox" accessibilityState={{ checked: seen }} accessibilityLabel={`${label} watched`} accessibilityHint="Long press for more" onPress={() => void watched.set(rowRefs(imdbId, row), !seen)} onLongPress={() => episodeMenu(row, label)} hitSlop={6} style={{ width: 44, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' }}>
-														<Icon name={seen ? 'check-circle' : 'check-circle-outline'} size={26} color={seen ? theme.accent : theme.muted} />
-													</Pressable>
-												</View>
-												{progress ? <View style={{ height: 3, borderRadius: 2, marginTop: 6, backgroundColor: theme.border }}><View style={{ height: 3, borderRadius: 2, width: `${Math.round(progress * 100)}%`, backgroundColor: theme.accent }} /></View> : null}
-												{list.map((copy) => episodeCopy(copy, label))}
-											</View>
-										);
+							<TVFocusGuideView autoFocus>
+								<ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 10, marginHorizontal: -16 }} contentContainerStyle={{ gap: 8, paddingHorizontal: 16 }}>
+									{seasons.map((number) => {
+										const { rows, seen } = seasonState(number);
+										return <FilterButton key={number} label={`${number === 0 ? 'Specials' : `Season ${number}`}${seen && seen < rows.length ? ` · ${seen}/${rows.length}` : ''}`} icon={seen && seen === rows.length ? 'check' : undefined} active={shownSeason === number} onPress={() => setSeason(number)} />;
 									})}
+									{episodes?.unplaced.length ? <FilterButton label={`Not placed (${episodes.unplaced.length})`} active={shownSeason === 'unplaced'} onPress={() => setSeason('unplaced')} /> : null}
+								</ScrollView>
+							</TVFocusGuideView>
+							<TVFocusGuideView autoFocus>
+								{shownSeason === 'unplaced'
+									? episodes?.unplaced.map((copy) => (
+											<View key={`${copy.item.id}/${copy.file.id}`} style={[{ paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: theme.border }]}>
+												<Text numberOfLines={2} style={{ color: theme.text, fontSize: 13.5 }}>{copy.label}</Text>
+												{episodeCopy(copy, copy.label)}
+											</View>
+										))
+									: (shownSeason === null || !episodes ? [] : seasonRows(episodes, shownSeason)).map((row) => {
+											const { episode: number, end, copies: list } = row;
+											const label = `${shownSeason === 0 ? 'Special' : 'Episode'} ${number}${end > number ? `–${end}` : ''}`;
+											const seen = isWatched(row);
+											const progress = progressOf(playing.get(watchKey({ imdbId, season: row.season, episode: number })), watched.watchedAt({ imdbId, season: row.season, episode: number }));
+											return (
+												<View key={number} style={{ paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: theme.border }}>
+													<View style={styles.row}>
+														<View style={{ flex: 1 }}>
+															<Text style={{ color: theme.text, fontSize: 15, fontWeight: '700' }}>{label}</Text>
+															<Text numberOfLines={1} style={{ color: theme.muted, fontSize: 12 }}>{fileBase(list[0].file.name)}</Text>
+														</View>
+														{/* A tap marks it, a long press offers "up to here". */}
+														<Pressable accessibilityRole="checkbox" accessibilityState={{ checked: seen }} accessibilityLabel={`${label} watched`} accessibilityHint="Long press for more" onPress={() => void watched.set(rowRefs(imdbId, row), !seen)} onLongPress={() => episodeMenu(row, label)} hitSlop={6} style={{ width: 44, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' }}>
+															<Icon name={seen ? 'check-circle' : 'check-circle-outline'} size={26} color={seen ? theme.accent : theme.muted} />
+														</Pressable>
+													</View>
+													{progress ? <View style={{ height: 3, borderRadius: 2, marginTop: 6, backgroundColor: theme.border }}><View style={{ height: 3, borderRadius: 2, width: `${Math.round(progress * 100)}%`, backgroundColor: theme.accent }} /></View> : null}
+													{list.map((copy) => episodeCopy(copy, label))}
+												</View>
+											);
+										})}
+							</TVFocusGuideView>
 							{!reading && episodes && seasons.length === 0 && episodes.unplaced.length === 0 ? <EmptyState title="No episodes to open yet" detail="Its releases have no video files the provider lists." /> : null}
 						</View>
 					)}
@@ -285,10 +298,10 @@ function OnDmm({ imdbId, kind }: { imdbId: string; kind: 'movie' | 'tv' }) {
 }
 
 /** A film's or a season's watched mark: outlined until watched, then filled. */
-function WatchButton({ watched: on, label, onPress }: { watched: boolean; label: string; onPress: () => void }) {
+function WatchButton({ watched: on, label, onPress, preferred = false }: { watched: boolean; label: string; onPress: () => void; preferred?: boolean }) {
 	const theme = useAppTheme();
 	return (
-		<Pressable accessibilityRole="button" accessibilityState={{ checked: on }} accessibilityLabel={label} onPress={onPress} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, height: 34, paddingHorizontal: 12, borderRadius: 17, borderWidth: 1, borderColor: theme.accent, backgroundColor: on ? theme.accent : 'transparent' }}>
+		<Pressable hasTVPreferredFocus={Platform.isTV && preferred} accessibilityRole="button" accessibilityState={{ checked: on }} accessibilityLabel={label} onPress={onPress} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, height: 34, paddingHorizontal: 12, borderRadius: 17, borderWidth: 1, borderColor: theme.accent, backgroundColor: on ? theme.accent : 'transparent' }}>
 			<Icon name={on ? 'check-circle' : 'check-circle-outline'} size={18} color={on ? theme.onAccent : theme.accent} />
 			<Text style={{ color: on ? theme.onAccent : theme.accent, fontSize: 13.5, fontWeight: '700' }}>{label}</Text>
 		</Pressable>
