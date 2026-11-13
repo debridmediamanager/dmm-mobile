@@ -1,5 +1,5 @@
 import { NavigationContainer, DarkTheme as NavigationDarkTheme, DefaultTheme as NavigationDefaultTheme } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { BottomTabBar, createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator, type NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -18,7 +18,7 @@ import { SearchScreen } from './screens/SearchScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { useAppTheme } from './theme';
 import { useEffect } from 'react';
-import { Linking, Platform } from 'react-native';
+import { Linking, Platform, Text, TVFocusGuideView, View } from 'react-native';
 import { Icon, Pressable, TvScale, useLayout, type IconName } from './ui';
 import type { LibrarySession } from './session';
 import { PROVIDERS } from './model';
@@ -36,7 +36,7 @@ const TAB_ICONS: Record<keyof MainTabParamList, [IconName, IconName]> = {
 
 function MainTabs({ navigation }: NativeStackScreenProps<RootStackParamList, 'Main'>) {
 	const theme = useAppTheme();
-	const { wide } = useLayout();
+	const { wide, tv } = useLayout();
 	// A magnet or .torrent opened from another app goes to Library's Add, which may not be mounted yet: Home comes first.
 	useEffect(() => {
 		const open = (url: string | null | undefined) => {
@@ -49,6 +49,13 @@ function MainTabs({ navigation }: NativeStackScreenProps<RootStackParamList, 'Ma
 	}, [navigation]);
 	return (
 		<Tabs.Navigator
+			// Apple TV's 80-point side safe area, drawn twice over by TvScale, would make the rail three times its width.
+			safeAreaInsets={tv ? { left: 0 } : undefined}
+			// The slim rail's buttons end a third of the way down, and Apple TV moves Left only into what lies level with the focus:
+			// a guide the rail's full height takes Left from any row to the tab last focused there.
+			// It is drawn over the pages for the focused tab's name. A zIndex would also move it after them in Android's view
+			// order, and the first key press (nothing focused yet) would then go to the page instead of the rail.
+			tabBar={tv ? (props) => <TVFocusGuideView autoFocus style={Platform.OS === 'android' ? { elevation: 1 } : { zIndex: 1 }}><BottomTabBar {...props} /></TVFocusGuideView> : undefined}
 			screenOptions={({ route }) => ({
 				headerShown: false,
 				// Tablets and TVs get a rail on the left: a remote reaches it with one press left from anywhere, not past the whole list.
@@ -56,11 +63,36 @@ function MainTabs({ navigation }: NativeStackScreenProps<RootStackParamList, 'Ma
 				tabBarVariant: wide ? 'material' : 'uikit',
 				tabBarLabelPosition: wide ? 'below-icon' : undefined,
 				// The app's button: an inset focus outline for remotes instead of Android's full-rail ripple.
-				tabBarButton: ({ href: _href, android_ripple: _ripple, hoverEffect: _hover, pressOpacity: _opacity, ref: _ref, ...props }) => <Pressable {...(props as React.ComponentProps<typeof Pressable>)} />,
+				tabBarButton: ({ href: _href, android_ripple: _ripple, hoverEffect: _hover, pressOpacity: _opacity, ref: _ref, children, ...props }) => (
+					<Pressable {...(props as React.ComponentProps<typeof Pressable>)}>
+						{({ focused }) => (
+							<>
+								{children}
+								{tv && focused ? (
+									// Past the 40-dp button (20-dp icon in react-navigation's 10-dp padding) and the rail's edge; a percentage would be
+									// taken of the button's inner width.
+									<View style={{ position: 'absolute', left: 48, top: 0, bottom: 0, width: 160, justifyContent: 'center', alignItems: 'flex-start' }}>
+										<View style={{ borderRadius: 16, paddingHorizontal: 12, paddingVertical: 5, backgroundColor: theme.focus }}>
+											<Text style={{ color: theme.background, fontSize: 15, fontWeight: '600' }}>{route.name}</Text>
+										</View>
+									</View>
+								) : null}
+							</>
+						)}
+					</Pressable>
+				),
 				tabBarIcon: ({ focused, color, size }) => <Icon name={TAB_ICONS[route.name][focused ? 0 : 1]} size={size} color={color} />,
 				tabBarActiveTintColor: theme.accent,
 				tabBarInactiveTintColor: theme.muted,
-				tabBarStyle: { backgroundColor: theme.surface, borderTopColor: theme.border, borderRightColor: theme.border },
+				tabBarStyle: [{ backgroundColor: theme.surface, borderTopColor: theme.border, borderRightColor: theme.border }, tv && { flex: 1, paddingStart: 2, paddingEnd: 2 }],
+				// TVs get a slim icon rail; the focused tab's name shows beside it, over the page, so the page never shifts.
+				...(tv && {
+					tabBarShowLabel: false,
+					tabBarIconSize: 20,
+					tabBarItemStyle: { overflow: 'visible' },
+					// Without a label Android has no name to read; iOS already says "Home, tab, 1 of 4".
+					tabBarAccessibilityLabel: Platform.OS === 'android' ? route.name : undefined,
+				}),
 				freezeOnBlur: true,
 			})}
 		>

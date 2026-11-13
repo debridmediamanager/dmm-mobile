@@ -410,7 +410,8 @@ to Real-Debrid through DMM's uploader and the media info panel.
 ## Tablets and TVs
 
 On a tablet or TV the tabs become a rail on the left and sheets float in the
-middle. On a TV everything is reached with the remote: the focused control is
+middle. On a TV the rail is a slim column of icons, and the focused one shows
+its name beside it. On a TV everything is reached with the remote: the focused control is
 outlined, Select opens a text field's keyboard (Android TV otherwise keeps the
 remote inside a focused field), and the dark theme is always on. Apple TV draws
 the Android TV layout at twice the size, so both look the same. What a TV has
