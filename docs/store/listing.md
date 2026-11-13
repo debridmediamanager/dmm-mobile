@@ -1,7 +1,8 @@
 # Store listings and form answers
 
 One app on both stores: bundle id / package `com.debridmediamanager.library`
-(fixed forever once published), version 1.0.0, build 1. Apple ships iPhone, iPad
+(fixed forever once published). Google Play has 1.1.0 (versionCode 3) on the closed
+test; the App Store has 1.0.0 (build 2). Apple ships iPhone, iPad
 and Apple TV in one App Store record (add the tvOS platform to it); Google Play
 ships phones, tablets and Android TV from one app bundle.
 
@@ -66,7 +67,18 @@ data shows, and its terms (9.6) forbid using its name in a way that confuses who
 it: the app has the same line with a link to simkl.com (Settings → Simkl) and "View on
 Simkl" on a title's page while Simkl is connected.
 
-**What's new** (1.0.0): `First release.`
+**What's new** (Google Play, 500 max):
+
+- 1.0.0: `First release.`
+- 1.1.0:
+
+  ```text
+  Your library by title now, with posters, seasons and episodes.
+  A built-in player that remembers where you stopped and plays the next episode.
+  Home: continue watching, next up and your watchlist.
+  Connect Trakt or Simkl to sync what you watch.
+  Your Trakt and Simkl lists, and a calendar of your shows with optional new-episode alerts.
+  ```
 
 ## Screenshots
 
@@ -150,9 +162,14 @@ Result: ESRB Teen, PEGI Parental guidance, USK 12, ClassInd 14, IARC 12+.
 
 | Data type | Collected | Shared | Ephemeral | Required | Purpose |
 |---|---|---|---|---|---|
-| Personal info → Other info (debrid logins and settings in the remembered copy) | Yes | No | No | Yes (always on) | App functionality |
+| Personal info → Other info (debrid and Trakt logins and settings in the remembered copy) | Yes | No | No | Yes (always on) | App functionality |
+| Files and docs → Files and docs (release names in the library, sent to DMM to find which film or show each is; DMM keeps the answer by hash, not by user) | Yes | No | No | Yes | App functionality |
+| App activity → Other actions (watch history and resume points, sent to Trakt or Simkl only when the user connects them; not sharing, since the user asked for it) | Yes | No | No | No (optional) | App functionality |
 | App activity → In-app search history (Search queries, looked up and not kept) | Yes | No | Yes | No | App functionality |
 | Everything else | No | | | | |
+
+The Simkl login stays on the device and goes only to Simkl. New-episode alerts are
+scheduled on the device; nothing about them leaves it.
 
 **Permissions** (no declaration form needs them, but reviewers see them in the manifest): `POST_NOTIFICATIONS`,
 asked only when the user switches on New-episode alerts in Settings, and `RECEIVE_BOOT_COMPLETED`, so alerts
