@@ -434,8 +434,10 @@ Settings (Infuse, VLC and the rest of DMM web's list).
 
 Release builds (click one to open it). The libraries show Blender open movies
 (CC BY) from a screenshot fixture of the real screens; the two sign-in screens are
-the app as it ships. There is no Search shot: its results are DMM's live search,
-with commercial posters.
+the app as it ships. Tears of Steel's media details come from probes the fixture
+builds from the film's real streams (its 5.1 mix, 22 subtitle languages), with the
+HDR its release names claim. There is no Search shot: its results are DMM's live
+search, with commercial posters.
 
 ### Phones
 
@@ -444,7 +446,8 @@ Pixel 6 (Android 16) and iPhone 17 Pro simulator (iOS 26.5).
 <p>
 <a href="docs/screenshots/android-phone-home.png"><img src="docs/screenshots/android-phone-home.png" width="200" alt="Home on an Android phone: Continue Watching with how much is left of each film, then Recently Added"></a>
 <a href="docs/screenshots/android-phone-library.png"><img src="docs/screenshots/android-phone-library.png" width="200" alt="Library on an Android phone: the films as posters, with how many copies of each"></a>
-<a href="docs/screenshots/android-phone-title.png"><img src="docs/screenshots/android-phone-title.png" width="200" alt="Tears of Steel's page: backdrop, plot, a 4K and a 1080p copy to open, and their releases"></a>
+<a href="docs/screenshots/android-phone-title.png"><img src="docs/screenshots/android-phone-title.png" width="200" alt="Tears of Steel's page: a 4K Dolby Vision copy and a 1080p copy, each with what ffprobe found in it (picture, sound, subtitles) and Open, then their releases"></a>
+<a href="docs/screenshots/android-phone-copy-details.png"><img src="docs/screenshots/android-phone-copy-details.png" width="200" alt="The 4K copy's media details: the file, the picture with its Dolby Vision profile, three audio tracks and the first of 22 subtitle tracks"></a>
 <a href="docs/screenshots/iphone-title.png"><img src="docs/screenshots/iphone-title.png" width="200" alt="Sintel's page on an iPhone"></a>
 <a href="docs/screenshots/iphone-sign-in.png"><img src="docs/screenshots/iphone-sign-in.png" width="200" alt="Sign-in on an iPhone, one card per provider"></a>
 </p>
