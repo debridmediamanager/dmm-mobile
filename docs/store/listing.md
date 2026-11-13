@@ -38,7 +38,10 @@ DMM Mobile puts the cloud library of your debrid service on your phone, tablet a
 Sign in to Real-Debrid, AllDebrid, TorBox, Premiumize, Offcloud or Debrid-Link and
 every file you keep there shows in one fast list, even with thousands of items.
 
-• Play any video in the player you choose, with its subtitles
+• Browse your library by title, with posters, seasons and episodes
+• Play in the built-in player, which remembers where you stopped and plays the next
+  episode, or in the player you choose
+• Continue watching and next up on Home
 • Connect Trakt or Simkl: what you play is scrobbled, and watched marks and resume points follow you
 • See your Trakt and Simkl watchlists and lists, and play what your library holds
 • A calendar of your shows' new episodes, with an optional alert when one airs
