@@ -1,18 +1,19 @@
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
-import { ActivityIndicator, Alert, Image, Linking, Platform, ScrollView, Text, TVFocusGuideView, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, Linking, Modal, Platform, Pressable as RNPressable, ScrollView, Text, TVFocusGuideView, View, useWindowDimensions } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useApp } from '../AppContext';
 import { dmmPageUrl } from '../search';
 import { simklPage } from '../simkl';
 import { DMM_ORIGIN } from '../tvLink';
 import { formatBytes } from '../core';
+import { copyDetails, copyFacts, filmProbe, probeFor, type FileProbe } from '../mediaInfo';
 import type { LibraryFile, LibraryItem } from '../model';
 import { PROVIDER_META } from '../model';
 import type { RootStackParamList } from '../navigation';
 import { playback } from '../playback';
 import { useAppTheme } from '../theme';
 import { mainFile, posterUrls, qualityOf, seasonRange, smallerTmdb, type EpisodeCopy, type TitleInfo } from '../titles';
-import { ActionSheet, EmptyState, FilterButton, Icon, Pressable, QrCode, Screen, styles, useLayout, type SheetAction } from '../ui';
+import { ActionSheet, EmptyState, FilterButton, Icon, Pressable, QrCode, Screen, styles, TV_SCALE, TvScale, useLayout, useSheetStyles, type SheetAction } from '../ui';
 import { progressOf, resumable, rowRefs, rowsUpTo, seasonRows, watched, watchKey, type HeldEpisode } from '../watched';
 import { useOpenCopy, useWatch } from './hooks';
 
@@ -20,6 +21,8 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Title'>;
 
 const SHORT = { rd: 'RD', ad: 'AD', tb: 'TB', pm: 'PM', oc: 'OC', dl: 'DL' } as const;
 const fileBase = (name: string) => name.split('/').pop() ?? name;
+/** Facts joined so a line breaks only between them, never inside "DV P8.1 + HDR10" or "Subs EN, ES +3". */
+const factLine = (facts: string[]) => facts.map((fact) => fact.replace(/ /g, '\u00a0')).join('\u00a0· ');
 
 /**
  * A film's or show's page: what the library holds of it, each copy with Open. Nothing here comes from DMM's search.
@@ -36,6 +39,7 @@ export function TitleScreen({ route, navigation }: Props) {
 	const openCopy = useOpenCopy();
 	const { playVersion } = useWatch();
 	const [menu, setMenu] = useState<{ title: string; actions: SheetAction[] } | null>(null);
+	const [details, setDetails] = useState<{ title: string; probe: FileProbe; name: string } | null>(null);
 	const version = useSyncExternalStore(titles.subscribe, titles.getVersion);
 	const { imdbId } = route.params;
 	const copies = useMemo(
@@ -64,6 +68,10 @@ export function TitleScreen({ route, navigation }: Props) {
 
 	// A show's episodes need each release's file list; the provider is asked once per release, then it is remembered.
 	const copyIds = copies.map((item) => item.id).join(',');
+	// What ffprobe knows of each copy, from DMM; asked once per release, then kept on the device.
+	useEffect(() => {
+		if (copies.length) void titles.loadProbes(copies);
+	}, [copyIds, titles]);
 	useEffect(() => {
 		if (kind !== 'tv' || copies.length === 0) return;
 		void titles.loadFiles(copies, (done, total) => mounted.current && setReading(done < total ? `Reading files ${done}/${total}…` : ''));
@@ -116,21 +124,38 @@ export function TitleScreen({ route, navigation }: Props) {
 			<Text style={[styles.fileButtonText, { color: theme.onAccent }]}>{opening === key ? 'Opening…' : 'Open'}</Text>
 		</Pressable>
 	);
-	const copyLine = (item: LibraryItem, quality: string, size: number) => {
+	const copyLine = (item: LibraryItem, quality: string, size: number, probe: FileProbe | undefined, label: string) => {
 		const meta = PROVIDER_META[item.provider];
 		const state = item.status === 'finished' ? '' : ` · ${Math.round(item.progress)}% ${item.serviceStatus}`;
+		const badge = <View style={{ backgroundColor: meta.color, borderRadius: 4, paddingHorizontal: 4, marginTop: probe ? 2 : 0 }}><Text style={{ fontSize: 10, fontWeight: '800', color: item.provider === 'tb' || item.provider === 'pm' ? '#fff' : '#111827' }}>{SHORT[item.provider]}</Text></View>;
+		const sized = formatBytes(size).replace('Unknown size', '');
+		// No probe: the name's resolution and tags, as before; nothing is guessed.
+		if (!probe) {
+			return (
+				<View style={[styles.row, { flex: 1, gap: 6 }]}>
+					{badge}
+					<Text numberOfLines={1} style={{ flex: 1, color: theme.text, fontSize: 13.5 }}>{[quality, sized].filter(Boolean).join(' · ')}{state}</Text>
+				</View>
+			);
+		}
+		const facts = copyFacts(probe, item.filename);
+		// The facts wrap rather than cut off; tapping them (Select on a TV) lists every track.
 		return (
-			<View style={[styles.row, { flex: 1, gap: 6 }]}>
-				<View style={{ backgroundColor: meta.color, borderRadius: 4, paddingHorizontal: 4 }}><Text style={{ fontSize: 10, fontWeight: '800', color: item.provider === 'tb' || item.provider === 'pm' ? '#fff' : '#111827' }}>{SHORT[item.provider]}</Text></View>
-				<Text numberOfLines={1} style={{ flex: 1, color: theme.text, fontSize: 13.5 }}>{[quality, formatBytes(size).replace('Unknown size', '')].filter(Boolean).join(' · ')}{state}</Text>
-			</View>
+			<Pressable accessibilityRole="button" accessibilityLabel={`${meta.label}: ${[...facts.picture, sized, ...facts.sound].join(', ')}`} accessibilityHint="Shows every audio and subtitle track" onPress={() => setDetails({ title: label, probe, name: item.filename })} style={({ pressed }) => ({ flex: 1, flexDirection: 'row', alignItems: 'flex-start', gap: 6, borderRadius: 6, opacity: pressed ? 0.6 : 1 })}>
+				{badge}
+				<View style={{ flex: 1 }}>
+					<Text style={{ color: theme.text, fontSize: 13.5, lineHeight: 18 }}>{factLine([...facts.picture, sized])}{state}</Text>
+					{facts.sound.length ? <Text style={{ color: theme.muted, fontSize: 12.5, lineHeight: 17 }}>{factLine(facts.sound)}</Text> : null}
+				</View>
+				<Icon name="information-outline" size={17} color={theme.muted} />
+			</Pressable>
 		);
 	};
 	const episodeCopy = (copy: EpisodeCopy, label: string) => {
 		const key = `${copy.item.id}/${copy.file.id}`;
 		return (
 			<View key={key} style={[styles.row, { paddingVertical: 6 }]}>
-				{copyLine(copy.item, copy.quality, copy.file.size)}
+				{copyLine(copy.item, copy.quality, copy.file.size, probeFor(titles.probesOf(copy.item) ?? [], copy.file), `${named?.title ?? ''} · ${label}`)}
 				{openButton(key, `Open ${label} from ${PROVIDER_META[copy.item.provider].label}`, () => void open(key, copy.item, (files) => files.find((file) => file.id === copy.file.id)))}
 			</View>
 		);
@@ -176,7 +201,7 @@ export function TitleScreen({ route, navigation }: Props) {
 							</View>
 							{[...copies].sort((a, b) => b.size - a.size).map((item) => (
 								<View key={item.id} style={[styles.fileRow, { borderBottomColor: theme.border }]}>
-									{copyLine(item, qualityOf(item.filename), item.size)}
+									{copyLine(item, qualityOf(item.filename), item.size, filmProbe(titles.probesOf(item) ?? [], item.size), named?.title ?? item.filename)}
 									{openButton(item.id, `Open from ${PROVIDER_META[item.provider].label}`, () => void open(item.id, item, (files) => mainFile(item, files)))}
 								</View>
 							))}
@@ -255,6 +280,7 @@ export function TitleScreen({ route, navigation }: Props) {
 				</View>
 			</ScrollView>
 			{menu ? <ActionSheet title={menu.title} actions={menu.actions} onClose={() => setMenu(null)} /> : null}
+			{details ? <CopyDetails {...details} onClose={() => setDetails(null)} /> : null}
 		</Screen>
 	);
 }
@@ -294,6 +320,44 @@ function OnDmm({ imdbId, kind }: { imdbId: string; kind: 'movie' | 'tv' }) {
 				<Text style={[styles.primaryButtonText, { color: theme.onAccent }]}>{opening ? 'Opening…' : 'Open on DMM'}</Text>
 			</Pressable>
 		</View>
+	);
+}
+
+/**
+ * Everything ffprobe knows of one copy: the file, the picture, every audio and subtitle track with its flags.
+ * On a TV each row takes focus, so the remote scrolls the list.
+ */
+function CopyDetails({ title, probe, name, onClose }: { title: string; probe: FileProbe; name: string; onClose: () => void }) {
+	const theme = useAppTheme();
+	const sheetStyles = useSheetStyles();
+	const listHeight = useWindowDimensions().height / TV_SCALE - 170;
+	return (
+		<Modal visible animationType="slide" transparent onRequestClose={onClose}>
+			<TvScale>
+				<RNPressable focusable={false} style={sheetStyles.backdrop} onPress={onClose} accessibilityLabel="Close media details">
+					<RNPressable focusable={false} style={[sheetStyles.sheet, { backgroundColor: theme.surface }]} onPress={() => undefined}>
+						<View style={styles.rowBetween}>
+							<Text style={[styles.modalTitle, { flex: 1, color: theme.text, fontSize: 19 }]}>{title}</Text>
+							<Pressable hasTVPreferredFocus={Platform.isTV} accessibilityRole="button" accessibilityLabel="Close media details" onPress={onClose} hitSlop={10}><Icon name="close" size={24} color={theme.muted} /></Pressable>
+						</View>
+						<ScrollView style={{ maxHeight: listHeight }} contentContainerStyle={{ paddingBottom: 8 }}>
+							{copyDetails(probe, name).map((section) => (
+								<View key={section.title} style={{ marginTop: 10 }}>
+									<Text style={{ color: theme.muted, fontSize: 12.5, fontWeight: '700', textTransform: 'uppercase', marginBottom: 2 }}>{section.title}</Text>
+									{section.rows.map((row, n) => (
+										<Pressable key={n} focusable={Platform.isTV} style={{ paddingVertical: 5, borderBottomWidth: 1, borderBottomColor: theme.border }}>
+											<Text style={{ color: theme.text, fontSize: 14.5, lineHeight: 20 }}>{row.text}</Text>
+											{row.note ? <Text style={{ color: theme.muted, fontSize: 12.5, lineHeight: 17 }}>{row.note}</Text> : null}
+										</Pressable>
+									))}
+								</View>
+							))}
+							<Text style={{ color: theme.muted, fontSize: 12, marginTop: 10 }}>From DMM: what ffprobe read of this file when someone's zurg or app played it.</Text>
+						</ScrollView>
+					</RNPressable>
+				</RNPressable>
+			</TvScale>
+		</Modal>
 	);
 }
 

@@ -13,7 +13,7 @@ import { formatBytes } from './core';
 import { useAppTheme } from './theme';
 
 /** Apple TV lays out 1920×1080 points where Android TV has 960×540 dp; drawing at half size and scaling by two gives both one layout. */
-const TV_SCALE = Platform.OS === 'ios' && Platform.isTV ? 2 : 1;
+export const TV_SCALE = Platform.OS === 'ios' && Platform.isTV ? 2 : 1;
 
 /** Wraps the app and each modal's content (a modal is a window of its own) in the Apple TV scale. */
 export function TvScale({ children }: { children: ReactNode }) {

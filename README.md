@@ -132,6 +132,16 @@ numbering or extras, stay on the show's page under "Not placed". Releases DMM
 cannot name stay below the posters as Other. Only what is in your library shows:
 finding new releases stays on DMM web.
 
+Each copy says what ffprobe found in it when DMM has a probe of the file (from
+zurg or a sponsor's app; the app asks once per release and keeps the answer):
+"4K · DV P8.1 + HDR10 · HEVC 10-bit · 61.2 GB" over "TrueHD Atmos 7.1 · EN, JA ·
+Subs EN, ES +3", with the best audio track. Tap it (Select on a TV) for every
+audio and subtitle track with its language, codec, channels and default,
+forced and SDH flags, the video bitrate and the runtime. A copy without a probe
+keeps the resolution and tags of its name. HDR10+ hides in frame data a stream
+probe cannot see, so it comes from the release name, and so does any HDR tag a
+probe is silent about.
+
 **Torrents** is the library page of DMM web, on the phone. One dense list across every
 connected provider, one row per item, built for libraries of thousands
 (measured with 7,205 items on a Pixel 6: a full refresh of six providers in

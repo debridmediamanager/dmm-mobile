@@ -73,7 +73,7 @@ export function AppProvider({ children, session: injectedSession }: { children: 
 	const [snapshot, setSnapshot] = useState<SessionSnapshot>(() => session.snapshot());
 	const sync = useCallback(() => setSnapshot(session.snapshot()), [session]);
 	const titles = useMemo(() => {
-		const index = new TitleIndex({ identities: () => session.titleIdentities(), detail: (provider, itemId) => session.detail(provider, itemId) }, fileCacheStore);
+		const index = new TitleIndex({ identities: () => session.titleIdentities(), detail: (provider, itemId) => session.detail(provider, itemId), isDemo: (provider) => session.isDemo(provider) }, fileCacheStore);
 		// Read now, so rows a provider lists come out as titles at once rather than after every provider has listed.
 		void index.load();
 		return index;
