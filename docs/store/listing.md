@@ -134,7 +134,8 @@ density 320), a Fire TV Cube, and iPhone 17 Pro Max, iPad Pro 13-inch and Apple 
 
 Previews (H.264 High, 30 fps, silent stereo AAC; kept outside the repo, `video.py` rebuilds them): App Store iPhone
 App Preview 886 × 1920 (21 s), Apple TV App Preview 1920 × 1080 (25 s), and a 1920 × 1080 Fire TV video (27 s) for
-Amazon and for Play's YouTube promo video.
+Amazon and for Play's YouTube promo video. Play's promo video is https://www.youtube.com/watch?v=k-ZhwzHk4FE, unlisted
+on the Debrid Media Manager YouTube channel; Amazon has the MP4 itself.
 
 ## App Store Connect answers
 
