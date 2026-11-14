@@ -189,6 +189,14 @@ describe('alerts', () => {
 		expect(alertDiff(after, after)).toEqual({ cancel: [], add: [] });
 		expect(alertDiff([], after).add).toHaveLength(after.length);
 	});
+
+	it('leaves an alert that is due but not shown yet to fire: Android delivers inexact alarms up to an hour late', () => {
+		const before = alertsFor(episodes, NOW);
+		const aired = before[0].at + 10 * 60_000;
+		const after = alertsFor(episodes, aired);
+		expect(after.map((alert) => alert.id)).not.toContain(before[0].id);
+		expect(alertDiff(before, after, aired)).toEqual({ cancel: [], add: [] });
+	});
 });
 
 describe('the store', () => {

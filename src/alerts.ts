@@ -84,7 +84,7 @@ export function syncAlerts(episodes: readonly CalendarEpisode[], now = Date.now(
 		// Turned off in the system's settings since: nothing is scheduled, and Settings says why.
 		if (!(await N.allowed())) return;
 		const scheduled = (await N.scheduled()).filter((alert) => alert.id.startsWith(PREFIX));
-		const { cancel, add } = alertDiff(scheduled, alertsFor(episodes, now));
+		const { cancel, add } = alertDiff(scheduled, alertsFor(episodes, now), now);
 		for (const id of cancel) await N.cancel(id);
 		for (const alert of add) await N.schedule(alert);
 	});

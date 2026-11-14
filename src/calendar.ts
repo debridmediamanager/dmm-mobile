@@ -170,13 +170,16 @@ export function alertsFor(episodes: readonly CalendarEpisode[], now: number): Al
 		.slice(0, ALERT_LIMIT);
 }
 
-/** What to cancel and what to schedule so the scheduled alerts become `wanted`; an unchanged one is left alone. */
-export function alertDiff(scheduled: readonly Alert[], wanted: readonly Alert[]): { cancel: string[]; add: Alert[] } {
+/**
+ * What to cancel and what to schedule so the scheduled alerts become `wanted`; an unchanged one is left alone, and so is
+ * one already due (Android delivers inexact alarms up to an hour late, and `wanted` holds only what is still to come).
+ */
+export function alertDiff(scheduled: readonly Alert[], wanted: readonly Alert[], now = -Infinity): { cancel: string[]; add: Alert[] } {
 	const same = (a: Alert, b: Alert) => a.at === b.at && a.title === b.title && a.body === b.body;
 	const want = new Map(wanted.map((alert) => [alert.id, alert]));
 	const have = new Map(scheduled.map((alert) => [alert.id, alert]));
 	return {
-		cancel: scheduled.filter((alert) => !want.has(alert.id) || !same(alert, want.get(alert.id)!)).map((alert) => alert.id),
+		cancel: scheduled.filter((alert) => alert.at > now && (!want.has(alert.id) || !same(alert, want.get(alert.id)!))).map((alert) => alert.id),
 		add: wanted.filter((alert) => !have.has(alert.id) || !same(alert, have.get(alert.id)!)),
 	};
 }
