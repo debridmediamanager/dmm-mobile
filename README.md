@@ -196,6 +196,18 @@ Opus and PCM audio, and SRT, ASS and PGS subtitles. Full screen and landscape
   a sleep timer (end of the episode or film, 15, 30 or 60 minutes; it carries on
   into the next episode) and audio and subtitle delay. Tablets and TVs show the
   whole toolbar at once.
+- **Chapters**: a file with chapters (most Blu-ray remuxes) shows the playing
+  chapter's name above the seek bar on the left ("Chapter 06" when the file names
+  none), a mark on the bar where each one starts, and a Chapters list in the
+  toolbar (behind › on phones) to jump to one. Files without chapters show nothing
+  extra.
+- **Picture in picture** (Android phones and tablets): the button left of rotate
+  keeps the video playing in a small window over other apps, with its own
+  play/pause button. Resume points, scrobbling and the sleep timer carry on there;
+  the window's expand button brings the player back, and closing the window
+  pauses it where it was. At the end of an episode the next one waits for the
+  player to come back (its countdown then runs). Not on iPhone and iPad (the
+  VLCKit 3 player has no picture in picture) or TVs.
 - **Lock**: hides everything but one unlock button; touches neither seek nor pause.
 - **TV**: the remote moves from the middle buttons down to the seek bar (left and
   right skip there) and the toolbar; play/pause and skip keys work, left and
@@ -451,8 +463,9 @@ Release builds (click one to open it). The libraries show Blender open movies
 (CC BY) from a screenshot fixture of the real screens; the two sign-in screens are
 the app as it ships. Tears of Steel's media details come from probes the fixture
 builds from the film's real streams (its 5.1 mix, 22 subtitle languages), with the
-HDR its release names claim. There is no Search shot: its results are DMM's live
-search, with commercial posters.
+HDR its release names claim. The player plays Blender's own Sintel 1080p MKV, whose
+eight chapters are the file's; its badges come from the fixture's release name.
+There is no Search shot: its results are DMM's live search, with commercial posters.
 
 ### Phones
 
@@ -468,7 +481,7 @@ Pixel 6 (Android 16) and iPhone 17 Pro simulator (iOS 26.5).
 </p>
 
 <p>
-<a href="docs/screenshots/android-phone-player.png"><img src="docs/screenshots/android-phone-player.png" width="440" alt="The built-in player on an Android phone, playing Sintel"></a>
+<a href="docs/screenshots/android-phone-player.png"><img src="docs/screenshots/android-phone-player.png" width="440" alt="The built-in player on an Android phone, paused in Sintel: its logo, year and badges, the chapter playing (Chapter 06) over a seek bar marked where each chapter starts, the toolbar and time, and picture in picture, rotate and lock at the top"></a>
 </p>
 
 ### Tablets
