@@ -1,6 +1,6 @@
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import { ActivityIndicator, Keyboard, Linking, Modal, Platform, Pressable as RNPressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions, type PressableProps, type TextInputInstance, type TextInputProps } from 'react-native';
+import { ActivityIndicator, Keyboard, Linking, Modal, Platform, Pressable as RNPressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions, type PressableProps, type StyleProp, type TextInputInstance, type TextInputProps, type TextStyle } from 'react-native';
 import qrcode from 'qrcode-generator';
 import { SafeAreaView, useSafeAreaInsets, type Edge } from 'react-native-safe-area-context';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -129,8 +129,8 @@ export function useSheetStyles() {
 
 /** The app's one icon set; its font is embedded at build time (expo-font in app.json), so icons draw on first frame. */
 export type IconName = keyof typeof MaterialCommunityIcons.glyphMap;
-export function Icon({ name, size = 20, color }: { name: IconName; size?: number; color: string }) {
-	return <MaterialCommunityIcons name={name} size={size} color={color} />;
+export function Icon({ name, size = 20, color, style }: { name: IconName; size?: number; color: string; style?: StyleProp<TextStyle> }) {
+	return <MaterialCommunityIcons name={name} size={size} color={color} style={style} />;
 }
 
 /** A search box with a magnifier and a clear button that empties it in one tap. */

@@ -13,6 +13,7 @@ import type { RootStackParamList } from '../navigation';
 import { FINISHED, playback, playbackKey } from '../playback';
 import { BUILT_IN, endsAt, FITS, openFileLink, playersForPlatform, ratioBox, SLEEP_MINUTES, sleepLabel, soundUnplayable, SPEEDS, type Fit, type Sleep } from '../player';
 import { episodeCode, findEpisode, logoUrl, mainFile, nextEpisode, pickCopy, qualityOf, showEpisodes, type EpisodeCopy } from '../titles';
+import { pngInk, type Ink } from '../png';
 import { refOf, type ScrobbleAction } from '../trackerSync';
 import { otherDevice } from '../watched';
 import { isSafeExternalUrl } from '../validation';
@@ -45,6 +46,22 @@ const uniqueLabels = (names: string[]) => names.map((name, n) => (names.indexOf(
 const uniqueLabelsOf = (actions: SheetAction[]): SheetAction[] => {
 	const labels = uniqueLabels(actions.map((action) => action.label));
 	return actions.map((action, n) => ({ ...action, label: labels[n] }));
+};
+
+/** Where a title's logo artwork sits in its canvas, asked once per title while the app runs; null for none (a 404). */
+const logoInks = new Map<string, Promise<Ink | null>>();
+const logoInk = (imdbId: string): Promise<Ink | null> => {
+	const known = logoInks.get(imdbId);
+	if (known) return known;
+	const ink = fetch(logoUrl(imdbId))
+		.then(async (response) => (response.ok ? pngInk(new Uint8Array(await response.arrayBuffer())) : null))
+		.catch(() => {
+			// A dropped connection is not a missing logo: asked again next time.
+			logoInks.delete(imdbId);
+			return null;
+		});
+	logoInks.set(imdbId, ink);
+	return ink;
 };
 
 /**
@@ -103,11 +120,11 @@ export function PlayerScreen({ route, navigation }: Props) {
 	useEffect(() => {
 		if (named?.kind === 'tv') void readEpisodeTitles(named.imdbId).then((names) => mounted.current && setEpisodeNames(names)).catch(() => undefined);
 	}, [named?.imdbId, named?.kind]);
-	/** The logo's width over height; null for none (a 404), undefined while asked. */
-	const [logo, setLogo] = useState<number | null>();
+	/** The logo's artwork in its canvas; null for none (a 404), undefined while asked. */
+	const [logo, setLogo] = useState<Ink | null>();
 	useEffect(() => {
 		if (!named) return setLogo(null);
-		Image.getSize(logoUrl(named.imdbId), (width, height) => mounted.current && setLogo(width / height || null), () => mounted.current && setLogo(null));
+		void logoInk(named.imdbId).then((ink) => mounted.current && setLogo(ink));
 	}, [named?.imdbId]);
 	useEffect(() => void titles.loadProbes([item]), [item, titles]);
 
@@ -418,13 +435,13 @@ export function PlayerScreen({ route, navigation }: Props) {
 	/** A round button in the middle: skips and play/pause. */
 	const round = (icon: IconName, label: string, onPress: () => void, large = false, preferred = false) => (
 		<Pressable accessibilityRole="button" accessibilityLabel={label} hasTVPreferredFocus={Platform.isTV && preferred} onPress={() => { onPress(); show(); }} style={({ focused }) => [local.round, large && local.roundLarge, focused && local.roundFocused]}>
-			<Icon name={icon} size={large ? 44 : 30} color="#fff" />
+			<Icon name={icon} size={large ? 44 : 30} color="#fff" style={local.shadow} />
 		</Pressable>
 	);
 	/** An icon button inside a pill; `on` tints a setting that is not the default. */
 	const tool = (icon: IconName, label: string, onPress: () => void, on = false) => (
 		<Pressable key={icon} accessibilityRole="button" accessibilityLabel={label} onPress={() => { onPress(); show(); }} style={({ focused }) => [local.tool, focused && local.toolFocused]}>
-			<Icon name={icon} size={22} color={on ? ACCENT : '#fff'} />
+			<Icon name={icon} size={22} color={on ? ACCENT : '#fff'} style={local.shadow} />
 		</Pressable>
 	);
 	const kind = named?.kind;
@@ -453,7 +470,8 @@ export function PlayerScreen({ route, navigation }: Props) {
 	const subline = current?.ref
 		? `S${current.ref.season} E${current.ref.episode}${current.ref.end ? `–E${current.ref.end}` : ''}${episodeName ? ` • ${episodeName}` : ''}`
 		: kind === 'movie' && named?.year ? String(named.year) : '';
-	const logoHeight = logo ? Math.min(phone ? 44 : 64, (phone ? 200 : 300) / logo) : 0;
+	// The artwork gets the room, not its empty canvas: the canvas's height in points, for artwork at most this tall and wide.
+	const logoScale = logo ? Math.min((phone ? 40 : 60) / logo.height, (phone ? 160 : 240) / (logo.width * logo.ratio)) : 0;
 	const box = (fit === '16:9' || fit === '4:3') && area.width ? ratioBox(area.width, area.height, fit) : null;
 
 	// Built when their sheet opens: the screen renders every second.
@@ -620,7 +638,7 @@ export function PlayerScreen({ route, navigation }: Props) {
 								{tool('lock-outline', 'Lock controls', () => setLocked(true))}
 							</View>
 							<Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={() => navigation.goBack()} style={local.back}>
-								<Icon name="close" size={22} color="#fff" />
+								<Icon name="close" size={22} color="#fff" style={local.shadow} />
 							</Pressable>
 						</View>
 					) : <View />}
@@ -636,7 +654,9 @@ export function PlayerScreen({ route, navigation }: Props) {
 							<View style={local.info} pointerEvents="box-none">
 								<View style={local.infoText} pointerEvents="box-none">
 									{logo && named ? (
-										<Image source={{ uri: logoUrl(named.imdbId) }} resizeMode="contain" accessibilityLabel={named.title} style={{ width: logoHeight * logo, height: logoHeight }} />
+										<View accessible accessibilityRole="image" accessibilityLabel={named.title} style={{ width: logo.width * logo.ratio * logoScale, height: logo.height * logoScale, overflow: 'hidden' }}>
+											<Image source={{ uri: logoUrl(named.imdbId) }} style={{ width: logo.ratio * logoScale, height: logoScale, marginLeft: -logo.left * logo.ratio * logoScale, marginTop: -logo.top * logoScale }} />
+										</View>
 									) : logo === null ? (
 										<Text numberOfLines={1} style={local.title}>{named?.title ?? baseName(file.name)}</Text>
 									) : null}
@@ -773,33 +793,36 @@ export function PlayerScreen({ route, navigation }: Props) {
 	);
 }
 
-/** Translucent like the app's dark surfaces, with a thin light edge, so they read over any picture. */
-const GLASS = { backgroundColor: 'rgba(21,29,49,0.55)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.18)' } as const;
+/** See-through glass with a thin light edge: the picture shows through, the edge and the icons' shadow keep them readable on it. */
+const GLASS = { backgroundColor: 'rgba(255,255,255,0.14)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)' } as const;
+const SHADOW = { textShadowColor: 'rgba(0,0,0,0.6)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 4 } as const;
 
 const local = StyleSheet.create({
 	screen: { flex: 1, backgroundColor: '#000' },
 	center: { position: 'absolute', alignSelf: 'center', top: '45%' },
-	overlay: { ...StyleSheet.absoluteFill, justifyContent: 'space-between', backgroundColor: 'rgba(0,0,0,0.35)' },
+	// Darker behind the top and bottom controls, light over the middle of the picture.
+	overlay: { ...StyleSheet.absoluteFill, justifyContent: 'space-between', backgroundImage: 'linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.1) 30%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.75) 100%)' },
 	top: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 10, paddingHorizontal: 20, paddingTop: 14 },
 	pill: { ...GLASS, flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', borderRadius: 24, padding: 3, gap: 2 },
 	tool: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
 	toolOutlined: { borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)' },
-	toolFocused: { backgroundColor: 'rgba(255,255,255,0.28)' },
+	toolFocused: { backgroundColor: 'rgba(255,255,255,0.4)' },
 	back: { ...GLASS, width: 46, height: 46, borderRadius: 23, alignItems: 'center', justifyContent: 'center' },
 	middle: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 40 },
-	round: { width: 58, height: 58, borderRadius: 29, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(11,16,32,0.4)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.35)' },
+	round: { ...GLASS, width: 58, height: 58, borderRadius: 29, alignItems: 'center', justifyContent: 'center' },
 	roundLarge: { width: 76, height: 76, borderRadius: 38 },
-	roundFocused: { backgroundColor: 'rgba(255,255,255,0.3)', borderColor: '#fff' },
+	roundFocused: { backgroundColor: 'rgba(255,255,255,0.4)', borderColor: '#fff' },
+	shadow: SHADOW,
 	bottom: { paddingHorizontal: 20, paddingBottom: 12, gap: 2 },
 	info: { flexDirection: 'row', alignItems: 'flex-end', gap: 12 },
 	infoText: { flex: 1, gap: 4, alignItems: 'flex-start' },
-	title: { color: '#fff', fontSize: 20, fontWeight: '800' },
-	subline: { color: '#e5e9f2', fontSize: 14, fontWeight: '600' },
+	title: { ...SHADOW, color: '#fff', fontSize: 20, fontWeight: '800' },
+	subline: { ...SHADOW, color: '#e5e9f2', fontSize: 14, fontWeight: '600' },
 	badges: { flexDirection: 'row', flexWrap: Platform.isTV ? 'wrap' : 'nowrap', gap: 5, paddingVertical: 1 },
 	badge: { flexDirection: 'row', alignItems: 'flex-start', height: 20, paddingHorizontal: 6, borderRadius: 5, backgroundColor: 'rgba(255,255,255,0.12)', borderWidth: StyleSheet.hairlineWidth, borderColor: 'rgba(255,255,255,0.35)' },
 	badgeText: { color: '#fff', fontSize: 11.5, lineHeight: 19, fontWeight: '700' },
 	badgeSuffix: { color: '#cfd6e4', fontSize: 7.5, lineHeight: 10, fontWeight: '800', marginLeft: 2, marginTop: 2 },
-	endsAt: { color: '#e5e9f2', fontSize: 13, fontWeight: '600', fontVariant: ['tabular-nums'] },
+	endsAt: { ...SHADOW, color: '#e5e9f2', fontSize: 13, fontWeight: '600', fontVariant: ['tabular-nums'] },
 	bar: { height: 32, justifyContent: 'center' },
 	barFocus: { borderRadius: 16, paddingHorizontal: 8 },
 	track: { height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.35)', overflow: 'hidden' },
@@ -807,7 +830,7 @@ const local = StyleSheet.create({
 	knob: { position: 'absolute', width: 14, height: 14, borderRadius: 7, marginLeft: -7, backgroundColor: ACCENT },
 	toolRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
 	timePill: { ...GLASS, borderRadius: 18, paddingHorizontal: 12, height: 34, justifyContent: 'center' },
-	time: { color: '#fff', fontSize: 13, fontWeight: '600', fontVariant: ['tabular-nums'] },
+	time: { ...SHADOW, color: '#fff', fontSize: 13, fontWeight: '600', fontVariant: ['tabular-nums'] },
 	focused: { backgroundColor: 'rgba(255,255,255,0.25)' },
 	dialog: { position: 'absolute', alignSelf: 'center', top: '20%', width: 340, maxWidth: '90%', padding: 18, gap: 10, borderRadius: 14, backgroundColor: 'rgba(21,29,49,0.95)' },
 	dialogTitle: { color: '#fff', fontSize: 17, fontWeight: '700' },
