@@ -36,6 +36,20 @@ EXPO_TV=1 npx expo prebuild -p android
 cd android && ./gradlew :app:assembleRelease -PreactNativeArchitectures=arm64-v8a,armeabi-v7a
 ```
 
+The GitHub release (also what Obtainium and IzzyOnDroid take) has one APK per ABI instead, with
+compressed native libraries: libVLC alone is 46 MB per ABI uncompressed. Build each one on its own and
+rename it as it is built, since every run writes `app-release.apk`:
+
+```sh
+for abi in arm64-v8a armeabi-v7a; do
+  ./gradlew :app:assembleRelease -PreactNativeArchitectures=$abi -Pexpo.useLegacyPackaging=true
+  cp app/build/outputs/apk/release/app-release.apk dmm-mobile-<version>-$abi.apk
+done
+```
+
+`expo.useLegacyPackaging` only goes on these APKs: Google Play's bundle keeps its libraries
+uncompressed, which Play compresses for the download and a phone then uses in place.
+
 Apple builds one project per platform: `npx expo prebuild -p ios` for iPhone
 and iPad, `EXPO_TV=1 npx expo prebuild -p ios` for Apple TV. Run `vlckit/fetch.sh`
 once first (plain `curl` from this repository's public release): the player's

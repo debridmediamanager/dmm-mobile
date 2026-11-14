@@ -10,7 +10,7 @@ already installed. Each one is recorded as a GitHub release.
 | Carries | the whole app: native code, permissions, icons, app config | `src/` and pure-JavaScript packages, images, fonts |
 | Needed for | a new or updated native module, an Expo SDK or React Native upgrade, any change to `app.json` or `plugins/`, icons, permissions | everything else |
 | Reaches | users after store review, once they install the new version | every installed build **of the same version** where Settings → Get fixes automatically is on (below): downloaded when the app starts, used from the next start |
-| GitHub release | `v1.2.0`, marked Latest, with the APK attached | `ota-1.2.0-<run>`, a pre-release holding the signed manifests and files |
+| GitHub release | `v1.2.2`, marked Latest, with one APK per ABI attached | `ota-1.2.2-<run>`, a pre-release holding the signed manifests and files |
 | Started by | a person: build, upload, tag | Actions → **Publish OTA update** → Run workflow |
 
 The version in `app.json` is the **runtime version**: an OTA update goes only to
@@ -25,11 +25,13 @@ lacks the native code it expects. The workflow enforces that rule (below).
 2. Build every platform from that commit ([development.md](development.md)) and upload it
    to the stores as in `docs/store/release.md`.
 3. Tag **exactly the commit you built** and publish the GitHub release with the
-   Android APK, which Fire TV users sideload:
+   Android APKs, one per ABI ([development.md](development.md)), which Fire TV users
+   sideload and Obtainium and IzzyOnDroid pick from by their names:
 
    ```sh
-   git tag v1.2.0 <commit> && git push origin v1.2.0
-   gh release create v1.2.0 --title "DMM Mobile 1.2.0" --notes "…" dmm-mobile-1.2.0.apk
+   git tag v1.2.2 <commit> && git push origin v1.2.2
+   gh release create v1.2.2 --title "DMM Mobile 1.2.2" --notes "…" \
+     dmm-mobile-1.2.2-arm64-v8a.apk dmm-mobile-1.2.2-armeabi-v7a.apk
    ```
 
    The OTA workflow compares the native code of every later update with this
