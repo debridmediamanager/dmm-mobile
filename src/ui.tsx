@@ -83,7 +83,8 @@ export function TextField({ style, onFocus, onBlur, onSubmitEditing, ...props }:
 	const [focused, setFocused] = useState(false);
 	const tv = useTvEditing(onSubmitEditing);
 	const field = <TextInput ref={tv.ref} placeholderTextColor={theme.muted} {...props} {...tv.input} onFocus={(event) => { setFocused(true); onFocus?.(event); }} onBlur={(event) => { setFocused(false); tv.ended(); onBlur?.(event); }} style={[style, focused && { borderColor: theme.focus, borderWidth: 2 }]} />;
-	return tv.button ? <Pressable accessibilityRole="button" accessibilityLabel={props.accessibilityLabel} {...tv.button} style={{ borderRadius: 10 }}>{field}</Pressable> : field;
+	// The field covers the button's own focus outline, so the field's border shows the remote is on it.
+	return tv.button ? <Pressable accessibilityRole="button" accessibilityLabel={props.accessibilityLabel} {...tv.button} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} style={{ borderRadius: 10 }}>{field}</Pressable> : field;
 }
 
 /** A QR code drawn with Views, one strip per run of dark modules; a TV shows it so a phone can approve a sign-in. */
