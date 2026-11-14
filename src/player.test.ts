@@ -7,7 +7,7 @@ vi.mock('expo-intent-launcher', () => ({ startActivityAsync: vi.fn(async () => (
 
 import { Linking } from 'react-native';
 import * as IntentLauncher from 'expo-intent-launcher';
-import { endsAt, iosPlayerUrl, loadPlayer, openFileLink, PLAYER_SCREEN, playersForPlatform, playsBuiltIn, ratioBox, sleepLabel, soundUnplayable } from './player';
+import { chapterAt, chapterMarks, chapterName, chaptersOf, endsAt, iosPlayerUrl, loadPlayer, openFileLink, PLAYER_SCREEN, playersForPlatform, playsBuiltIn, ratioBox, sleepLabel, soundUnplayable } from './player';
 import { _resetSettingsCache } from './settings';
 
 const TB = 'https://store-024.weur.tb-cdn.st/zip/1?token=abc&x=1';
@@ -137,5 +137,46 @@ describe('player controls', () => {
 		expect(sleepLabel(NOW + 15 * 60_000, NOW)).toBe('15 min left');
 		expect(sleepLabel(NOW + 14 * 60_000 + 1, NOW)).toBe('15 min left');
 		expect(sleepLabel(NOW + 5_000, NOW)).toBe('1 min left');
+	});
+});
+
+describe('chapters', () => {
+	// libVLC's list for a remux: MakeMKV names, a nameless one, starts in ms.
+	const chapters = [
+		{ name: 'Chapter 01', time: 0 },
+		{ name: 'Chapter 02', time: 312_480 },
+		{ name: '', time: 845_052 },
+		{ name: 'End Credits', time: 6_901_000 },
+	];
+
+	it('shows none for a file with one chapter or none', () => {
+		expect(chaptersOf(null)).toEqual([]);
+		expect(chaptersOf({ chapters: [] })).toEqual([]);
+		expect(chaptersOf({ chapters: [{ name: 'Chapter 1', time: 0 }] })).toEqual([]);
+		expect(chaptersOf({ chapters })).toBe(chapters);
+	});
+
+	it('finds the chapter playing from the time', () => {
+		expect(chapterAt(chapters, 0)).toBe(0);
+		expect(chapterAt(chapters, 312_479)).toBe(0);
+		expect(chapterAt(chapters, 312_480)).toBe(1);
+		expect(chapterAt(chapters, 1_000_000)).toBe(2);
+		expect(chapterAt(chapters, 9_000_000)).toBe(3);
+		// a first chapter after the start: nothing before it
+		expect(chapterAt(chapters.slice(1), 100_000)).toBe(-1);
+	});
+
+	it('names a chapter, numbering one without a name', () => {
+		expect(chapterName(chapters, 1)).toBe('Chapter 02');
+		expect(chapterName(chapters, 2)).toBe('Chapter 03');
+		expect(chapterName(chapters, 3)).toBe('End Credits');
+		expect(chapterName([{ name: ' ', time: 0 }, ...chapters], 0)).toBe('Chapter 01');
+	});
+
+	it('marks chapter starts on the seek bar, not the file start nor past the end', () => {
+		expect(chapterMarks(chapters, 7_000_000)).toEqual([312_480 / 7_000_000, 845_052 / 7_000_000, 6_901_000 / 7_000_000]);
+		expect(chapterMarks(chapters, 6_901_000)).toEqual([312_480 / 6_901_000, 845_052 / 6_901_000]);
+		// no duration yet (a stream without one)
+		expect(chapterMarks(chapters, 0)).toEqual([]);
 	});
 });

@@ -11,7 +11,7 @@ import { copyFacts, filmProbe, playerBadges, probeFor } from '../mediaInfo';
 import { PROVIDER_META, type LibraryFile, type LibraryItem } from '../model';
 import type { RootStackParamList } from '../navigation';
 import { FINISHED, playback, playbackKey } from '../playback';
-import { BUILT_IN, endsAt, FITS, openFileLink, playersForPlatform, ratioBox, SLEEP_MINUTES, sleepLabel, soundUnplayable, SPEEDS, type Fit, type Sleep } from '../player';
+import { BUILT_IN, chapterAt, chapterMarks, chapterName, chaptersOf, endsAt, FITS, openFileLink, playersForPlatform, ratioBox, SLEEP_MINUTES, sleepLabel, soundUnplayable, SPEEDS, type Fit, type Sleep } from '../player';
 import { episodeCode, findEpisode, logoUrl, mainFile, nextEpisode, pickCopy, qualityOf, showEpisodes, type EpisodeCopy } from '../titles';
 import { pngInk, type Ink } from '../png';
 import { refOf, type ScrobbleAction } from '../trackerSync';
@@ -47,6 +47,8 @@ const uniqueLabelsOf = (actions: SheetAction[]): SheetAction[] => {
 	const labels = uniqueLabels(actions.map((action) => action.label));
 	return actions.map((action, n) => ({ ...action, label: labels[n] }));
 };
+
+const PIP = Platform.OS === 'android' && !Platform.isTV;
 
 /** Where a title's logo artwork sits in its canvas, asked once per title while the app runs; null for none (a 404). */
 const logoInks = new Map<string, Promise<Ink | null>>();
@@ -150,8 +152,13 @@ export function PlayerScreen({ route, navigation }: Props) {
 	const [error, setError] = useState('');
 	const [tracks, setTracks] = useState<VLCPlayerTracks | null>(null);
 	const [controls, setControls] = useState<'shown' | 'peek' | 'hidden'>('shown');
+	/**
+	 * In Android's picture-in-picture window, which shows the picture alone. The activity is paused there, so React
+	 * Native holds JS timers and commands to the player until it is back in front; the player's events still arrive.
+	 */
+	const [pip, setPip] = useState(false);
 	const [poked, setPoked] = useState(0);
-	const [sheet, setSheet] = useState<'audio' | 'subtitle' | 'apps' | 'speed' | 'fit' | 'sleep' | 'delay' | 'episodes' | 'versions' | null>(null);
+	const [sheet, setSheet] = useState<'audio' | 'subtitle' | 'apps' | 'speed' | 'fit' | 'sleep' | 'delay' | 'episodes' | 'versions' | 'chapters' | null>(null);
 	const [locked, setLocked] = useState(false);
 	const [portrait, setPortrait] = useState(false);
 	const [rate, setRate] = useState(1);
@@ -223,13 +230,21 @@ export function PlayerScreen({ route, navigation }: Props) {
 	);
 	// On leaving the player, and when the app goes to the background (the player pauses itself). Through a ref:
 	// the episode's name can arrive after opening, and a re-run would tell the trackers it stopped.
-	const leave = useRef({ save, scrobble });
-	leave.current = { save, scrobble };
+	const leave = useRef({ save, scrobble, pip });
+	leave.current = { save, scrobble, pip };
 	useEffect(() => {
 		const subscription = AppState.addEventListener('change', (state) => {
-			if (state === 'active') return;
+			if (state === 'active') {
+				// Back from the picture-in-picture window.
+				if (leave.current.pip) {
+					setPip(false);
+					setControls('shown');
+				}
+				return;
+			}
 			leave.current.save();
-			leave.current.scrobble('pause');
+			// It plays on in the picture-in-picture window.
+			if (!leave.current.pip) leave.current.scrobble('pause');
 		});
 		return () => {
 			subscription.remove();
@@ -290,7 +305,8 @@ export function PlayerScreen({ route, navigation }: Props) {
 		const timer = setInterval(() => setTick((n) => n + 1), 15_000);
 		return () => clearInterval(timer);
 	}, [paused]);
-	// The sleep timer pauses, and the screen may sleep again.
+	// The sleep timer pauses, and the screen may sleep again. The player is also told the time (pauseAt): in Android's
+	// picture-in-picture window this timer waits until the app is back in front.
 	useEffect(() => {
 		if (typeof sleep !== 'number') return undefined;
 		const timer = setTimeout(() => {
@@ -431,6 +447,9 @@ export function PlayerScreen({ route, navigation }: Props) {
 	};
 	const shownTime = scrub ?? time;
 	const progress = duration ? Math.min(100, (shownTime / duration) * 100) : 0;
+	const chapters = chaptersOf(tracks);
+	const chapter = chapterAt(chapters, shownTime);
+	const marks = chapterMarks(chapters, duration);
 
 	/** A round button in the middle: skips and play/pause. */
 	const round = (icon: IconName, label: string, onPress: () => void, large = false, preferred = false) => (
@@ -453,6 +472,7 @@ export function PlayerScreen({ route, navigation }: Props) {
 		episodes && episodes.seasons.size ? tool('format-list-bulleted', 'Episodes', () => setSheet('episodes')) : null,
 	].filter(Boolean);
 	const toolsMore = [
+		chapters.length ? tool('format-list-numbered', 'Chapters', () => setSheet('chapters')) : null,
 		tool('aspect-ratio', 'Picture size', () => setSheet('fit'), fit !== 'contain'),
 		versions.length ? tool('layers-outline', 'Versions', () => setSheet('versions')) : null,
 		tool('power-sleep', `Sleep timer, ${sleepLabel(sleep, Date.now(), kind)}`, () => setSheet('sleep'), sleep !== null),
@@ -512,6 +532,8 @@ export function PlayerScreen({ route, navigation }: Props) {
 				];
 			case 'episodes':
 				return episodeActions();
+			case 'chapters':
+				return chapters.map((entry, n) => ({ label: `${chapterName(chapters, n)} · ${clock(entry.time)}`, checked: n === chapter, onPress: () => seekTo(entry.time) }));
 			case 'versions':
 				return versionActions();
 			case 'audio':
@@ -521,7 +543,7 @@ export function PlayerScreen({ route, navigation }: Props) {
 				return [];
 		}
 	};
-	const SHEET_TITLES = { audio: 'Audio', subtitle: 'Subtitles', apps: 'Open in another app', speed: 'Speed', fit: 'Picture size', sleep: 'Sleep timer', episodes: 'Episodes', versions: 'Other versions', delay: 'Delay' };
+	const SHEET_TITLES = { audio: 'Audio', subtitle: 'Subtitles', apps: 'Open in another app', speed: 'Speed', fit: 'Picture size', sleep: 'Sleep timer', episodes: 'Episodes', versions: 'Other versions', delay: 'Delay', chapters: 'Chapters' };
 	const sheetDetail =
 		sheet === 'subtitle' && externalSubs.length ? 'Files of this release are listed after the tracks inside the video.'
 		: sheet === 'sleep' && typeof sleep === 'number' ? `Pauses in ${sleepLabel(sleep, Date.now()).replace(' left', '')}.`
@@ -544,6 +566,7 @@ export function PlayerScreen({ route, navigation }: Props) {
 					style={box ? { position: 'absolute', ...box } : StyleSheet.absoluteFill}
 					resizeMode={box ? 'stretch' : fit === '16:9' || fit === '4:3' ? 'contain' : fit}
 					rate={rate}
+					pauseAt={typeof sleep === 'number' ? sleep : 0}
 					// Opened at the resume point rather than started and then moved there.
 					source={{ uri: url, isNetwork: true, mediaOptions: start ? [`:start-time=${start / 1000}`] : [] }}
 					continueAudioInBackground={false}
@@ -592,6 +615,8 @@ export function PlayerScreen({ route, navigation }: Props) {
 					}}
 					onPaused={() => {
 						setPaused(true);
+						// Also when the player pauses itself: closing Android's picture-in-picture window stops it.
+						save();
 						scrobble('pause');
 					}}
 					onEnd={ended}
@@ -622,7 +647,7 @@ export function PlayerScreen({ route, navigation }: Props) {
 
 			{buffering && !error && start !== null ? <ActivityIndicator size="large" color="#fff" style={local.center} pointerEvents="none" /> : null}
 
-			{controls !== 'hidden' && start !== null && !error && countdown === null && locked ? (
+			{pip ? null : controls !== 'hidden' && start !== null && !error && countdown === null && locked ? (
 				// Locked: one button, until it is tapped; nothing else takes a touch.
 				<View style={[StyleSheet.absoluteFill, safe]} pointerEvents="box-none">
 					<View style={local.top} pointerEvents="box-none">
@@ -634,6 +659,12 @@ export function PlayerScreen({ route, navigation }: Props) {
 					{controls === 'shown' && !Platform.isTV ? (
 						<View style={local.top} pointerEvents="box-none">
 							<View style={local.pill}>
+								{PIP ? tool('picture-in-picture-bottom-right', 'Picture in picture', () => {
+									// Before the app goes to the background, which would tell the trackers of a pause.
+									leave.current.pip = true;
+									setPip(true);
+									player.current?.enterPictureInPicture();
+								}) : null}
 								{tool('screen-rotation', portrait ? 'Turn to landscape' : 'Turn to portrait', () => setPortrait((was) => !was))}
 								{tool('lock-outline', 'Lock controls', () => setLocked(true))}
 							</View>
@@ -678,6 +709,7 @@ export function PlayerScreen({ route, navigation }: Props) {
 								{duration ? <Text style={local.endsAt}>Ends at {new Date(endsAt(Date.now(), shownTime, duration, rate)).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}</Text> : null}
 							</View>
 						) : null}
+						{chapter >= 0 ? <Text numberOfLines={1} style={local.chapter}>{chapterName(chapters, chapter)}</Text> : null}
 						{(() => {
 							const bar = (
 								<View
@@ -698,6 +730,7 @@ export function PlayerScreen({ route, navigation }: Props) {
 								>
 									<View style={local.track} pointerEvents="none">
 										<View style={[local.fill, { width: `${progress}%` }]} />
+										{marks.map((mark) => <View key={mark} style={[local.mark, { left: `${mark * 100}%` }]} />)}
 									</View>
 									<View style={[local.knob, { left: `${progress}%` }]} pointerEvents="none" />
 								</View>
@@ -827,6 +860,9 @@ const local = StyleSheet.create({
 	barFocus: { borderRadius: 16, paddingHorizontal: 8 },
 	track: { height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.35)', overflow: 'hidden' },
 	fill: { height: 4, backgroundColor: ACCENT },
+	// A gap in the bar at each chapter start.
+	mark: { position: 'absolute', top: 0, bottom: 0, width: 2, marginLeft: -1, backgroundColor: 'rgba(0,0,0,0.7)' },
+	chapter: { ...SHADOW, color: '#e5e9f2', fontSize: 13, fontWeight: '600', marginTop: 6 },
 	knob: { position: 'absolute', width: 14, height: 14, borderRadius: 7, marginLeft: -7, backgroundColor: ACCENT },
 	toolRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
 	timePill: { ...GLASS, borderRadius: 18, paddingHorizontal: 12, height: 34, justifyContent: 'center' },

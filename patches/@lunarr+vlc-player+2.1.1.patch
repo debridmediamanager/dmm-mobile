@@ -1,8 +1,259 @@
+diff --git a/node_modules/@lunarr/vlc-player/android/src/main/java/com/lunarr/vlcplayer/VLCPlayerView.kt b/node_modules/@lunarr/vlc-player/android/src/main/java/com/lunarr/vlcplayer/VLCPlayerView.kt
+index 63c19ea..5f85946 100644
+--- a/node_modules/@lunarr/vlc-player/android/src/main/java/com/lunarr/vlcplayer/VLCPlayerView.kt
++++ b/node_modules/@lunarr/vlc-player/android/src/main/java/com/lunarr/vlcplayer/VLCPlayerView.kt
+@@ -1,14 +1,26 @@
+ package com.lunarr.vlcplayer
+ 
+ import android.annotation.SuppressLint
++import android.app.Activity
++import android.app.Application
++import android.app.PendingIntent
++import android.app.PictureInPictureParams
++import android.app.RemoteAction
++import android.content.BroadcastReceiver
+ import android.content.Context
++import android.content.Intent
++import android.content.IntentFilter
+ import android.graphics.Bitmap
+ import android.graphics.SurfaceTexture
+ import android.graphics.drawable.Drawable
++import android.graphics.drawable.Icon
+ import android.media.AudioManager
+ import android.net.Uri
++import android.os.Build
++import android.os.Bundle
+ import android.os.Handler
+ import android.os.Looper
++import android.util.Rational
+ import android.util.Base64
+ import android.util.Log
+ import android.view.TextureView
+@@ -83,6 +95,7 @@ class VLCPlayerView(context: ThemedReactContext) :
+     private var shouldResumePlaying = false
+     private var nextTrackEnabled = false
+     private var previousTrackEnabled = false
++    private var pauseAt = 0L
+ 
+     private val progressRunnable = object : Runnable {
+         override fun run() {
+@@ -115,11 +128,13 @@ class VLCPlayerView(context: ThemedReactContext) :
+     override fun onAttachedToWindow() {
+         super.onAttachedToWindow()
+         addOnLayoutChangeListener(onLayoutChangeListener)
++        watchPictureInPicture(true)
+     }
+ 
+     override fun onDetachedFromWindow() {
+         super.onDetachedFromWindow()
+         removeOnLayoutChangeListener(onLayoutChangeListener)
++        watchPictureInPicture(false)
+         releasePlayer()
+     }
+ 
+@@ -141,6 +156,10 @@ class VLCPlayerView(context: ThemedReactContext) :
+ 
+     private fun progressChanged() {
+         val player = mediaPlayer ?: return
++        if (pauseAt > 0 && System.currentTimeMillis() >= pauseAt) {
++            pauseAt = 0
++            pause()
++        }
+         Arguments.createMap().apply {
+             // Android reports milliseconds, iOS reports seconds, so normalise.
+             putDouble("currentTime", player.time / 1000.0)
+@@ -186,6 +205,7 @@ class VLCPlayerView(context: ThemedReactContext) :
+                 scheduleProgress()
+                 updateFrameSizeFromMedia()
+                 pushNowPlaying()
++                updatePictureInPicture()
+                 emitState("onPlaying", "Playing")
+             }
+             MediaPlayer.Event.Opening -> {
+@@ -203,6 +223,7 @@ class VLCPlayerView(context: ThemedReactContext) :
+             MediaPlayer.Event.Paused -> {
+                 stopProgress()
+                 pushNowPlaying()
++                updatePictureInPicture()
+                 emitState("onPaused", "Paused")
+             }
+             MediaPlayer.Event.Buffering -> {
+@@ -372,7 +393,13 @@ class VLCPlayerView(context: ThemedReactContext) :
+ 
+     // ---- Public API (called from the manager) ----
+ 
++    fun setPauseAt(at: Long) {
++        pauseAt = at
++    }
++
+     fun play() {
++        // A time that passed while paused is spent.
++        if (pauseAt in 1..System.currentTimeMillis()) pauseAt = 0
+         pausedProp = false
+         mediaPlayer?.play()
+         requestAudioFocus()
+@@ -769,11 +796,18 @@ class VLCPlayerView(context: ThemedReactContext) :
+         player.getSpuTracks()?.forEach { t ->
+             subJson.put(org.json.JSONObject().put("id", t.id).put("name", t.name ?: ""))
+         }
++        val chapterJson = org.json.JSONArray()
++        // -1: the current title's chapters.
++        player.getChapters(-1)?.forEach { c ->
++            chapterJson.put(org.json.JSONObject().put("name", c.name ?: "").put("time", c.timeOffset))
++        }
+         Arguments.createMap().apply {
+             putString("audio", audioJson.toString())
+             putString("subtitle", subJson.toString())
+             putInt("audioIndex", player.getAudioTrack())
+             putInt("subtitleIndex", player.getSpuTrack())
++            putString("chapters", chapterJson.toString())
++            putInt("chapterIndex", player.getChapter())
+             emit("onTracks", this)
+         }
+     }
+@@ -827,6 +861,8 @@ class VLCPlayerView(context: ThemedReactContext) :
+     }
+ 
+     override fun onHostPause() {
++        // Entering picture in picture pauses the activity: the video plays on in the small window.
++        if (isInPictureInPicture()) return
+         if (!continueAudioInBackground && mediaPlayer?.isPlaying == true) {
+             pause()
+             shouldResumePlaying = true
+@@ -873,6 +909,87 @@ class VLCPlayerView(context: ThemedReactContext) :
+         mediaPlayer?.setEqualizer(eq)
+     }
+ 
++    // ---- Picture in picture (Android 8+) ----
++
++    private fun isInPictureInPicture(): Boolean =
++        Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && themedReactContext.currentActivity?.isInPictureInPictureMode == true
++
++    fun enterPictureInPicture() {
++        val activity = themedReactContext.currentActivity ?: return
++        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || mediaPlayer == null) return
++        try {
++            activity.enterPictureInPictureMode(pictureInPictureParams())
++        } catch (e: IllegalStateException) {
++            // Picture in picture is switched off for the app, or the device has none.
++            Log.w(TAG, "No picture in picture", e)
++        }
++    }
++
++    private fun pictureInPictureParams(): PictureInPictureParams {
++        val playing = mediaPlayer?.isPlaying == true
++        val label = if (playing) "Pause" else "Play"
++        val intent = PendingIntent.getBroadcast(
++            context, 0, Intent(PIP_PLAY_PAUSE).setPackage(context.packageName), PendingIntent.FLAG_IMMUTABLE
++        )
++        val icon = Icon.createWithResource("android", if (playing) android.R.drawable.ic_media_pause else android.R.drawable.ic_media_play)
++        val builder = PictureInPictureParams.Builder().setActions(listOf(RemoteAction(icon, label, label, intent)))
++        if (frameWidth > 0 && frameHeight > 0) {
++            // Android refuses a window wider than 2.39:1 or taller than 1:2.39.
++            val ratio = (frameWidth.toFloat() / frameHeight).coerceIn(0.42f, 2.38f)
++            builder.setAspectRatio(Rational((ratio * 1000).toInt(), 1000))
++        }
++        return builder.build()
++    }
++
++    /** The window's play/pause button follows the player. */
++    private fun updatePictureInPicture() {
++        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || !isInPictureInPicture()) return
++        try {
++            themedReactContext.currentActivity?.setPictureInPictureParams(pictureInPictureParams())
++        } catch (e: IllegalStateException) {
++            Log.w(TAG, "Picture in picture params", e)
++        }
++    }
++
++    private val pictureInPictureButton = object : BroadcastReceiver() {
++        override fun onReceive(context: Context, intent: Intent) {
++            if (mediaPlayer?.isPlaying == true) pause() else play()
++        }
++    }
++
++    // Closing the picture-in-picture window stops the activity (entering it only pauses it): playback stops too.
++    private val activityStops = object : Application.ActivityLifecycleCallbacks {
++        override fun onActivityStopped(activity: Activity) {
++            if (activity === themedReactContext.currentActivity && mediaPlayer?.isPlaying == true) pause()
++        }
++        override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {}
++        override fun onActivityStarted(activity: Activity) {}
++        override fun onActivityResumed(activity: Activity) {}
++        override fun onActivityPaused(activity: Activity) {}
++        override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
++        override fun onActivityDestroyed(activity: Activity) {}
++    }
++
++    private var watching = false
++
++    private fun watchPictureInPicture(watch: Boolean) {
++        if (watch == watching || Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
++        val application = context.applicationContext as Application
++        if (watch) {
++            val filter = IntentFilter(PIP_PLAY_PAUSE)
++            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
++                context.registerReceiver(pictureInPictureButton, filter, Context.RECEIVER_NOT_EXPORTED)
++            } else {
++                context.registerReceiver(pictureInPictureButton, filter)
++            }
++            application.registerActivityLifecycleCallbacks(activityStops)
++        } else {
++            context.unregisterReceiver(pictureInPictureButton)
++            application.unregisterActivityLifecycleCallbacks(activityStops)
++        }
++        watching = watch
++    }
++
+     // ---- SurfaceTextureListener ----
+ 
+     override fun onSurfaceTextureAvailable(surface: SurfaceTexture, width: Int, height: Int) {
+@@ -965,6 +1082,7 @@ class VLCPlayerView(context: ThemedReactContext) :
+     companion object {
+         const val REACT_CLASS = "VLCPlayer"
+         private const val TAG = "VLCPlayerView"
++        private const val PIP_PLAY_PAUSE = "com.lunarr.vlcplayer.PIP_PLAY_PAUSE"
+     }
+ }
+ 
+diff --git a/node_modules/@lunarr/vlc-player/android/src/main/java/com/lunarr/vlcplayer/VLCPlayerViewManager.kt b/node_modules/@lunarr/vlc-player/android/src/main/java/com/lunarr/vlcplayer/VLCPlayerViewManager.kt
+index 48153f5..8b03ec7 100644
+--- a/node_modules/@lunarr/vlc-player/android/src/main/java/com/lunarr/vlcplayer/VLCPlayerViewManager.kt
++++ b/node_modules/@lunarr/vlc-player/android/src/main/java/com/lunarr/vlcplayer/VLCPlayerViewManager.kt
+@@ -46,6 +46,10 @@ class VLCPlayerViewManager(private val reactContext: ReactApplicationContext) :
+         view.setRate(value.toFloat())
+     }
+ 
++    override fun setPauseAt(view: VLCPlayerView, value: Double) {
++        view.setPauseAt(value.toLong())
++    }
++
+     override fun setResizeMode(view: VLCPlayerView, value: String?) {
+         view.setResizeMode(value)
+     }
+@@ -155,4 +159,8 @@ class VLCPlayerViewManager(private val reactContext: ReactApplicationContext) :
+     override fun setEqualizerBandGains(view: VLCPlayerView, gains: String) {
+         view.setEqualizerBandGains(gains)
+     }
++
++    override fun enterPictureInPicture(view: VLCPlayerView) {
++        view.enterPictureInPicture()
++    }
+ }
 diff --git a/node_modules/@lunarr/vlc-player/ios/VLCPlayerComponentView.mm b/node_modules/@lunarr/vlc-player/ios/VLCPlayerComponentView.mm
-index f8b3904..5bf10b4 100644
+index f8b3904..ecbca1d 100644
 --- a/node_modules/@lunarr/vlc-player/ios/VLCPlayerComponentView.mm
 +++ b/node_modules/@lunarr/vlc-player/ios/VLCPlayerComponentView.mm
-@@ -210,6 +210,12 @@ + (ComponentDescriptorProvider)componentDescriptorProvider
+@@ -129,6 +129,8 @@ - (void)emitEvent:(NSString *)type payload:(NSDictionary *)payload
+           .audioIndex = [payload[@"audioIndex"] intValue],
+           .subtitle = [self stdString:payload[@"subtitle"]],
+           .subtitleIndex = [payload[@"subtitleIndex"] intValue],
++          .chapters = [self stdString:payload[@"chapters"]],
++          .chapterIndex = [payload[@"chapterIndex"] intValue],
+       };
+       emitter.onTracks(e);
+       return;
+@@ -210,6 +212,12 @@ + (ComponentDescriptorProvider)componentDescriptorProvider
    return concreteComponentDescriptorProvider<VLCPlayerComponentDescriptor>();
  }
  
@@ -15,3 +266,181 @@ index f8b3904..5bf10b4 100644
  - (void)prepareForRecycle
  {
    // Fabric may move a removed component view into a recycling pool. Release
+@@ -413,4 +421,9 @@ - (void)setEqualizerBandGains:(NSString *)gains
+   [_playerView setEqualizerBandGains:gains];
+ }
+ 
++// VLCKit 3 has no picture in picture.
++- (void)enterPictureInPicture
++{
++}
++
+ @end
+diff --git a/node_modules/@lunarr/vlc-player/ios/VLCPlayerView.swift b/node_modules/@lunarr/vlc-player/ios/VLCPlayerView.swift
+index 831c97e..95f2212 100644
+--- a/node_modules/@lunarr/vlc-player/ios/VLCPlayerView.swift
++++ b/node_modules/@lunarr/vlc-player/ios/VLCPlayerView.swift
+@@ -299,11 +299,21 @@ public final class VLCPlayerView: UIView, VLCMediaPlayerDelegate, VLCMediaDelega
+             ])
+         }
+ 
++        // -1: the current title's chapters.
++        let chapters: [[String: Any]] = (p.chapterDescriptions(ofTitle: -1) as? [[String: Any]] ?? []).map {
++            [
++                "name": $0[VLCChapterDescriptionName] as? String ?? "",
++                "time": ($0[VLCChapterDescriptionTimeOffset] as? NSNumber)?.int64Value ?? 0,
++            ]
++        }
++
+         onEvent?("Tracks", [
+             "audio": jsonString(audio),
+             "audioIndex": Int(p.currentAudioTrackIndex),
+             "subtitle": jsonString(subtitle),
+             "subtitleIndex": Int(p.currentVideoSubTitleIndex),
++            "chapters": jsonString(chapters),
++            "chapterIndex": Int(p.currentChapterIndex),
+         ])
+     }
+ 
+diff --git a/node_modules/@lunarr/vlc-player/specs/VLCPlayerNativeComponent.ts b/node_modules/@lunarr/vlc-player/specs/VLCPlayerNativeComponent.ts
+index 3983507..30c8e55 100644
+--- a/node_modules/@lunarr/vlc-player/specs/VLCPlayerNativeComponent.ts
++++ b/node_modules/@lunarr/vlc-player/specs/VLCPlayerNativeComponent.ts
+@@ -88,6 +88,10 @@ export interface VLCTracksEvent {
+   subtitle: string;
+   /** id of the currently selected subtitle track (-1 if disabled). */
+   subtitleIndex: Int32;
++  /** JSON-encoded `[{ "name": string, "time": number }, ...]` chapters of the current title, start times in ms. */
++  chapters: string;
++  /** index of the current chapter (-1 if none). */
++  chapterIndex: Int32;
+ }
+ 
+ export interface NativeProps extends ViewProps {
+@@ -96,6 +100,9 @@ export interface NativeProps extends ViewProps {
+   muted?: boolean;
+   repeat?: boolean;
+   rate?: Double;
++  /** Android: pauses at this wall-clock time (ms since 1970; 0 for none), also in the picture-in-picture window,
++   * where React Native holds JS timers and commands until the app is back in front. */
++  pauseAt?: Double;
+   resizeMode?: string;
+   volume?: Double;
+   autoAspectRatio?: boolean;
+@@ -152,6 +159,7 @@ export interface NativeCommands {
+   setEqualizerPreset: (ref: React.ComponentRef<HostComponent<NativeProps>>, index: Int32) => void;
+   setEqualizerPreamp: (ref: React.ComponentRef<HostComponent<NativeProps>>, value: Double) => void;
+   setEqualizerBandGains: (ref: React.ComponentRef<HostComponent<NativeProps>>, gains: string) => void;
++  enterPictureInPicture: (ref: React.ComponentRef<HostComponent<NativeProps>>) => void;
+ }
+ 
+ export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
+@@ -173,6 +181,7 @@ export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
+     'setEqualizerPreset',
+     'setEqualizerPreamp',
+     'setEqualizerBandGains',
++    'enterPictureInPicture',
+   ],
+ });
+ 
+diff --git a/node_modules/@lunarr/vlc-player/src/VLCPlayerView.tsx b/node_modules/@lunarr/vlc-player/src/VLCPlayerView.tsx
+index abf7935..ce48382 100644
+--- a/node_modules/@lunarr/vlc-player/src/VLCPlayerView.tsx
++++ b/node_modules/@lunarr/vlc-player/src/VLCPlayerView.tsx
+@@ -12,6 +12,7 @@ import type {
+   VLCStateChangeEvent,
+   VLCTracksEvent,
+   VLCTrack,
++  VLCChapter,
+   VLCPlayerSource,
+   VLCRequestNavigationEvent,
+ } from './types';
+@@ -27,7 +28,7 @@ function toNativeEvent<T>(
+   return (event: NativeSyntheticEvent<T>) => handler(event.nativeEvent);
+ }
+ 
+-function parseTracks(json: string): VLCTrack[] {
++function parseTracks<T = VLCTrack>(json: string): T[] {
+   try {
+     const parsed = JSON.parse(json);
+     return Array.isArray(parsed) ? parsed : [];
+@@ -125,6 +126,11 @@ export default forwardRef<VLCPlayerRef, VLCPlayerProps>(function VLCPlayer(props
+         Commands.setEqualizerBandGains(nativeRef.current, gains);
+       }
+     },
++    enterPictureInPicture() {
++      if (nativeRef.current) {
++        Commands.enterPictureInPicture(nativeRef.current);
++      }
++    },
+   }));
+ 
+   const { source, autoplay, onLoad, onLoadStart, onProgress, onSeek, onPlaying, onPaused, onEnd, onError, onBuffer, onMetadata, onStopped, onSnapshot, onTracks, onRequestNext, onRequestPrevious, continueAudioInBackground, showNowPlaying, rate, volume, ...rest } = props;
+@@ -158,6 +164,8 @@ export default forwardRef<VLCPlayerRef, VLCPlayerProps>(function VLCPlayer(props
+                 audioIndex: event.nativeEvent.audioIndex,
+                 subtitle: parseTracks(event.nativeEvent.subtitle),
+                 subtitleIndex: event.nativeEvent.subtitleIndex,
++                chapters: event.nativeEvent.chapters ? parseTracks<VLCChapter>(event.nativeEvent.chapters) : [],
++                chapterIndex: event.nativeEvent.chapterIndex ?? -1,
+               })
+           : undefined
+       }
+diff --git a/node_modules/@lunarr/vlc-player/src/index.ts b/node_modules/@lunarr/vlc-player/src/index.ts
+index 31b5720..655f21e 100644
+--- a/node_modules/@lunarr/vlc-player/src/index.ts
++++ b/node_modules/@lunarr/vlc-player/src/index.ts
+@@ -13,6 +13,7 @@ export type {
+   VLCSnapshotEvent,
+   VLCTracksEvent,
+   VLCTrack,
++  VLCChapter,
+   VLCPlayerTracks,
+   VLCRequestNavigationEvent,
+   VLCResizeMode,
+diff --git a/node_modules/@lunarr/vlc-player/src/types.ts b/node_modules/@lunarr/vlc-player/src/types.ts
+index b2f7f5e..42767c9 100644
+--- a/node_modules/@lunarr/vlc-player/src/types.ts
++++ b/node_modules/@lunarr/vlc-player/src/types.ts
+@@ -57,6 +57,14 @@ export interface VLCTrack {
+   name: string;
+ }
+ 
++/** A chapter of the playing title. */
++export interface VLCChapter {
++  /** The chapter's own name, empty when the file gives none. */
++  name: string;
++  /** Start, in milliseconds. */
++  time: number;
++}
++
+ /** Parsed `onTracks` payload. */
+ export interface VLCPlayerTracks {
+   audio: VLCTrack[];
+@@ -65,6 +73,10 @@ export interface VLCPlayerTracks {
+   subtitle: VLCTrack[];
+   /** id of the currently selected subtitle track (-1 if disabled). */
+   subtitleIndex: number;
++  /** The current title's chapters, empty for a file without any. */
++  chapters: VLCChapter[];
++  /** index of the current chapter (-1 if none). */
++  chapterIndex: number;
+ }
+ 
+ /** How the video is framed inside the view. */
+@@ -79,6 +91,9 @@ export type VLCPlayerProps = {
+   repeat?: boolean;
+   /** Playback speed multiplier. 1 = normal, 0.5 half speed, 2 double. Default 1. */
+   rate?: number;
++  /** Android: pauses at this wall-clock time (ms since 1970; 0 for none), also in the picture-in-picture window,
++   * where React Native holds JS timers and commands until the app is back in front. */
++  pauseAt?: number;
+   /**
+    * Video framing: `contain` (fit, letterbox), `cover` (zoom, fill/crop),
+    * `stretch` (fill, distort), `center` / `none` (original size).
+@@ -164,4 +179,6 @@ export interface VLCPlayerRef {
+   setEqualizerPreamp(value: number): void;
+   /** Comma-separated band gains (-20..20 dB), e.g. "0,-2,3,0". */
+   setEqualizerBandGains(gains: string): void;
++  /** Android 8+ phones and tablets: plays on in a picture-in-picture window (no-op elsewhere). */
++  enterPictureInPicture(): void;
+ }

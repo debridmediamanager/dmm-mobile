@@ -147,7 +147,8 @@
       ],
       "./plugins/withReleaseSigning",
       "./plugins/withLibVlcKeep",
-      "./plugins/withVlcKit"
+      "./plugins/withVlcKit",
+      "./plugins/withPictureInPicture"
     ],
     "updates": {
       "url": "https://ota.debridmediamanager.com/manifest",

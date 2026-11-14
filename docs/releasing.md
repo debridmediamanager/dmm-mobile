@@ -41,6 +41,11 @@ air: the workflow's fingerprint check refuses it. It reaches users with the next
 store release; until then a fix for 1.0.0 goes out from a branch off `v1.0.0`
 (below).
 
+The same holds for 1.1.0 since 2026-11-14: the player's chapters and Android's
+picture in picture changed its native code (`patches/@lunarr+vlc-player+2.1.1.patch`)
+and the Android manifest (`plugins/withPictureInPicture.js`). They reach users with
+the next store release; a fix for 1.1.0 goes out from a branch off `v1.1.0`.
+
 A binary runs its own code until an update newer than the build itself is
 published: updates are ordered by date, so one published before the build is
 ignored. Builds of older versions keep the last update published for their version. To

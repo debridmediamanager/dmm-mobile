@@ -1,5 +1,5 @@
 import { Linking, Platform } from 'react-native';
-import type { VLCPlayerTracks } from '@lunarr/vlc-player';
+import type { VLCChapter, VLCPlayerTracks } from '@lunarr/vlc-player';
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 import * as IntentLauncher from 'expo-intent-launcher';
 import { isVideoName } from './core';
@@ -146,3 +146,12 @@ export const SLEEP_MINUTES = [15, 30, 60];
 /** "12 min left", "End of episode", "Off". */
 export const sleepLabel = (sleep: Sleep, now: number, kind?: 'movie' | 'tv'): string =>
 	sleep === null ? 'Off' : sleep === 'end' ? `End of ${kind === 'tv' ? 'episode' : kind === 'movie' ? 'film' : 'video'}` : `${Math.max(1, Math.ceil((sleep - now) / 60_000))} min left`;
+
+/** A file's chapters worth showing: one chapter spanning the whole file is none. */
+export const chaptersOf = (tracks: Pick<VLCPlayerTracks, 'chapters'> | null): VLCChapter[] => (tracks && tracks.chapters.length > 1 ? tracks.chapters : []);
+/** The chapter playing at `ms`: the last one started by then, -1 before the first. */
+export const chapterAt = (chapters: VLCChapter[], ms: number): number => chapters.findLastIndex((chapter) => chapter.time <= ms);
+/** The chapter's own name, else its number: "Chapter 06". */
+export const chapterName = (chapters: VLCChapter[], index: number): string => chapters[index]?.name.trim() || `Chapter ${String(index + 1).padStart(2, '0')}`;
+/** Where the seek bar marks chapter starts, as fractions of the duration: not the start of the file, nothing past its end. */
+export const chapterMarks = (chapters: VLCChapter[], duration: number): number[] => (duration > 0 ? chapters.map((chapter) => chapter.time / duration).filter((at) => at > 0 && at < 1) : []);
