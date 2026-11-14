@@ -45,7 +45,8 @@ of open movies without a debrid account.
 
 Accounts (the sign-in screen before that) ends with **DMM server**. Leave it blank
 for debridmediamanager.com, or enter your own DMM's address, such as
-`https://dmm.example.com` or `http://192.168.1.5:3000`. Everything the app asks
+`https://dmm.example.com` or `192.168.1.5:3000` (an address on your own
+network typed without `http://` or `https://` means `http://`). Everything the app asks
 DMM goes there: remembered logins and settings, TV linking, titles and episode
 lists, media details, search, Trakt, and the pages Search and title pages open.
 The address is kept on this device only and is never synced, since the synced

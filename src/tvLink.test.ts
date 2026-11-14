@@ -34,6 +34,11 @@ describe('a self-hosted DMM server', () => {
 		expect(normalizeDmmOrigin('DMM.example.com/')).toBe('https://dmm.example.com');
 		expect(normalizeDmmOrigin('http://192.168.1.5:3000/library?x=1')).toBe('http://192.168.1.5:3000');
 		expect(normalizeDmmOrigin('HTTPS://[fd00::5]:3000')).toBe('https://[fd00::5]:3000');
+		// DMM self-hosts on plain http, so a bare LAN address means http; a domain still means https.
+		expect(normalizeDmmOrigin('192.168.1.5:3000')).toBe('http://192.168.1.5:3000');
+		expect(normalizeDmmOrigin('nas.local:3000')).toBe('http://nas.local:3000');
+		expect(normalizeDmmOrigin('localhost:3000')).toBe('http://localhost:3000');
+		expect(normalizeDmmOrigin('dmm.example.com:8443')).toBe('https://dmm.example.com:8443');
 		for (const bad of ['ftp://dmm.example.com', 'javascript:alert(1)', 'dmm example.com', 'https://']) expect(() => normalizeDmmOrigin(bad)).toThrow('Enter the DMM server');
 	});
 

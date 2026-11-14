@@ -14,13 +14,16 @@ export function setDmmOrigin(origin: string): void {
 	DMM_ORIGIN = origin;
 }
 
-/** `dmm.example.com`, `http://192.168.1.5:3000/` → an origin; blank means debridmediamanager.com. */
+/** `dmm.example.com`, `192.168.1.5:3000/` → an origin; blank means debridmediamanager.com. */
 export function normalizeDmmOrigin(input: string): string {
 	const text = input.trim();
 	if (!text) return OFFICIAL_DMM_ORIGIN;
 	const match = /^(?:(https?):\/\/)?([a-z0-9.-]+|\[[0-9a-f:.]+\])(:\d{1,5})?(?:[/?#]\S*)?$/i.exec(text);
 	if (!match) throw new Error('Enter the DMM server as an address like https://dmm.example.com or http://192.168.1.5:3000.');
-	return `${(match[1] ?? 'https').toLowerCase()}://${match[2].toLowerCase()}${match[3] ?? ''}`;
+	const host = match[2].toLowerCase();
+	// Typed without a scheme, a LAN address (an IP, a .local or a one-word name) is a plain-http self-host; anything else is https.
+	const lan = /^(\d{1,3}\.){3}\d{1,3}$|^\[|\.local$|^[^.]+$/.test(host);
+	return `${(match[1] ?? (lan ? 'http' : 'https')).toLowerCase()}://${host}${match[3] ?? ''}`;
 }
 
 /**
