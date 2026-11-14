@@ -104,15 +104,17 @@ headless Chrome at Apple's exact sizes). Edit the copy there and rerun.
 
 `docs/store/screenshots/`: the app's real screens with a sample library of Blender open
 movies (the README's screenshot fixture), status bars at 9:41. No Search screens, which
-would show commercial posters.
+would show commercial posters. The Play phone set is the README's Android phone shots cut to
+Play's 2:1 limit: a 240 px band taken out where it shows least (empty space, or content just
+above the tab bar or home indicator), and the landscape player shot letterboxed.
 
 | Store slot | Size | Files |
 |---|---|---|
 | App Store iPhone 6.9" | 1320 × 2868 | `appstore-iphone-*.png` (5) |
 | App Store iPad 13" | 2064 × 2752 | `appstore-ipad-*.png` (2) |
 | App Store Apple TV | 3840 × 2160 | `appstore-appletv-*.png` (3) |
-| Play phone | 1080 × 2160 | `play-phone-*.png` |
-| Play 10" tablet | 2560 × 1600 | `play-tablet-*.png` |
+| Play phone | 1080 × 2160 (player 2400 × 1200) | `play-phone-*.png` (5) |
+| Play 7" and 10" tablet | 2560 × 1600 | `../screenshots/android-tablet-home.png` |
 | Play Android TV | 1920 × 1080 | `../screenshots/firetv-*.png` |
 | Play feature graphic | 1024 × 500 | `play-feature-graphic.png` |
 | Play icon | 512 × 512 | `play-icon.png` |
