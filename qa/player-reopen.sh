@@ -1,7 +1,7 @@
 #!/bin/sh
 # Checks that the built-in player opens a second video in the same app session: plays qa/clips/a.mkv, pauses and
 # closes it, opens qa/clips/b.mp4 and fails unless B starts. Fabric reused the closed player's native view on iOS, which
-# kept the pause, so B hung at 0:00 (2026-11-12). Give it an iOS simulator build of the app (README, Local development);
+# kept the pause, so B hung at 0:00 (2026-11-12). Give it an iOS simulator build of the app (docs/development.md);
 # it runs a copy with qa/player-reopen.tsx as its JavaScript in a throwaway simulator:
 #   qa/player-reopen.sh path/to/Release-iphonesimulator/DMMMobile.app
 set -eu

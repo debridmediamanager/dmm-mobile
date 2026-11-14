@@ -119,7 +119,7 @@ screens and TV sets TV screens.
 headless Chrome at each store's exact size; edit the headlines there and rerun). `python3 docs/store/marketing/video.py`
 builds the previews from screen recordings into the same backgrounds and frames.
 
-The screens are the 1.2.0 release build running the README's screenshot fixture, status bars at 9:41: Blender open
+The screens are the 1.2.0 release build running the screenshot fixture (`docs/features.md`, Screenshots), status bars at 9:41: Blender open
 movies (CC BY), no Search screens (they would show commercial posters). Sintel's 4K copy is fictional, as its release
 name says (a Dolby Vision, TrueHD Atmos REMUX); its media details come from a probe the fixture builds to match, and it
 plays Blender's own Sintel 1080p MKV with the file's eight chapters. Captured on a Pixel 6 (tablet: `wm size 2560x1600`,

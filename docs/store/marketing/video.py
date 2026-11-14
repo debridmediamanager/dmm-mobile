@@ -4,7 +4,7 @@ the slide background with its headline, a cut from browsing to playback, then th
     python3 docs/store/marketing/render.py --video <assets>
     python3 docs/store/marketing/video.py <assets> <recordings> <out>
 
-Recordings (README screenshot fixture, Blender open movies): iphone-rec.mov (`simctl io recordVideo`, iPhone 17 Pro
+Recordings (the screenshot fixture in docs/features.md, Blender open movies): iphone-rec.mov (`simctl io recordVideo`, iPhone 17 Pro
 Max simulator, portrait, so its landscape player is turned back here), atv-rec.mov (Apple TV 4K at 1080p simulator),
 ftv-rec.mp4 (Fire TV Cube, `adb shell screenrecord`). The cuts below are seconds into those files.
 """

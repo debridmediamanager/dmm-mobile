@@ -22,7 +22,7 @@ lacks the native code it expects. The workflow enforces that rule (below).
 1. On `main`, raise `version` in `app.json` (and `ios.buildNumber` /
    `android.versionCode`; the stores refuse a number they have already seen).
    Commit it. Every native change since the last store release ships now.
-2. Build every platform from that commit (README, Local development) and upload it
+2. Build every platform from that commit ([development.md](development.md)) and upload it
    to the stores as in `docs/store/release.md`.
 3. Tag **exactly the commit you built** and publish the GitHub release with the
    Android APK, which Fire TV users sideload:

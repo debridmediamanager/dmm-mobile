@@ -6,7 +6,7 @@ device frame, on a DMM teal gradient. Same six slides, same order, same headline
     python3 docs/store/marketing/render.py --video <dir>     # backgrounds, frames and geometry for video.py
 
 Each slide is an HTML page at the store's exact pixel size, screenshotted by headless Chrome. The screens in
-screens/ are captures of the release build running the README screenshot fixture (Blender open movies, CC BY):
+screens/ are captures of the release build running the screenshot fixture in docs/features.md (Blender open movies, CC BY):
 phone and tablet from a Pixel 6 (tablet = wm size 2560x1600), TV from a Fire TV Cube, iPhone, iPad and Apple TV
 from simulators. Inter (OFL) comes from Google Fonts once and is cached in ~/.cache/dmm-store-marketing.
 """

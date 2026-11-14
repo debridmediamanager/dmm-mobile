@@ -130,7 +130,7 @@ My Apps → + → New App: platforms iOS **and** tvOS, name "DMM Mobile", bundle
 iPhone/iPad and Apple TV are separate projects from the same source:
 
 ```sh
-vlckit/fetch.sh   # once: the player's VLCKit frameworks (README, Built-in player)
+vlckit/fetch.sh   # once: the player's VLCKit frameworks (docs/development.md)
 
 # iPhone and iPad
 npx expo prebuild -p ios --clean
