@@ -1,7 +1,7 @@
 # Store listings and form answers
 
 One app on both stores: bundle id / package `com.debridmediamanager.library`
-(fixed forever once published). Google Play has 1.1.0 (versionCode 3) on the closed
+(fixed forever once published). Google Play has 1.2.0 (versionCode 4) on the closed
 test; the App Store has 1.0.0 (build 2). Apple ships iPhone, iPad
 and Apple TV in one App Store record (add the tvOS platform to it); Google Play
 ships phones, tablets and Android TV from one app bundle.
@@ -41,6 +41,10 @@ every file you keep there shows in one fast list, even with thousands of items.
 • Browse your library by title, with posters, seasons and episodes
 • Play in the built-in player, which remembers where you stopped and plays the next
   episode, or in the player you choose
+• The player shows chapters, changes speed and picture size, switches to another copy
+  of the same film and has a sleep timer; on Android phones and tablets it keeps
+  playing in a small window (picture in picture)
+• See what each copy holds: resolution, HDR or Dolby Vision, audio and subtitle tracks
 • Continue watching and next up on Home
 • Connect Trakt or Simkl: what you play is scrobbled, and watched marks and resume points follow you
 • See your Trakt and Simkl watchlists and lists, and play what your library holds
@@ -81,6 +85,15 @@ Simkl" on a title's page while Simkl is connected.
   Home: continue watching, next up and your watchlist.
   Connect Trakt or Simkl to sync what you watch.
   Your Trakt and Simkl lists, and a calendar of your shows with optional new-episode alerts.
+  ```
+- 1.2.0:
+
+  ```text
+  See what each copy holds: 4K, HDR or Dolby Vision, audio and subtitles.
+  A new look for the player, with chapters you can jump to.
+  Picture in picture: keep watching in a small window while you use other apps.
+  Switch to another version, change the speed or set a sleep timer right in the player.
+  A slimmer menu on TVs, so your posters get more room.
   ```
 
 ## Screenshots
@@ -166,7 +179,7 @@ Result: ESRB Teen, PEGI Parental guidance, USK 12, ClassInd 14, IARC 12+.
 | Data type | Collected | Shared | Ephemeral | Required | Purpose |
 |---|---|---|---|---|---|
 | Personal info → Other info (debrid and Trakt logins and settings in the remembered copy) | Yes | No | No | Yes (always on) | App functionality |
-| Files and docs → Files and docs (release names in the library, sent to DMM to find which film or show each is; DMM keeps the answer by hash, not by user) | Yes | No | No | Yes | App functionality |
+| Files and docs → Files and docs (release names in the library, sent to DMM to find which film or show each is, and since 1.2.0 their hashes, to read what each file holds; DMM keeps the answers by hash, not by user) | Yes | No | No | Yes | App functionality |
 | App activity → Other actions (watch history and resume points, sent to Trakt or Simkl only when the user connects them; not sharing, since the user asked for it) | Yes | No | No | No (optional) | App functionality |
 | App activity → In-app search history (Search queries, looked up and not kept) | Yes | No | Yes | No | App functionality |
 | Everything else | No | | | | |
@@ -178,6 +191,8 @@ scheduled on the device; nothing about them leaves it.
 asked only when the user switches on New-episode alerts in Settings, and `RECEIVE_BOOT_COMPLETED`, so alerts
 already scheduled survive a restart. Both come with `expo-notifications`; the push (Firebase Cloud Messaging),
 wake-lock, Play install-referrer and launcher-badge permissions it also brings are removed in `app.json`. No exact-alarm permission.
+Picture in picture (1.2.0) is the main activity's `supportsPictureInPicture` attribute: no permission, no foreground
+service and no Play declaration.
 The App Store build has no push entitlement.
 
 **App access:** see `review.md`.
