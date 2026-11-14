@@ -1,0 +1,5 @@
+{
+  "request": "POST https://debridmediamanager.com/api/browser-state, body {}, no Origin",
+  "status": 400,
+  "body": {"error":"Missing identity"}
+}

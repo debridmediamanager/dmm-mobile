@@ -8,7 +8,7 @@ import { playersForPlatform } from '../player';
 import { loadSettings, onSettingsChange, saveSetting, type AppSettings, type SettingName } from '../settings';
 import { useAppTheme } from '../theme';
 import { ActionSheet, DropdownChip, FilterButton, Pressable, QrCode, Screen, styles, type SheetAction, useLayout } from '../ui';
-import { DMM_ORIGIN } from '../tvLink';
+import { OFFICIAL_DMM_ORIGIN } from '../tvLink';
 import { pollSimklLink, startSimklLink, type TrackerLink } from '../simkl';
 import { pollTraktLink, startTraktLink } from '../trakt';
 import type { TrackerSync } from '../trackerSync';
@@ -268,8 +268,8 @@ export function SettingsScreen() {
 				{row('Remembered across devices', 'Always on in the app. Sign in to any one provider here or on DMM web with "Remember my logins and settings across devices", and your other logins and these settings come back. Anyone who can sign in to one of those accounts gets all of them, so do not use a shared debrid account.', <Text style={{ color: theme.accent, fontWeight: '700' }}>On</Text>)}
 				{row(`Version ${Updates.runtimeVersion ?? ''}`.trim(), updates.isUpdatePending ? `${versionDetail} An update is ready.` : versionDetail, Updates.isEnabled ? <FilterButton label={updates.isUpdatePending ? 'Restart' : checking ? 'Checking…' : 'Check'} active={updates.isUpdatePending} onPress={() => void (checking ? undefined : updateApp())} /> : null)}
 				{/* A TV has no browser, so it shows where the pages are. */}
-				{[['Privacy policy', '/privacy'], ['Help and support', '/support']].map(([title, path]) => <Fragment key={path}>{row(title, Platform.isTV ? `${DMM_ORIGIN.replace('https://', '')}${path}` : 'Opens on debridmediamanager.com.', Platform.isTV ? null : (
-					<Pressable accessibilityRole="link" accessibilityLabel={title} onPress={() => void Linking.openURL(`${DMM_ORIGIN}${path}`)} style={[styles.outlineButton, { borderColor: theme.accent }]}>
+				{[['Privacy policy', '/privacy'], ['Help and support', '/support']].map(([title, path]) => <Fragment key={path}>{row(title, Platform.isTV ? `${OFFICIAL_DMM_ORIGIN.replace('https://', '')}${path}` : 'Opens on debridmediamanager.com.', Platform.isTV ? null : (
+					<Pressable accessibilityRole="link" accessibilityLabel={title} onPress={() => void Linking.openURL(`${OFFICIAL_DMM_ORIGIN}${path}`)} style={[styles.outlineButton, { borderColor: theme.accent }]}>
 						<Text style={[styles.outlineButtonText, { color: theme.accent }]}>Open</Text>
 					</Pressable>
 				))}</Fragment>)}

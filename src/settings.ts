@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
+import { normalizeDmmOrigin, setDmmOrigin } from './tvLink';
 
 /**
  * The app's settings, each one a DMM web `settings:*` key so "remember across devices"
@@ -51,3 +52,27 @@ export function onSettingsChange(listener: () => void): () => void {
 export const _resetSettingsCache = () => {
 	cache = null;
 };
+
+// Kept apart from SETTINGS: synced state goes to this server, so a restore must never be able to move it.
+const ORIGIN_KEY = 'dmm.library.origin';
+
+/** Reads this device's DMM server before anything calls DMM. */
+export async function loadDmmOrigin(): Promise<void> {
+	if (Platform.OS === 'web') return;
+	try {
+		const saved = await SecureStore.getItemAsync(ORIGIN_KEY);
+		if (saved) setDmmOrigin(normalizeDmmOrigin(saved));
+	} catch {
+		// Unreadable or no longer valid: debridmediamanager.com.
+	}
+}
+
+/** Saves the DMM server typed in (blank = debridmediamanager.com) and returns it as used. */
+export async function saveDmmOrigin(input: string): Promise<string> {
+	const origin = normalizeDmmOrigin(input);
+	if (Platform.OS !== 'web') await SecureStore.setItemAsync(ORIGIN_KEY, origin);
+	setDmmOrigin(origin);
+	// Same as a changed setting: the logins are pushed, here to the new server.
+	listeners.forEach((listener) => listener());
+	return origin;
+}

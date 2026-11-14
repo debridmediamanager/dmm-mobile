@@ -3,6 +3,7 @@ import type { ProviderId } from './model';
 import { PROVIDERS } from './model';
 import { isDemoToken } from './demo';
 import { SETTINGS, type AppSettings, type SettingName } from './settings';
+import { DMM_ORIGIN } from './tvLink';
 
 /**
  * DMM web's "remember my logins and settings across devices", always on in the app.
@@ -15,7 +16,6 @@ export type SyncIdentity =
 	| { service: 'rd'; clientId: string; clientSecret: string; refreshToken: string }
 	| { service: ProviderId; apiKey: string };
 
-export const BROWSER_STATE_URL = 'https://debridmediamanager.com/api/browser-state';
 
 type Credentials = Partial<Record<ProviderId, StoredCredential>>;
 
@@ -153,7 +153,7 @@ export interface BrowserStateApi {
 }
 
 async function send(method: 'POST' | 'PUT', body: unknown): Promise<Response> {
-	return fetch(BROWSER_STATE_URL, { method, headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+	return fetch(`${DMM_ORIGIN}/api/browser-state`, { method, headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
 }
 
 export const browserStateApi: BrowserStateApi = {

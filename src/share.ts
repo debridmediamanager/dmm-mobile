@@ -1,8 +1,7 @@
 import lzString from 'lz-string';
 import type { LibraryItem } from './model';
+import { OFFICIAL_DMM_ORIGIN } from './tvLink';
 import { isBtih, parseBtihMagnet } from './validation';
-
-export const DMM_ORIGIN = 'https://debridmediamanager.com';
 
 /**
  * Rows with an info hash. A TorBox web download carries an md5 of its link, and some
@@ -11,10 +10,10 @@ export const DMM_ORIGIN = 'https://debridmediamanager.com';
 export const shareableItems = (items: readonly LibraryItem[]): LibraryItem[] =>
 	items.filter((item) => item.kind !== 'web' && isBtih(item.hash));
 
-/** DMM web's /hashlist page reads the list from the fragment, so no server is involved. */
+/** DMM web's /hashlist page reads the list from the fragment, so the public site opens it for anyone, even from a self-hosted DMM. */
 export function hashlistUrl(title: string, items: readonly LibraryItem[]): string {
 	const torrents = shareableItems(items).map((item) => ({ filename: item.filename, hash: item.hash, bytes: item.size }));
-	return `${DMM_ORIGIN}/hashlist#${lzString.compressToEncodedURIComponent(JSON.stringify({ title, torrents }))}`;
+	return `${OFFICIAL_DMM_ORIGIN}/hashlist#${lzString.compressToEncodedURIComponent(JSON.stringify({ title, torrents }))}`;
 }
 
 /** The same `.dmm.json` shape DMM web's Local backup writes, so either side restores it. */

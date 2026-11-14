@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { pollTvPairing, startTvPairing } from './tvLink';
+import probe from './test/fixtures/dmm-browser-state-empty-probe-2026-11-14.json';
+import { checkDmmServer, DMM_ORIGIN, normalizeDmmOrigin, OFFICIAL_DMM_ORIGIN, pollTvPairing, setDmmOrigin, startTvPairing } from './tvLink';
 
 const reply = (status: number, body: unknown = {}) => vi.fn(async () => ({ status, json: async () => body }));
 
@@ -24,5 +25,36 @@ describe('linking a TV through DMM', () => {
 		const fetcher = reply(202);
 		await pollTvPairing('SECRET', fetcher);
 		expect(fetcher).toHaveBeenCalledWith('https://debridmediamanager.com/api/tv/poll', expect.objectContaining({ body: JSON.stringify({ deviceCode: 'SECRET' }) }));
+	});
+});
+
+describe('a self-hosted DMM server', () => {
+	it('reads what people type as an origin, blank as debridmediamanager.com', () => {
+		expect(normalizeDmmOrigin('  ')).toBe(OFFICIAL_DMM_ORIGIN);
+		expect(normalizeDmmOrigin('DMM.example.com/')).toBe('https://dmm.example.com');
+		expect(normalizeDmmOrigin('http://192.168.1.5:3000/library?x=1')).toBe('http://192.168.1.5:3000');
+		expect(normalizeDmmOrigin('HTTPS://[fd00::5]:3000')).toBe('https://[fd00::5]:3000');
+		for (const bad of ['ftp://dmm.example.com', 'javascript:alert(1)', 'dmm example.com', 'https://']) expect(() => normalizeDmmOrigin(bad)).toThrow('Enter the DMM server');
+	});
+
+	it('sends every DMM call to the server set on this device', async () => {
+		setDmmOrigin('http://192.168.1.5:3000');
+		try {
+			const fetcher = reply(202);
+			await pollTvPairing('d', fetcher);
+			expect(fetcher).toHaveBeenCalledWith('http://192.168.1.5:3000/api/tv/poll', expect.anything());
+		} finally {
+			setDmmOrigin(OFFICIAL_DMM_ORIGIN);
+		}
+		expect(DMM_ORIGIN).toBe(OFFICIAL_DMM_ORIGIN);
+	});
+
+	it('takes a server only when it answers an empty sync request the way DMM does', async () => {
+		const fetcher = reply(probe.status, probe.body);
+		await checkDmmServer('https://dmm.example.com', fetcher);
+		expect(fetcher).toHaveBeenCalledWith('https://dmm.example.com/api/browser-state', expect.objectContaining({ method: 'POST', body: '{}' }));
+		await expect(checkDmmServer('https://example.com', reply(405))).rejects.toThrow('does not answer like a DMM server (405)');
+		await expect(checkDmmServer('https://old.example.com', reply(403, { error: 'Forbidden' }))).rejects.toThrow('too old');
+		await expect(checkDmmServer('http://10.0.0.9:3000', vi.fn(async () => Promise.reject(new Error('Network request failed'))))).rejects.toThrow('cannot be reached (Network request failed)');
 	});
 });

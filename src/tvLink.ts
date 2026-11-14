@@ -5,7 +5,40 @@ import type { BrowserState } from './sync';
  * debridmediamanager.com/tv, a signed-in phone approves it there, and the TV collects
  * that browser's logins and settings once (DMM web's /api/tv/pair, /approve, /poll).
  */
-export const DMM_ORIGIN = 'https://debridmediamanager.com';
+export const OFFICIAL_DMM_ORIGIN = 'https://debridmediamanager.com';
+
+/** Where every DMM call goes: debridmediamanager.com, or a self-hosted DMM set on this device (never synced). */
+export let DMM_ORIGIN = OFFICIAL_DMM_ORIGIN;
+
+export function setDmmOrigin(origin: string): void {
+	DMM_ORIGIN = origin;
+}
+
+/** `dmm.example.com`, `http://192.168.1.5:3000/` → an origin; blank means debridmediamanager.com. */
+export function normalizeDmmOrigin(input: string): string {
+	const text = input.trim();
+	if (!text) return OFFICIAL_DMM_ORIGIN;
+	const match = /^(?:(https?):\/\/)?([a-z0-9.-]+|\[[0-9a-f:.]+\])(:\d{1,5})?(?:[/?#]\S*)?$/i.exec(text);
+	if (!match) throw new Error('Enter the DMM server as an address like https://dmm.example.com or http://192.168.1.5:3000.');
+	return `${(match[1] ?? 'https').toLowerCase()}://${match[2].toLowerCase()}${match[3] ?? ''}`;
+}
+
+/**
+ * Asks a self-hosted server whether it is a DMM the app can sync with before any login goes there:
+ * DMM's /api/browser-state turns down an empty body with "Missing identity", sending nothing anywhere.
+ */
+export async function checkDmmServer(origin: string, fetcher: Fetch = fetch as unknown as Fetch): Promise<void> {
+	let res: Awaited<ReturnType<Fetch>>;
+	try {
+		res = await fetcher(`${origin}/api/browser-state`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' });
+	} catch (caught) {
+		throw new Error(`${origin} cannot be reached${caught instanceof Error && caught.message ? ` (${caught.message})` : ''}.`);
+	}
+	const body = (await res.json().catch(() => ({}))) as { error?: unknown };
+	if (res.status === 400 && body.error === 'Missing identity') return;
+	if (res.status === 403) throw new Error(`${origin} is a DMM too old for the app: update it to DMM from 9 November 2026 or later.`);
+	throw new Error(`${origin} does not answer like a DMM server (${res.status}).`);
+}
 
 export interface TvPairing {
 	/** As shown: ABCD-EFGH. */

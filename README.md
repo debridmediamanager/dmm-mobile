@@ -47,6 +47,7 @@ library of open movies.
 - **Six debrid services.** Real-Debrid, AllDebrid, TorBox, Premiumize, Offcloud and Debrid-Link.
 - **Made for your TV.** Android TV, Fire TV and Apple TV, all with the remote. Sign in by scanning a code with your phone.
 - **Sign in once.** Your other services and settings come back on every device, DMM on the web included.
+- **Your own DMM.** Point the app at a self-hosted DMM instead of debridmediamanager.com.
 
 <p>
   <img src="docs/store/marketing/android-phone/1-title.jpg" width="32%" alt="Your debrid library, ready to watch: Sintel's page with a 4K Dolby Vision copy and a 1080p copy">

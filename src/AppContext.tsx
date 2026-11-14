@@ -3,7 +3,7 @@ import { AppState } from 'react-native';
 import { File, Paths } from 'expo-file-system';
 import type { StoredCredential } from './auth';
 import type { LibraryFile, LibraryItem, ProviderId } from './model';
-import { onSettingsChange } from './settings';
+import { loadDmmOrigin, onSettingsChange } from './settings';
 import { LibrarySession, type BulkResult, type SessionSnapshot } from './session';
 import type { AddOptions, PickedFile } from './providerApi';
 import type { AddEntry } from './share';
@@ -93,6 +93,7 @@ export function AppProvider({ children, session: injectedSession }: { children: 
 		setReady(false);
 		setStartupError('');
 		try {
+			await loadDmmOrigin();
 			await session.loadCredentials();
 			setReady(true);
 			sync();

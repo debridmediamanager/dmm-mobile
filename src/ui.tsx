@@ -7,7 +7,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { startDeviceLogin, supportsDeviceLogin, waitForApproval, type DeviceLogin, type StoredCredential } from './auth';
 import type { LibraryItem, MediaType, ProviderId } from './model';
 import { PROVIDER_META, statusLabel } from './model';
-import { pollTvPairing, startTvPairing, type TvPairing } from './tvLink';
+import { DMM_ORIGIN, pollTvPairing, startTvPairing, type TvPairing } from './tvLink';
 import type { BrowserState } from './sync';
 import { formatBytes } from './core';
 import { useAppTheme } from './theme';
@@ -425,7 +425,7 @@ export function TvLinkPanel({ onLinked, signedIn }: { onLinked: (state: BrowserS
 			if (timer) clearTimeout(timer);
 		};
 	}, [attempt, onLinked]);
-	const page = pairing ? pairing.verifyUrl.replace(/^https?:\/\//, '').replace(/\?.*$/, '') : 'debridmediamanager.com/tv';
+	const page = pairing ? pairing.verifyUrl.replace(/^https?:\/\//, '').replace(/\?.*$/, '') : `${DMM_ORIGIN.replace(/^https?:\/\//, '')}/tv`;
 	return (
 		<View style={[styles.accountCard, { backgroundColor: theme.surface, borderColor: theme.border, flexDirection: 'row', alignItems: 'center', gap: 24 }]}>
 			{pairing ? <QrCode value={pairing.verifyUrl} size={180} /> : <View style={{ width: 180, height: 180, alignItems: 'center', justifyContent: 'center' }}>{error ? <Icon name="qrcode-remove" size={64} color={theme.muted} /> : <ActivityIndicator color={theme.accent} />}</View>}

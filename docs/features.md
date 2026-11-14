@@ -41,6 +41,31 @@ before clearing that provider's library rows.
 The demo key `dmmdemo` works as any provider's API key and opens a sample library
 of open movies without a debrid account.
 
+## Self-hosted DMM
+
+Accounts (the sign-in screen before that) ends with **DMM server**. Leave it blank
+for debridmediamanager.com, or enter your own DMM's address, such as
+`https://dmm.example.com` or `http://192.168.1.5:3000`. Everything the app asks
+DMM goes there: remembered logins and settings, TV linking, titles and episode
+lists, media details, search, Trakt, and the pages Search and title pages open.
+The address is kept on this device only and is never synced, since the synced
+logins are sent to it.
+
+Before saving, the app sends the server an empty sync request and takes it only
+when it answers the way DMM does, so a typo never receives your logins. It needs
+DMM from 2026-11-09 (`516fcf8d`) or later, the first to let the app sync; an
+older one is refused with a note to update. Once saved, the app pushes its logins
+and settings to the new server, and a TV shows a fresh code from it.
+
+Some things stay on debridmediamanager.com: hash list links (the page reads the
+list from the link itself, so anyone can open it), the privacy policy and help
+pages, and poster images. Trakt goes through the server's own Trakt app, so it
+needs one set up there.
+
+Plain `http://` works on iPhone, iPad and Apple TV for addresses on your own
+network (an IP address or a `.local` name). Android refuses plain HTTP in
+release builds, so use `https://` there.
+
 ## Home
 
 The first tab once signed in: rows of posters of what the library holds. Rows
