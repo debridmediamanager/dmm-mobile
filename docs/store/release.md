@@ -60,14 +60,13 @@ Check the result is signed by the upload key before uploading:
 `1D:66:B5:7B:…:F8:A1:01`.
 
 `EXPO_TV=1` adds the Android TV launcher entry and banner; the same bundle serves
-phones, tablets and TVs. Builds run on `ssh ben@windows` (see the project memory
-for the toolchain); the Mac has no JDK.
+phones, tablets and TVs. Android builds need JDK 17 and the Android SDK; ours run
+on a Windows machine.
 
 ### First release on a personal account: the 14-day closed test
 
-Status: closed test approved and live on 2026-11-10 15:36, Android TV active (Play
-Console account 6907620095512694450, app 4974392213799747854, developer
-benadriansarmiento@gmail.com). Testers join the Google Group
+Status: closed test approved and live on 2026-11-10 15:36, Android TV active.
+Testers join the Google Group
 `dmm-mobile-beta@googlegroups.com` (anyone can join; only managers see members),
 then opt in at https://play.google.com/apps/testing/com.debridmediamanager.library.
 Feedback in Play goes to support@debridmediamanager.com.
