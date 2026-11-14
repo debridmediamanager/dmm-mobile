@@ -221,8 +221,11 @@ scheduled on the device; nothing about them leaves it.
 
 **Permissions** (no declaration form needs them, but reviewers see them in the manifest): `POST_NOTIFICATIONS`,
 asked only when the user switches on New-episode alerts in Settings, and `RECEIVE_BOOT_COMPLETED`, so alerts
-already scheduled survive a restart. Both come with `expo-notifications`; the push (Firebase Cloud Messaging),
-wake-lock, Play install-referrer and launcher-badge permissions it also brings are removed in `app.json`. No exact-alarm permission.
+already scheduled survive a restart. Since 1.2.1 both come with the app's own alerts module (`modules/dmm-alerts`),
+and Android builds leave out `expo-notifications` and the `expo-application` it pulls in (`package.json`,
+`expo.autolinking`), so the APK has no Firebase, Google Play services or Play Install Referrer code. 1.1.0 and 1.2.0
+shipped them, with their push, wake-lock, install-referrer and launcher-badge permissions removed in `app.json`. No
+exact-alarm permission.
 Picture in picture (1.2.0) is the main activity's `supportsPictureInPicture` attribute: no permission, no foreground
 service and no Play declaration.
 The App Store build has no push entitlement.

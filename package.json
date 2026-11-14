@@ -61,5 +61,15 @@
     "@react-native/virtualized-lists": {
       "react-native": "$react-native"
     }
+  },
+  "expo": {
+    "autolinking": {
+      "android": {
+        "exclude": [
+          "expo-notifications",
+          "expo-application"
+        ]
+      }
+    }
   }
 }

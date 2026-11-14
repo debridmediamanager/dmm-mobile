@@ -12,14 +12,45 @@ import { alertDiff, alertsFor, type Alert, type CalendarEpisode } from './calend
 export const alertsSupported = Platform.OS !== 'web' && !Platform.isTV;
 
 const KEY = 'dmm.library.alerts';
-const CHANNEL = 'episodes';
 const PREFIX = 'episode:';
 
-// Loaded only where alerts exist: its pod is iOS only, so an Apple TV build has no native side for it.
-const notifications = (): typeof import('expo-notifications') => require('expo-notifications');
+/** What alerts need from the system. */
+interface Notifier {
+	/** Asks to notify where the system asks; whether the app may. */
+	request(): Promise<boolean>;
+	allowed(): Promise<boolean>;
+	scheduled(): Promise<Alert[]>;
+	schedule(alert: Alert): Promise<void>;
+	cancel(id: string): Promise<void>;
+	cancelAll(): Promise<void>;
+}
+
+/** iOS: expo-notifications, loaded only there (its pod is iOS only; tvOS has none). Its Android side brings Firebase. */
+function expoNotifications(): Notifier {
+	const N: typeof import('expo-notifications') = require('expo-notifications');
+	// An alert that comes while the app is open shows as well; quietly, like the rest.
+	N.setNotificationHandler({ handleNotification: async () => ({ shouldShowBanner: true, shouldShowList: true, shouldPlaySound: false, shouldSetBadge: false }) });
+	return {
+		request: async () => (await N.requestPermissionsAsync({ ios: { allowAlert: true, allowSound: true, allowBadge: false } })).granted,
+		allowed: async () => (await N.getPermissionsAsync()).granted,
+		scheduled: async () =>
+			(await N.getAllScheduledNotificationsAsync()).map((request) => ({ id: request.identifier, at: Number(request.content.data?.at) || 0, title: request.content.title ?? '', body: request.content.body ?? '' })),
+		schedule: async (alert) =>
+			void (await N.scheduleNotificationAsync({
+				identifier: alert.id,
+				content: { title: alert.title, body: alert.body, data: { at: alert.at } },
+				trigger: { type: N.SchedulableTriggerInputTypes.DATE, date: alert.at },
+			})),
+		cancel: (id) => N.cancelScheduledNotificationAsync(id),
+		cancelAll: () => N.cancelAllScheduledNotificationsAsync(),
+	};
+}
+
+let notifier: Notifier | null = null;
+// Android: the app's own module (modules/dmm-alerts), alarms and the system's notifications, no Firebase.
+const system = (): Notifier => (notifier ??= Platform.OS === 'android' ? require('expo').requireNativeModule('DmmAlerts') : expoNotifications());
 
 let on: boolean | null = null;
-let ready = false;
 /** The calendar as last seen, so switching alerts on schedules at once. */
 let latest: readonly CalendarEpisode[] = [];
 let tail: Promise<unknown> = Promise.resolve();
@@ -34,29 +65,13 @@ export async function alertsOn(): Promise<boolean> {
 	return on;
 }
 
-function api() {
-	const N = notifications();
-	if (!ready) {
-		ready = true;
-		// An alert that comes while the app is open shows as well; quietly, like the rest.
-		N.setNotificationHandler({ handleNotification: async () => ({ shouldShowBanner: true, shouldShowList: true, shouldPlaySound: false, shouldSetBadge: false }) });
-	}
-	return N;
-}
-
 /** On: asks for permission (false when refused) and schedules the calendar. Off: cancels every scheduled alert. */
 export async function setAlerts(enable: boolean): Promise<boolean> {
-	const N = api();
-	if (enable) {
-		// Android 13 and later ask for the permission only once the app has a notification channel.
-		if (Platform.OS === 'android') await N.setNotificationChannelAsync(CHANNEL, { name: 'New episodes', importance: N.AndroidImportance.DEFAULT });
-		const { granted } = await N.requestPermissionsAsync({ ios: { allowAlert: true, allowSound: true, allowBadge: false } });
-		if (!granted) return false;
-	}
+	if (enable && !(await system().request())) return false;
 	on = enable;
 	await SecureStore.setItemAsync(KEY, enable ? '1' : '0');
 	if (enable) await syncAlerts(latest);
-	else await queue(() => N.cancelAllScheduledNotificationsAsync());
+	else await queue(() => system().cancelAll());
 	return true;
 }
 
@@ -65,25 +80,17 @@ export function syncAlerts(episodes: readonly CalendarEpisode[], now = Date.now(
 	latest = episodes;
 	return queue(async () => {
 		if (!(await alertsOn())) return;
-		const N = api();
+		const N = system();
 		// Turned off in the system's settings since: nothing is scheduled, and Settings says why.
-		if (!(await N.getPermissionsAsync()).granted) return;
-		const scheduled: Alert[] = (await N.getAllScheduledNotificationsAsync())
-			.filter((request) => request.identifier.startsWith(PREFIX))
-			.map((request) => ({ id: request.identifier, at: Number(request.content.data?.at) || 0, title: request.content.title ?? '', body: request.content.body ?? '' }));
+		if (!(await N.allowed())) return;
+		const scheduled = (await N.scheduled()).filter((alert) => alert.id.startsWith(PREFIX));
 		const { cancel, add } = alertDiff(scheduled, alertsFor(episodes, now));
-		for (const id of cancel) await N.cancelScheduledNotificationAsync(id);
-		for (const alert of add) {
-			await N.scheduleNotificationAsync({
-				identifier: alert.id,
-				content: { title: alert.title, body: alert.body, data: { at: alert.at } },
-				trigger: { type: N.SchedulableTriggerInputTypes.DATE, date: alert.at, channelId: CHANNEL },
-			});
-		}
+		for (const id of cancel) await N.cancel(id);
+		for (const alert of add) await N.schedule(alert);
 	});
 }
 
 /** Whether the system still lets the app notify, for Settings. */
 export async function alertsAllowed(): Promise<boolean> {
-	return alertsSupported && (await api().getPermissionsAsync()).granted;
+	return alertsSupported && (await system().allowed());
 }

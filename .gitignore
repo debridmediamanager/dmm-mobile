@@ -4,8 +4,8 @@ dist/
 coverage/
 *.tsbuildinfo
 .DS_Store
-android/
-ios/
+/android/
+/ios/
 .env
 .env.*
 !.env.example
@@ -15,3 +15,4 @@ ios/
 vlckit/build/
 vlckit/out/
 vlckit/*.xcframework
+modules/*/android/build/

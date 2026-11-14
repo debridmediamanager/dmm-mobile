@@ -54,7 +54,7 @@ def outputs():
                        ("top-shelf-wide", 2320, 720), ("top-shelf-wide@2x", 4640, 1440)]:
         yield f"assets/tv/{name}.png", w, h, banner(w, h), False
     # Android's status bar draws only the alpha of a notification icon: the glyph alone, white, on nothing.
-    yield "assets/notification-icon.png", 96, 96, image(96, 96, re.sub(r'fill="#[0-9A-Fa-f]+"', 'fill="#FFFFFF"', glyph(80, 48, 48)), None), True
+    yield "modules/dmm-alerts/android/src/main/res/drawable-xxxhdpi/dmm_alert_icon.png", 96, 96, image(96, 96, re.sub(r'fill="#[0-9A-Fa-f]+"', 'fill="#FFFFFF"', glyph(80, 48, 48)), None), True
     yield "docs/store/screenshots/play-icon.png", 512, 512, image(512, 512, glyph(301, 256, 258)), False
     yield "docs/store/screenshots/play-tv-banner.png", 1280, 720, banner(1280, 720), False
 
