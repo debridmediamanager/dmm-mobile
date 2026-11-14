@@ -350,11 +350,14 @@ that left or moved; switching alerts off cancels them all. Nothing runs in the b
 anything: alerts already scheduled fire with the app closed, and the next ones are scheduled the next time the app
 opens. Android may deliver one up to an hour after the air time: without the exact-alarm permission, which the app
 does not ask for, it batches alarms (measured on the Pixel 6: a window of three quarters of the wait, at most an
-hour). The module is `expo-notifications`, with its push side switched off: no push entitlement on iOS, and the
-Firebase Cloud Messaging, wake-lock, install-referrer and launcher-badge permissions it brings are removed on
-Android (`app.json`), leaving `POST_NOTIFICATIONS` (asked only when alerts are switched on) and
-`RECEIVE_BOOT_COMPLETED` (so scheduled alerts survive a restart). It is native code, so it ships with a store
-release, not over the air.
+hour); an alert that is due but not shown yet is left to fire. On Android the alerts are the app's own module
+(`modules/dmm-alerts`: an alarm per alert, kept on the device so a restart, an app update or a force stop can set
+them again). Since 1.2.1 Android builds leave out `expo-notifications`, which would bring Firebase Cloud Messaging
+for push the app does not use, and the `expo-application` it pulls in, which brings Google's Play Install Referrer
+library (`package.json`, `expo.autolinking`): the APK has no Firebase or Google Play services code. Its permissions
+are `POST_NOTIFICATIONS` (asked only when alerts are switched on) and `RECEIVE_BOOT_COMPLETED` (so scheduled alerts
+survive a restart). iOS uses `expo-notifications` with no push entitlement. Both are native code, so they ship with
+a store release, not over the air.
 
 Tested on 2026-11-12 with the Trakt and Simkl test accounts (Pixel 6, Fire TV Cube, iPhone simulator): a library show
 alone (The Simpsons, from DMM and Trakt's season list), then Trakt's watched and watchlisted shows and Simkl's watching
@@ -363,6 +366,11 @@ after a pull to refresh, played from the calendar; the watched tick; on the Fire
 QR code holding the plain DMM page; alerts switched on (Android 13's and iOS's permission prompts), 19 scheduled on the
 Pixel, none after switching off; a notification firing on time on the Pixel and the iPhone simulator from a test build
 with an episode faked two minutes ahead (the test change is not in the repository). Not yet on an iPhone or Apple TV.
+
+The Android module was tested on 2026-11-14 on the Pixel 6 (Android 16): switching alerts on asked Android's
+permission and set an inexact alarm per episode (7), switching off removed them all, a test build's fake episode
+posted its notification with the app in the background, and the alarms came back after a force stop both from a
+`BOOT_COMPLETED` broadcast and from the next app start. The Fire TV Cube started and has no alerts setting.
 
 ## Search
 
@@ -470,6 +478,7 @@ TVs have no Search tab, since a TV has no browser to open results in.
 On TVs (2026-11-09): the Fire TV Cube signed in by scanning its QR code with a
 phone, then the library, remote navigation, search with the on-screen keyboard
 and opening a file were tested. The Apple TV simulator signed in the same way
-and was driven with the remote. A real Apple TV has not been tested yet.
+and was driven with the remote. A real Apple TV 4K (tvOS 26.6) was tested on
+2026-11-13: the built-in player, TrueHD reaching the receiver, Trakt, Lists and the Calendar.
 
 Background downloads are outside this release.
