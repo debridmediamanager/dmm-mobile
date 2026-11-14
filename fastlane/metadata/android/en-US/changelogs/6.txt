@@ -1,0 +1,2 @@
+New in Settings: Get fixes automatically. It starts off unless the app came from Google Play or the Amazon Appstore: small updates from debridmediamanager.com download only once you switch it on.
+The GitHub release has one APK per device type, about a third of the old size: arm64-v8a for phones and tablets, armeabi-v7a for TVs and 32-bit phones.

@@ -27,7 +27,10 @@ debrid service straight from your device.
   and install DMM Mobile from Play.
 - **APK** for any Android phone, tablet, Android TV or Fire TV:
   [download the latest release](https://github.com/debridmediamanager/dmm-mobile/releases/latest).
-  One file fits them all; on a Fire TV, sideload it.
+  Take `arm64-v8a` for a phone or tablet, `armeabi-v7a` for a TV (Fire TV included) or a
+  32-bit phone; on a Fire TV, sideload it.
+- **Obtainium** installs the right APK and keeps it up to date: add
+  `https://github.com/debridmediamanager/dmm-mobile` as a new app.
 - **App Store** (iPhone, iPad, Apple TV) and **Amazon Appstore** (Fire TV): in review, coming soon.
 
 No debrid account yet? Enter `dmmdemo` as any service's API key to look around a sample
