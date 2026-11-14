@@ -56,7 +56,6 @@ def outputs():
     # Android's status bar draws only the alpha of a notification icon: the glyph alone, white, on nothing.
     yield "assets/notification-icon.png", 96, 96, image(96, 96, re.sub(r'fill="#[0-9A-Fa-f]+"', 'fill="#FFFFFF"', glyph(80, 48, 48)), None), True
     yield "docs/store/screenshots/play-icon.png", 512, 512, image(512, 512, glyph(301, 256, 258)), False
-    yield "docs/store/screenshots/play-feature-graphic.png", 1024, 500, banner(1024, 500), False
     yield "docs/store/screenshots/play-tv-banner.png", 1280, 720, banner(1280, 720), False
 
 

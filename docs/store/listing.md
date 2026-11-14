@@ -96,29 +96,45 @@ Simkl" on a title's page while Simkl is connected.
   A slimmer menu on TVs, so your posters get more room.
   ```
 
-## Screenshots
+## Screenshots and previews
 
-The App Store sets are marketing slides: a headline over the real screens in device
-frames, rebuilt with `python3 docs/store/marketing/render.py` (HTML rendered by
-headless Chrome at Apple's exact sizes). Edit the copy there and rerun.
+Every store gets the same six slides, in the same order and with the same headlines: a big headline over the
+app's real screen in a device frame, on a DMM teal gradient. Phone sets show phone screens, tablet sets tablet
+screens and TV sets TV screens.
 
-`docs/store/screenshots/`: the app's real screens with a sample library of Blender open
-movies (the README's screenshot fixture), status bars at 9:41. No Search screens, which
-would show commercial posters. The Play phone set is the README's Android phone shots cut to
-Play's 2:1 limit: a 240 px band taken out where it shows least (empty space, or content just
-above the tab bar or home indicator), and the landscape player shot letterboxed.
+1. Your debrid library, ready to watch: a title page
+2. Every film and show you have, as posters: Library
+3. 4K, Dolby Vision, TrueHD. It just plays.: the built-in player (on phones with a close-up of its badges and chapter)
+4. Pick up where you left off, on any device: Home's Continue Watching, with "Syncs with Trakt and Simkl"
+5. See what's in every file: a copy's media details
+6. Made for your TV too: the TV Home with the slim rail, and TV sign-in
 
-| Store slot | Size | Files |
+`python3 docs/store/marketing/render.py` rebuilds every set from `docs/store/marketing/screens/` (HTML rendered by
+headless Chrome at each store's exact size; edit the headlines there and rerun). `python3 docs/store/marketing/video.py`
+builds the previews from screen recordings into the same backgrounds and frames.
+
+The screens are the 1.2.0 release build running the README's screenshot fixture, status bars at 9:41: Blender open
+movies (CC BY), no Search screens (they would show commercial posters). Sintel's 4K copy is fictional, as its release
+name says (a Dolby Vision, TrueHD Atmos REMUX); its media details come from a probe the fixture builds to match, and it
+plays Blender's own Sintel 1080p MKV with the file's eight chapters. Captured on a Pixel 6 (tablet: `wm size 2560x1600`,
+density 320), a Fire TV Cube, and iPhone 17 Pro Max, iPad Pro 13-inch and Apple TV 4K simulators.
+
+| Store slot | Size | Files in `docs/store/` |
 |---|---|---|
-| App Store iPhone 6.9" | 1320 × 2868 | `appstore-iphone-*.png` (5) |
-| App Store iPad 13" | 2064 × 2752 | `appstore-ipad-*.png` (2) |
-| App Store Apple TV | 3840 × 2160 | `appstore-appletv-*.png` (3) |
-| Play phone | 1080 × 2160 (player 2400 × 1200) | `play-phone-*.png` (5) |
-| Play 7" and 10" tablet | 2560 × 1600 | `../screenshots/android-tablet-home.png` |
-| Play Android TV | 1920 × 1080 | `../screenshots/firetv-*.png` |
-| Play feature graphic | 1024 × 500 | `play-feature-graphic.png` |
-| Play icon | 512 × 512 | `play-icon.png` |
-| Play TV banner | 1280 × 720 | `play-tv-banner.png` |
+| App Store iPhone 6.9" | 1320 × 2868 | `marketing/iphone/` (6) |
+| App Store iPad 13" | 2752 × 2064 | `marketing/ipad/` (6) |
+| App Store Apple TV | 1920 × 1080 | `marketing/appletv/` (6) |
+| Play phone | 1080 × 1920 | `marketing/android-phone/` (6) |
+| Play 7" and 10" tablet, Amazon Fire tablet | 1920 × 1200 | `marketing/android-tablet/` (6) |
+| Play Android TV, Amazon Fire TV | 1920 × 1080 | `marketing/android-tv/` (6) |
+| Play feature graphic, Amazon promotional image | 1024 × 500 | `marketing/play-feature-graphic.jpg` |
+| Amazon Fire TV background (no text or logo, as Amazon asks) | 1920 × 1080 | `marketing/amazon-firetv-background.jpg` |
+| Play icon | 512 × 512 | `screenshots/play-icon.png` |
+| Play TV banner | 1280 × 720 | `screenshots/play-tv-banner.png` |
+
+Previews (H.264 High, 30 fps, silent stereo AAC; kept outside the repo, `video.py` rebuilds them): App Store iPhone
+App Preview 886 × 1920 (21 s), Apple TV App Preview 1920 × 1080 (25 s), and a 1920 × 1080 Fire TV video (27 s) for
+Amazon and for Play's YouTube promo video.
 
 ## App Store Connect answers
 

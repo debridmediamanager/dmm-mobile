@@ -1,169 +1,419 @@
-"""Renders the App Store marketing screenshots from the app's real screen captures.
+"""Store listing slides for every store and platform, in one look: a big headline over the app's real screen in a
+device frame, on a DMM teal gradient. Same six slides, same order, same headlines everywhere.
 
-    python3 docs/store/marketing/render.py      # writes docs/store/screenshots/appstore-*.png
+    python3 docs/store/marketing/render.py                  # every set into docs/store/marketing/<set>/
+    python3 docs/store/marketing/render.py iphone android-tv  # some sets
+    python3 docs/store/marketing/render.py --video <dir>     # backgrounds, frames and geometry for video.py
 
-Each slide is an HTML page sized to Apple's exact pixels and screenshotted by headless Chrome. The phone,
-tablet and TV pictures inside are untouched captures of the release build (docs/screenshots, docs/store/screenshots).
+Each slide is an HTML page at the store's exact pixel size, screenshotted by headless Chrome. The screens in
+screens/ are captures of the release build running the README screenshot fixture (Blender open movies, CC BY):
+phone and tablet from a Pixel 6 (tablet = wm size 2560x1600), TV from a Fire TV Cube, iPhone, iPad and Apple TV
+from simulators. Inter (OFL) comes from Google Fonts once and is cached in ~/.cache/dmm-store-marketing.
 """
 import html
+import json
 import pathlib
+import re
 import subprocess
+import sys
 import tempfile
+import urllib.request
 
-ROOT = pathlib.Path(__file__).resolve().parents[3]
-SHOTS = ROOT / "docs/screenshots"
-STORE = ROOT / "docs/store/screenshots"
-OUT = STORE
+from PIL import Image
+
+HERE = pathlib.Path(__file__).resolve().parent
+ROOT = HERE.parents[2]
+SCREENS = HERE / "screens"
 CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+CACHE = pathlib.Path.home() / ".cache/dmm-store-marketing"
+LOGO = (ROOT / "assets/brand/logo.svg").read_text()
+GLYPH = "".join(re.findall(r"<path[^>]*/>", LOGO))  # play triangle, wave and crown in a 200-unit box
+CIRCLE = re.search(r"<circle[^>]*/>", LOGO).group(0).replace("#00A0B0", "#0b5560")  # darker disc on the teal
+WHITE_GLYPH = re.sub(r'fill="#[0-9A-Fa-f]+"', 'fill="#FFFFFF"', GLYPH)
 
-# Provider badge colours as the app draws them (src/ui.tsx ProviderBadge).
-PROVIDERS = [("RD", "#a3d977", "#10210a"), ("AD", "#f6c344", "#2a1e00"), ("TB", "#5b5bd6", "#fff"),
-             ("PM", "#d9302c", "#fff"), ("OC", "#f08a24", "#2a1300"), ("DL", "#38bdf8", "#04202e")]
+# The six slides. Same wording on every platform; line breaks are for two-line layouts.
+SLIDES = [
+    ("title", "Your debrid library,<br>ready to watch"),
+    ("library", "Every film and show<br>you have, as posters"),
+    ("player", "4K, Dolby Vision, TrueHD.<br>It just plays."),
+    ("home", "Pick up where you left off,<br>on any device"),
+    ("details", "See what’s in<br>every file"),
+    ("tv", "Made for<br>your TV too"),
+]
+PILL = {"home": "Syncs with Trakt and Simkl"}
 
-BASE_CSS = """
+# One gradient per slide, all DMM teal (#00A0B0) into deep petrol/navy, so every set reads as the same row.
+# (angle, top, bottom, glow x %, glow y %). Tops stay at or below #00A0B0's brightness: white text keeps >= 3:1.
+BACKGROUNDS = [
+    (180, "#00A0B0", "#022A33", 50, 62),
+    (160, "#0098A7", "#0A2C40", 30, 58),
+    (180, "#00808D", "#01090C", 50, 50),
+    (200, "#00A0B0", "#032F3A", 70, 60),
+    (160, "#008E9C", "#062338", 40, 64),
+    (180, "#00A3B3", "#02262E", 50, 58),
+]
+
+# Sets: canvas size, layout ("portrait" phones, "landscape" tablets, "tv"), device kind, screen prefix, TV family.
+SETS = {
+    "iphone": dict(size=(1320, 2868), layout="portrait", device="phone", screens="iphone", tv="appletv",
+                   store="App Store iPhone 6.9-inch"),
+    "ipad": dict(size=(2752, 2064), layout="landscape", device="tablet", screens="ipad", tv="appletv",
+                 store="App Store iPad 13-inch"),
+    "appletv": dict(size=(1920, 1080), layout="tv", device="tv", screens="appletv", tv="appletv", store="App Store Apple TV"),
+    "android-phone": dict(size=(1080, 1920), layout="portrait", device="phone", screens="android-phone", tv="android-tv",
+                          store="Google Play phone"),
+    "android-tablet": dict(size=(1920, 1200), layout="landscape", device="tablet", screens="android-tablet", tv="android-tv",
+                           store="Google Play 7- and 10-inch tablet, Amazon Fire tablet"),
+    "android-tv": dict(size=(1920, 1080), layout="tv", device="tv", screens="android-tv", tv="android-tv",
+                       store="Google Play Android TV, Amazon Fire TV"),
+}
+# Player close-up for portrait canvases: where the logo, badges, chapter and seek bar sit in each phone capture
+# (fractions of the landscape screen), cut at a badge boundary.
+ZOOM = {"iphone": (0.075, 0.48, 0.499, 0.81), "android-phone": (0.062, 0.48, 0.484, 0.83)}
+
+
+def fonts():
+    """@font-face rules for Inter 600/800 with the woff2 files cached locally (Chrome renders offline after the first run)."""
+    css_file = CACHE / "inter.css"
+    if not css_file.exists():
+        CACHE.mkdir(parents=True, exist_ok=True)
+        req = urllib.request.Request("https://fonts.googleapis.com/css2?family=Inter:wght@600;800&display=block",
+                                     headers={"User-Agent": "Mozilla/5.0 (Macintosh) AppleWebKit/537.36 Chrome/120 Safari/537.36"})
+        css = urllib.request.urlopen(req, timeout=30).read().decode()
+        for i, url in enumerate(sorted(set(re.findall(r"url\((https://[^)]+\.woff2)\)", css)))):
+            local = CACHE / f"inter-{i}.woff2"
+            local.write_bytes(urllib.request.urlopen(url, timeout=30).read())
+            css = css.replace(url, local.as_uri())
+        css_file.write_text(css)
+    return css_file.read_text()
+
+
+def size(path):
+    with Image.open(path) as im:
+        return im.size
+
+
+def screen(set_name, slot):
+    return SCREENS / f"{set_name}-{slot}.webp"
+
+
+def frame_geometry(kind, aspect, box, valign="center", halign="center", stand_fits=True):
+    """Fit a device (screen aspect w/h plus bezel, plus a stand for TVs unless stand_fits is False) into box (x, y, w, h)."""
+    bx, by, bw, bh = box
+    sw1, sh1 = aspect, 1.0  # screen at height 1
+    short = min(sw1, sh1)
+    bezel1 = {"phone": 0.034 * short, "tablet": 0.032 * short, "tv": 0.011 * sw1}[kind]
+    radius1 = {"phone": 0.125 * short, "tablet": 0.055 * short, "tv": 0.007 * sw1}[kind]
+    stand1 = 0.075 * sw1 if kind == "tv" else 0.0
+    fw1, fh1 = sw1 + 2 * bezel1, sh1 + 2 * bezel1 + (stand1 if stand_fits else 0)
+    s = min(bw / fw1, bh / fh1)
+    fw, fh = fw1 * s, fh1 * s
+    x = bx + {"center": (bw - fw) / 2, "left": 0, "right": bw - fw}[halign]
+    y = by + {"center": (bh - fh) / 2, "top": 0, "bottom": bh - fh}[valign]
+    return dict(kind=kind, x=x, y=y, w=fw, h=fh - (stand1 * s if stand_fits else 0), bezel=bezel1 * s, radius=radius1 * s, stand=stand1 * s,
+                sx=x + bezel1 * s, sy=y + bezel1 * s, sw=sw1 * s, sh=sh1 * s)
+
+
+def device_html(g, src=None, z=1):
+    """Device frame as a border ring (its middle stays transparent for video), the screen inside; TVs get a stand."""
+    out = (f'<div class="dev" style="left:{g["x"]:.1f}px;top:{g["y"]:.1f}px;width:{g["w"]:.1f}px;height:{g["h"]:.1f}px;'
+           f'border-width:{g["bezel"]:.1f}px;border-radius:{g["radius"]:.1f}px;z-index:{z}">')
+    if src:
+        out += f'<img src="{src.as_uri()}" style="border-radius:{max(g["radius"] - g["bezel"], 0):.1f}px">'
+    out += "</div>"
+    if g["stand"]:
+        neck_w, neck_h = g["w"] * 0.05, g["stand"] * 0.62
+        foot_w, foot_h = g["w"] * 0.26, g["stand"] * 0.2
+        cx, top = g["x"] + g["w"] / 2, g["y"] + g["h"]
+        out += (f'<div class="stand" style="left:{cx - neck_w / 2:.1f}px;top:{top:.1f}px;width:{neck_w:.1f}px;height:{neck_h:.1f}px;z-index:{z - 1}"></div>'
+                f'<div class="stand foot" style="left:{cx - foot_w / 2:.1f}px;top:{top + neck_h:.1f}px;width:{foot_w:.1f}px;'
+                f'height:{foot_h:.1f}px;border-radius:{foot_h / 2:.1f}px;z-index:{z - 1}"></div>')
+    return out
+
+
+_WIDTHS = {}
+
+
+def line_widths():
+    """Width of every headline line (and of each whole headline on one line) in Inter 800 at 100 px, measured by Chrome."""
+    if not _WIDTHS:
+        lines = sorted({part for _, t in SLIDES for part in t.split("<br>")} | {t.replace("<br>", " ") for _, t in SLIDES})
+        spans = "".join(f'<span style="white-space:nowrap">{t}</span><br>' for t in lines)
+        doc = (f"<!doctype html><html><head><meta charset=utf-8><style>{fonts()} body{{font:800 100px Inter;letter-spacing:-.025em}}</style>"
+               f"</head><body>{spans}<script>document.fonts.ready.then(()=>{{document.body.dataset.w=JSON.stringify("
+               f"[...document.querySelectorAll('span')].map(s=>[s.textContent,s.getBoundingClientRect().width]))}})</script></body></html>")
+        with tempfile.TemporaryDirectory() as t:
+            src = pathlib.Path(t) / "m.html"
+            src.write_text(doc)
+            dom = run_chrome(["--allow-file-access-from-files", "--virtual-time-budget=6000", "--dump-dom", src.as_uri()], pathlib.Path(t))
+        _WIDTHS.update(json.loads(html.unescape(re.search(r'data-w="([^"]+)"', dom).group(1))))
+    return _WIDTHS
+
+
+def headline_metrics(w, h, layout):
+    """Font size, top, line count and where the device area starts. One size per set: the longest line of all six
+    headlines fits the width. The pill row is reserved on every slide so the device sits in the same place."""
+    widths = line_widths()
+    if layout != "portrait":  # landscape canvases: one line, so the device gets the height
+        longest = max(v for k, v in widths.items() if any(k == t.replace("<br>", " ") for _, t in SLIDES))
+    else:
+        longest = max(v for k, v in widths.items() if any(k in t.split("<br>") for _, t in SLIDES))
+    cap, room = {"portrait": (0.08, 0.9), "landscape": (0.05, 0.88), "tv": (0.036, 0.88)}[layout]
+    fs = min(cap * w, room * w * 100 / longest)
+    top = {"portrait": 0.05 * h, "landscape": 0.055 * h, "tv": 0.058 * h}[layout]
+    lines = 2 if layout == "portrait" else 1
+    pill_fs = fs * 0.36
+    pill_top = top + lines * fs * 1.06 + fs * 0.32
+    device_top = pill_top + pill_fs * 2.1 + fs * 0.42
+    return fs, top, lines, pill_fs, pill_top, device_top
+
+
+def layout(set_name, slot, w=None, h=None, video=False):
+    """Everything on one slide: background/headline parameters and device geometries (with their screens)."""
+    cfg = SETS[set_name]
+    w, h = w or cfg["size"][0], h or cfg["size"][1]
+    lay = cfg["layout"]
+    fs, top, lines, pill_fs, pill_top, device_top = headline_metrics(w, h, lay)
+    mx = {"portrait": 0.06, "landscape": 0.07, "tv": 0.07}[lay] * w
+    mb = {"portrait": 0.04, "landscape": 0.025, "tv": 0.035}[lay] * h
+    box = (mx, device_top, w - 2 * mx, h - device_top - mb)
+    bx, by, bw, bh = box
+    devices, extras = [], []
+    prefix = cfg["screens"]
+    if slot == "tv":
+        tv = cfg["tv"]
+        rail, sign = screen(tv, "rail"), screen(tv, "signin")
+        a = 16 / 9
+        bx, by, bw, bh = box
+        if lay == "portrait":
+            # Two TVs stacked at full width: the slim rail, then sign-in with the phone.
+            g1 = frame_geometry("tv", a, (bx - mx * 0.5, by, bw + mx, bh))
+            g2 = frame_geometry("tv", a, (bx - mx * 0.5, by, bw + mx, bh))
+            gap = bh * 0.035
+            group = 2 * (g1["h"] + g1["stand"]) + gap
+            for g, dy in ((g1, 0), (g2, g1["h"] + g1["stand"] + gap)):
+                g["y"] = by + (bh - group) / 2 + dy
+                g["sy"] = g["y"] + g["bezel"]
+        else:
+            g1 = frame_geometry("tv", a, (bx, by, bw * 0.76, h - by - 0.03 * h), "top", "left", stand_fits=lay != "tv")
+            g2 = frame_geometry("tv", a, (bx + bw * 0.5, by + bh * 0.4, bw * 0.5, bh * 0.6), "bottom", "right")
+        devices = [(g1, rail), (g2, sign)]
+    elif slot == "player" and lay == "portrait":
+        src = screen(prefix, "player")
+        sw, sh = size(src)
+        bx, by, bw, bh = box
+        if video:
+            devices = [(frame_geometry("phone", sw / sh, (0, by, w, bh)), src)]
+        else:
+            gx = frame_geometry("phone", sw / sh, (bx - mx * 0.6, by, bw + mx * 1.2, bh * 0.45), "top")
+            x0, y0, x1, y1 = ZOOM[prefix]
+            cw = bw
+            ch = cw * ((y1 - y0) * sh) / ((x1 - x0) * sw)
+            gap = bh * 0.05
+            shift = (bh - (gx["h"] + gap + ch)) * 0.22  # near the headline, like the other slides
+            for k in ("y", "sy"):
+                gx[k] += shift
+            devices = [(gx, src)]
+            cy = gx["y"] + gx["h"] + gap
+            extras.append(dict(type="zoom", src=src, crop=(x0, y0, x1, y1), x=bx, y=cy, w=cw, h=ch,
+                               mark=(gx["sx"] + x0 * gx["sw"], gx["sy"] + y0 * gx["sh"], (x1 - x0) * gx["sw"], (y1 - y0) * gx["sh"])))
+    else:
+        src = screen(prefix, slot)
+        sw, sh = size(src)
+        if lay == "tv":  # the stand may run off the bottom edge: the screen gets the room
+            devices = [(frame_geometry("tv", sw / sh, (bx, by, bw, h - by - 0.03 * h), stand_fits=False), src)]
+        else:
+            devices = [(frame_geometry(cfg["device"], sw / sh, box), src)]
+    return dict(w=w, h=h, lay=lay, fs=fs, top=top, lines=lines, pill_fs=pill_fs, pill_top=pill_top, slot=slot,
+                index=[s for s, _ in SLIDES].index(slot), devices=devices, extras=extras)
+
+
+CSS = """
+%(fonts)s
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { width: %(w)dpx; height: %(h)dpx; overflow: hidden; background: #04060c; }
-body { font-family: -apple-system, "SF Pro Display", "Helvetica Neue", sans-serif; color: #f4f7fb;
-  -webkit-font-smoothing: antialiased; position: relative; }
-.bg { position: absolute; inset: 0; overflow: hidden;
-  background: radial-gradient(120%% 80%% at 50%% 0%%, #0b1a2e 0%%, #04060c 60%%); }
-.blob { position: absolute; border-radius: 50%%; filter: blur(%(blur)dpx); opacity: .75; }
-.grid { position: absolute; inset: 0; opacity: .22;
-  background-image: linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px),
-                    linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px);
-  background-size: %(grid)dpx %(grid)dpx;
-  -webkit-mask-image: radial-gradient(70%% 55%% at 50%% 30%%, #000 0%%, transparent 75%%); }
-.eyebrow { display: inline-flex; align-items: center; gap: .5em; font-weight: 700; letter-spacing: .14em;
-  text-transform: uppercase; color: #8be9f2; padding: .55em 1.1em; border-radius: 999px;
-  background: rgba(0,160,176,.14); border: 1.5px solid rgba(139,233,242,.35); }
-.eyebrow i { width: .55em; height: .55em; border-radius: 50%%; background: #2ee6f2; box-shadow: 0 0 18px #2ee6f2; }
-h1 { font-weight: 800; letter-spacing: -.035em; line-height: 1.02; }
-h1 em { font-style: normal; background: linear-gradient(100deg, #5ef0f8 0%%, #7aa8ff 55%%, #b18cff 100%%);
-  -webkit-background-clip: text; background-clip: text; color: transparent; }
-p.sub { color: #a9b6c8; font-weight: 500; line-height: 1.32; letter-spacing: -.01em; }
-.device { position: absolute; background: linear-gradient(150deg, #5b6270 0%%, #1b1f27 22%%, #0d1016 60%%, #3a404c 100%%);
-  box-shadow: 0 0 0 2px rgba(255,255,255,.10) inset, 0 0 0 1px rgba(0,0,0,.9),
-              0 80px 160px rgba(0,0,0,.65), 0 0 220px rgba(0,180,200,.22); }
-.device img { display: block; width: 100%%; height: auto; }
-.chips { display: flex; flex-wrap: wrap; gap: .45em; }
-.chip { font-weight: 800; letter-spacing: .02em; padding: .28em .62em; border-radius: .34em; }
+html, body { width: %(w)dpx; height: %(h)dpx; overflow: hidden; background: %(page)s; }
+body { position: relative; font-family: Inter, sans-serif; color: #fff; -webkit-font-smoothing: antialiased; }
+.bg { position: absolute; inset: 0; overflow: hidden; }
+.glyph { position: absolute; opacity: .07; }
+h1 { position: absolute; left: 0; right: 0; text-align: center; white-space: nowrap; font-weight: 800; letter-spacing: -.025em;
+  line-height: 1.06; text-shadow: 0 2px 18px rgba(0, 30, 40, .35); }
+.pill { position: absolute; left: 50%%; transform: translateX(-50%%); white-space: nowrap; font-weight: 600;
+  letter-spacing: -.005em; padding: .42em 1.05em; border-radius: 999px; background: rgba(255, 255, 255, .14);
+  border: 1.5px solid rgba(255, 255, 255, .32); }
+.dev { position: absolute; border-style: solid; border-color: #0b0e13; background: transparent;
+  box-shadow: 0 0 0 1.5px rgba(255, 255, 255, .16), 0 30px 90px rgba(0, 0, 0, .42), 0 8px 24px rgba(0, 0, 0, .3); }
+.dev img { display: block; width: 100%%; height: 100%%; }
+.stand { position: absolute; background: linear-gradient(180deg, #05080b, #161b22); }
+.zoom { position: absolute; overflow: hidden; border: 2px solid rgba(255, 255, 255, .35);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, .45); background-repeat: no-repeat; }
+.mark { position: absolute; border: 2px solid rgba(255, 255, 255, .85); }
+.card { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 """
 
 
-def blobs(w, h, spots):
-    return "".join(
-        f'<div class="blob" style="left:{x * w - r * w / 2:.0f}px;top:{y * h - r * w / 2:.0f}px;width:{r * w:.0f}px;'
-        f'height:{r * w:.0f}px;background:{c}"></div>' for x, y, r, c in spots)
+def background(index, w, h, mark=True):
+    """The slide's gradient with a soft glow and, faintly in a corner, the DMM glyph."""
+    angle, top, bottom, gx, gy = BACKGROUNDS[index]
+    glyph = (f'<svg class="glyph" style="right:{-0.12 * max(w, h):.0f}px;bottom:{-0.1 * max(w, h):.0f}px" '
+             f'width="{0.62 * max(w, h):.0f}" height="{0.62 * max(w, h):.0f}" viewBox="55 60 90 95">{WHITE_GLYPH}</svg>') if mark else ""
+    return (f'<div class="bg" style="background:radial-gradient(60% 45% at {gx}% {gy}%, rgba(64, 232, 244, .28), transparent 70%),'
+            f'linear-gradient({angle}deg, {top} 0%, {bottom} 100%)">{glyph}</div>')
 
 
-def chips(size):
-    return '<div class="chips" style="font-size:%dpx">%s</div>' % (size, "".join(
-        f'<span class="chip" style="background:{bg};color:{fg}">{name}</span>' for name, bg, fg in PROVIDERS))
+def text_html(L):
+    head = SLIDES[L["index"]][1] if L["lines"] == 2 else SLIDES[L["index"]][1].replace("<br>", " ")
+    out = f'<h1 style="top:{L["top"]:.1f}px;font-size:{L["fs"]:.1f}px">{head}</h1>'
+    if L["slot"] in PILL:
+        out += f'<div class="pill" style="top:{L["pill_top"]:.1f}px;font-size:{L["pill_fs"]:.1f}px">{html.escape(PILL[L["slot"]])}</div>'
+    return out
 
 
-def page(w, h, body, spots, blur=None, grid=None):
-    css = BASE_CSS % {"w": w, "h": h, "blur": blur or w // 7, "grid": grid or w // 12}
-    return (f"<!doctype html><html><head><meta charset=utf-8><style>{css}</style></head><body>"
-            f'<div class="bg">{blobs(w, h, spots)}<div class="grid"></div></div>{body}</body></html>')
+def page(L, part="all"):
+    """part: all (the slide), bg (background + headline only), frame (device rings only, transparent page)."""
+    body = ""
+    if part in ("all", "bg"):
+        body += background(L["index"], L["w"], L["h"]) + text_html(L)
+    if part in ("all", "frame"):
+        for i, (g, src) in enumerate(L["devices"]):
+            body += device_html(g, src if part == "all" else None, z=2 + i)
+    if part == "all":
+        for e in L["extras"]:
+            x0, y0, x1, y1 = e["crop"]
+            fw = e["w"] / (x1 - x0)
+            fh = e["h"] / (y1 - y0)
+            r = e["w"] * 0.035
+            mx, my, mw, mh = e["mark"]
+            body += (f'<div class="mark" style="left:{mx:.1f}px;top:{my:.1f}px;width:{mw:.1f}px;height:{mh:.1f}px;border-radius:{r * 0.35:.1f}px;z-index:9"></div>'
+                     f'<div class="zoom" style="left:{e["x"]:.1f}px;top:{e["y"]:.1f}px;width:{e["w"]:.1f}px;height:{e["h"]:.1f}px;'
+                     f'border-radius:{r:.1f}px;background-image:url({e["src"].as_uri()});background-size:{fw:.1f}px {fh:.1f}px;'
+                     f'background-position:{-x0 * fw:.1f}px {-y0 * fh:.1f}px;z-index:9"></div>')
+    css = CSS % {"fonts": fonts(), "w": L["w"], "h": L["h"], "page": "transparent" if part == "frame" else "#022a33"}
+    return f"<!doctype html><html><head><meta charset=utf-8><style>{css}</style></head><body>{body}</body></html>"
 
 
-def phone(src, left, top, width, tilt=0, z=1):
-    pad, radius = width * 0.028, width * 0.155
-    return (f'<div class="device" style="left:{left}px;top:{top}px;width:{width}px;padding:{pad:.0f}px;'
-            f'border-radius:{radius:.0f}px;transform:rotate({tilt}deg);z-index:{z}">'
-            f'<img src="{src.as_uri()}" style="border-radius:{radius - pad:.0f}px"></div>')
+def run_chrome(args, tmp):
+    """Headless Chrome with its own profile (a running desktop Chrome is left alone); it fails now and then: retry."""
+    for attempt in range(3):
+        done = subprocess.run([CHROME, "--headless=new", f"--user-data-dir={tmp / 'profile'}", *args], capture_output=True, text=True)
+        if done.returncode == 0:
+            return done.stdout
+    raise RuntimeError(f"Chrome failed 3 times: {done.stderr[-500:]}")
 
 
-def tablet(src, left, top, width, tilt=0, z=1):
-    pad, radius = width * 0.026, width * 0.06
-    return (f'<div class="device" style="left:{left}px;top:{top}px;width:{width}px;padding:{pad:.0f}px;'
-            f'border-radius:{radius:.0f}px;transform:rotate({tilt}deg);z-index:{z}">'
-            f'<img src="{src.as_uri()}" style="border-radius:{radius - pad:.0f}px"></div>')
-
-
-def screen(src, left, top, width, z=1):
-    pad, radius = width * 0.012, width * 0.018
-    return (f'<div class="device" style="left:{left}px;top:{top}px;width:{width}px;padding:{pad:.0f}px;'
-            f'border-radius:{radius:.0f}px;z-index:{z}"><img src="{src.as_uri()}" style="border-radius:{radius - pad:.0f}px"></div>')
-
-
-def header(eyebrow, title, sub, size, left, top, width, align="left"):
-    return (f'<div style="position:absolute;left:{left}px;top:{top}px;width:{width}px;text-align:{align};z-index:5">'
-            f'<div class="eyebrow" style="font-size:{size * .26:.0f}px"><i></i>{html.escape(eyebrow)}</div>'
-            f'<h1 style="font-size:{size}px;margin-top:{size * .38:.0f}px">{title}</h1>'
-            f'<p class="sub" style="font-size:{size * .36:.0f}px;margin-top:{size * .32:.0f}px">{html.escape(sub)}</p></div>')
-
-
-AURORA = [(.15, .12, .9, "#007f8c"), (.95, .30, .8, "#3047c9"), (.40, .75, 1.0, "#0f3b7a"), (.95, .95, .7, "#6a2bd6")]
-AURORA2 = [(.85, .10, .9, "#00a0b0"), (.05, .40, .8, "#3a2bb8"), (.60, .85, 1.1, "#0b4f8a")]
-
-
-def iphone_slides():
-    w, h, s = 1320, 2868, 118
-    X = 110
-    yield "appstore-iphone-1-library", w, h, page(w, h, header(
-        "Debrid Media Manager", "Your debrid library.<br><em>Everywhere.</em>",
-        "Every file from every service you use, in one fast list.", s, X, 190, 1100)
-        + f'<div style="position:absolute;left:{X}px;top:800px;z-index:5">{chips(46)}</div>'
-        + phone(STORE / "ios-iphone-1-library.png", 170, 1020, 980), AURORA)
-    yield "appstore-iphone-2-detail", w, h, page(w, h, header(
-        "Play anything", "One tap from<br><em>file to film.</em>",
-        "Videos open in the player you choose, subtitles included.", s, X, 190, 1100)
-        + phone(STORE / "ios-iphone-2-detail.png", 170, 980, 980), AURORA2)
-    yield "appstore-iphone-3-menu", w, h, page(w, h, header(
-        "Stay in control", "Tidy up<br><em>in seconds.</em>",
-        "Select, reinsert, share or delete, one at a time or in bulk.", s, X, 190, 1100)
-        + phone(STORE / "ios-iphone-3-menu.png", 230, 960, 860), AURORA)
-    yield "appstore-iphone-4-sign-in", w, h, page(w, h, header(
-        "Six services", "Sign in once.<br><em>Done.</em>",
-        "Your other logins and settings come back on every device.", s, X, 190, 1100)
-        + phone(SHOTS / "iphone-sign-in.png", 170, 980, 980), AURORA2)
-    yield "appstore-iphone-5-everywhere", w, h, page(w, h, header(
-        "iPhone · iPad · Apple TV", "Phone, tablet<br><em>and the big screen.</em>",
-        "Browse with your thumb or your remote. Same library.", s, X, 190, 1100)
-        + screen(SHOTS / "appletv-library.png", 110, 860, 1100, z=1)
-        + tablet(SHOTS / "ipad-library.png", 110, 1560, 700, z=2)
-        + phone(STORE / "ios-iphone-2-detail.png", 850, 1520, 360, z=3), AURORA)
-
-
-def ipad_slides():
-    w, h, s = 2064, 2752, 150
-    yield "appstore-ipad-1-library", w, h, page(w, h, header(
-        "Debrid Media Manager", "Your whole library,<br><em>at a glance.</em>",
-        "Thousands of items, searched, filtered and sorted instantly.", s, 170, 170, 1700)
-        + tablet(SHOTS / "ipad-library.png", 232, 1000, 1600), AURORA)
-    yield "appstore-ipad-2-everywhere", w, h, page(w, h, header(
-        "iPhone · iPad · Apple TV", "Every screen.<br><em>One library.</em>",
-        "Sign in once and your services follow you to every device.", s, 170, 170, 1700)
-        + screen(SHOTS / "appletv-library.png", 170, 900, 1724, z=1)
-        + tablet(SHOTS / "ipad-library.png", 170, 1950, 1080, z=2)
-        + phone(STORE / "ios-iphone-2-detail.png", 1340, 1880, 554, z=3), AURORA2)
-
-
-def tv_slides():
-    w, h, s = 3840, 2160, 150
-    def slide(name, eyebrow, title, sub, src, spots):
-        return name, w, h, page(w, h, header(eyebrow, title, sub, s, 200, 640, 1050)
-                                + screen(src, 1400, 400, 2240), spots, blur=420, grid=180)
-    yield slide("appstore-appletv-1-library", "Apple TV", "Your library<br>on the<br><em>big screen.</em>",
-                "Every file from every service, browsed with the remote.", SHOTS / "appletv-library.png", AURORA)
-    yield slide("appstore-appletv-2-select", "Made for the remote", "Select many.<br><em>Act once.</em>",
-                "Mark several titles with the remote and handle them together.", SHOTS / "appletv-select.png", AURORA2)
-    yield slide("appstore-appletv-3-menu", "Stay in control", "Every action,<br><em>one click away.</em>",
-                "Details, selection and cleanup without leaving the couch.", SHOTS / "appletv-menu.png", AURORA)
-
-
-def render(name, w, h, doc, tmp):
-    src = tmp / f"{name}.html"
+def chrome(doc, w, h, out, tmp, transparent=False):
+    src = tmp / "page.html"
     src.write_text(doc)
-    out = OUT / f"{name}.png"
-    subprocess.run([CHROME, "--headless=new", "--hide-scrollbars", "--force-device-scale-factor=1",
-                    "--allow-file-access-from-files", f"--window-size={w},{h}", f"--screenshot={out}",
-                    "--virtual-time-budget=4000", src.as_uri()], check=True, capture_output=True)
-    print(out.relative_to(ROOT))
+    args = ["--hide-scrollbars", "--force-device-scale-factor=1", "--allow-file-access-from-files",
+            f"--window-size={w},{h}", f"--screenshot={out}", "--virtual-time-budget=6000", src.as_uri()]
+    if transparent:
+        args.insert(0, "--default-background-color=00000000")
+    run_chrome(args, tmp)
+
+
+def save_jpeg(png, out, quality=88):
+    with Image.open(png) as im:
+        im.convert("RGB").save(out, "JPEG", quality=quality, optimize=True, progressive=True, subsampling=0)
+
+
+def extra_pages():
+    """Store graphics in the same look: Play feature graphic (= Amazon promo image) and the Fire TV background."""
+    def fg():
+        w, h = 1024, 500
+        tv = frame_geometry("tv", 16 / 9, (500, 70, 470, 330), "top", "left")
+        ph = frame_geometry("phone", 1080 / 2400, (820, 120, 170, 360), "top", "left")
+        body = background(0, w, h, mark=False)
+        body += (f'<svg style="position:absolute;left:58px;top:126px" width="104" height="104" viewBox="40 40 120 120">'
+                 f'{CIRCLE}{GLYPH}</svg>'
+                 f'<div style="position:absolute;left:58px;top:250px;font-weight:800;font-size:56px;letter-spacing:-.025em">DMM Mobile</div>'
+                 f'<div style="position:absolute;left:60px;top:322px;font-weight:600;font-size:23px;opacity:.92">Your debrid library, ready to watch</div>')
+        body += device_html(tv, screen("android-tv", "home"), 2) + device_html(ph, screen("android-phone", "home"), 3)
+        return "play-feature-graphic", w, h, body
+
+    def firetv_background():
+        # Amazon draws its own text over this: no words or logo, the demo library's posters on the right.
+        w, h = 1920, 1080
+        lib = screen("android-tv", "library")
+        posters = [(113 + 256 * c, 262 + 450 * r) for r in range(2) for c in range(7) if not (r == 1 and c == 6)]
+        tiles = ""
+        for i in range(18):
+            px, py = posters[i % len(posters)]
+            col, row = i % 6, i // 6
+            x, y = 820 + col * 250 - row * 80, -120 + row * 400
+            tiles += (f'<div style="position:absolute;left:{x}px;top:{y}px;width:230px;height:346px;border-radius:14px;'
+                      f'background:url({lib.as_uri()}) -{px * 230 / 235:.0f}px -{py * 346 / 352:.0f}px / {1920 * 230 / 235:.0f}px {1080 * 346 / 352:.0f}px;'
+                      f'box-shadow:0 18px 50px rgba(0,0,0,.45)"></div>')
+        body = background(5, w, h, mark=False)
+        body += (f'<div style="position:absolute;inset:0;transform:rotate(-8deg);transform-origin:70% 50%">{tiles}</div>'
+                 f'<div style="position:absolute;inset:0;background:linear-gradient(90deg,#02303a 0%,#02303a 34%,rgba(2,48,58,.55) 55%,rgba(2,48,58,0) 80%)"></div>')
+        return "amazon-firetv-background", w, h, body
+
+    for make in (fg, firetv_background):
+        name, w, h, body = make()
+        css = CSS % {"fonts": fonts(), "w": w, "h": h, "page": "#022a33"}
+        yield name, w, h, f"<!doctype html><html><head><meta charset=utf-8><style>{css}</style></head><body>{body}</body></html>"
+
+
+def render_sets(names):
+    with tempfile.TemporaryDirectory() as t:
+        t = pathlib.Path(t)
+        for name in [n for n in names if n in SETS]:
+            out_dir = HERE / name
+            out_dir.mkdir(exist_ok=True)
+            for old in out_dir.glob("*.jpg"):
+                old.unlink()
+            w, h = SETS[name]["size"]
+            for i, (slot, _) in enumerate(SLIDES):
+                L = layout(name, slot)
+                chrome(page(L), w, h, t / "s.png", t)
+                out = out_dir / f"{i + 1}-{slot}.jpg"
+                save_jpeg(t / "s.png", out)
+                print(out.relative_to(ROOT), f"{w}x{h}", f"{out.stat().st_size // 1024} KB")
+        if "extras" in names:
+            for name, w, h, doc in extra_pages():
+                chrome(doc, w, h, t / "s.png", t)
+                out = HERE / f"{name}.jpg"
+                save_jpeg(t / "s.png", out, 92)
+                print(out.relative_to(ROOT), f"{w}x{h}", f"{out.stat().st_size // 1024} KB")
+
+
+# Video layouts: (canvas, set whose layout it borrows, segments). video.py composes the recordings into them.
+VIDEOS = {
+    "iphone-preview": ((886, 1920), "iphone", ["title", "player"]),
+    "appletv-preview": ((1920, 1080), "appletv", ["title", "player"]),
+    "firetv-landscape": ((1920, 1080), "android-tv", ["title", "player"]),
+}
+
+
+def render_video_assets(out):
+    out.mkdir(parents=True, exist_ok=True)
+    geo = {}
+    with tempfile.TemporaryDirectory() as t:
+        t = pathlib.Path(t)
+        for vid, ((w, h), set_name, slots) in VIDEOS.items():
+            geo[vid] = {"size": [w, h], "segments": {}}
+            for slot in slots:
+                L = layout(set_name, slot, w, h, video=True)
+                bg, fr = out / f"{vid}-{slot}-bg.png", out / f"{vid}-{slot}-frame.png"
+                chrome(page(L, "bg"), w, h, bg, t)
+                with Image.open(bg) as im:
+                    im.convert("RGB").save(bg)
+                chrome(page(L, "frame"), w, h, fr, t, transparent=True)
+                g = L["devices"][0][0]
+                geo[vid]["segments"][slot] = {k: round(g[k]) for k in ("sx", "sy", "sw", "sh")}
+            # End card: the logo and the name on the first slide's gradient.
+            card = (background(0, w, h) +
+                    f'<div class="card"><svg width="{0.3 * min(w, h):.0f}" height="{0.3 * min(w, h):.0f}" viewBox="40 40 120 120">'
+                    f'{CIRCLE}{GLYPH}</svg>'
+                    f'<div style="font-weight:800;font-size:{0.085 * min(w, h):.0f}px;letter-spacing:-.025em;margin-top:{0.04 * min(w, h):.0f}px">DMM Mobile</div></div>')
+            css = CSS % {"fonts": fonts(), "w": w, "h": h, "page": "#022a33"}
+            chrome(f"<!doctype html><html><head><meta charset=utf-8><style>{css}</style></head><body>{card}</body></html>", w, h, out / f"{vid}-card.png", t)
+    (out / "geometry.json").write_text(json.dumps(geo, indent=1))
+    print(out / "geometry.json")
 
 
 if __name__ == "__main__":
-    with tempfile.TemporaryDirectory() as t:
-        for slide in [*iphone_slides(), *ipad_slides(), *tv_slides()]:
-            render(*slide, pathlib.Path(t))
+    args = sys.argv[1:]
+    if args[:1] == ["--video"]:
+        render_video_assets(pathlib.Path(args[1]))
+    else:
+        render_sets(args or [*SETS, "extras"])
