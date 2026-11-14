@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore
 import { ActivityIndicator, Animated, AppState, Image, Modal, Platform, Pressable as PlainPressable, ScrollView, StyleSheet, Text, useTVEventHandler, useWindowDimensions, View, type GestureResponderEvent } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import VLCPlayer, { type VLCPlayerRef, type VLCPlayerTracks } from '@lunarr/vlc-player';
+import Video, { type PlayerRef, type PlayerTracks } from '../video';
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import { useApp } from '../AppContext';
 import { otherCopies, readEpisodeTitles } from '../calendar';
@@ -25,7 +25,7 @@ const SKIP_MS = 10_000;
 const SAVE_EVERY_MS = 5_000;
 const HIDE_AFTER_MS = 4_000;
 const NEXT_IN_S = 10;
-/** A dropped connection leaves libVLC playing a frozen picture with no error: this long without the clock moving is a stop. */
+/** A dropped connection leaves libVLC playing a frozen picture with no error (Media3 retries as long): this long without the clock moving is a stop. */
 const STALL_MS = 30_000;
 const SUBTITLE = /\.(srt|ass|ssa|vtt|sub)$/i;
 const ACCENT = '#8ab4ff';
@@ -67,10 +67,10 @@ const logoInk = (imdbId: string): Promise<Ink | null> => {
 };
 
 /**
- * The built-in player (libVLC 3): any container and codec the provider serves, embedded audio and
- * subtitle tracks, subtitle files from the same release, resume, and the show's next episode.
- * libVLC 4 (expo-libvlc-player 58.0.9) was tried first: it read a Real-Debrid MKV from the start
- * up to every seek target (4 GB for one seek on the Pixel 6), where libVLC 3 jumps there.
+ * The built-in player (libVLC 3 on iPhone, iPad and Apple TV; Media3 on Android, src/video.android.tsx): any
+ * container and codec the provider serves, embedded audio and subtitle tracks, subtitle files from the same
+ * release, resume, and the show's next episode. libVLC 4 (expo-libvlc-player 58.0.9) was tried first: it read a
+ * Real-Debrid MKV from the start up to every seek target (4 GB for one seek on the Pixel 6), where libVLC 3 jumps there.
  */
 export function PlayerScreen({ route, navigation }: Props) {
 	const { url, item, fileId, resume, at: from, sleep: sleepAt } = route.params;
@@ -130,7 +130,7 @@ export function PlayerScreen({ route, navigation }: Props) {
 	}, [named?.imdbId]);
 	useEffect(() => void titles.loadProbes([item]), [item, titles]);
 
-	const player = useRef<VLCPlayerRef>(null);
+	const player = useRef<PlayerRef>(null);
 	const mounted = useRef(true);
 	const position = useRef({ time: 0, duration: 0, savedAt: 0, movedAt: 0 });
 	/** Whether the sound was checked once the video started: 'asked' while libVLC lists its tracks. */
@@ -150,7 +150,7 @@ export function PlayerScreen({ route, navigation }: Props) {
 	const [paused, setPaused] = useState(false);
 	const [buffering, setBuffering] = useState(true);
 	const [error, setError] = useState('');
-	const [tracks, setTracks] = useState<VLCPlayerTracks | null>(null);
+	const [tracks, setTracks] = useState<PlayerTracks | null>(null);
 	const [controls, setControls] = useState<'shown' | 'peek' | 'hidden'>('shown');
 	/**
 	 * In Android's picture-in-picture window, which shows the picture alone. The activity is paused there, so React
@@ -559,7 +559,7 @@ export function PlayerScreen({ route, navigation }: Props) {
 	return (
 		<View style={local.screen} onLayout={(event) => setArea({ width: event.nativeEvent.layout.width, height: event.nativeEvent.layout.height })}>
 			{start !== null ? (
-				<VLCPlayer
+				<Video
 					key={attempt}
 					ref={player}
 					// 16:9 and 4:3 shape the view itself and stretch the picture into it: libVLC's own forced ratio is reset by the wrapper's framing.
@@ -631,7 +631,7 @@ export function PlayerScreen({ route, navigation }: Props) {
 							setError('Its sound is in a format this player cannot decode.');
 						}
 					}}
-					onError={() => setError('This file could not be played here.')}
+					onError={(event) => setError(event?.message ?? 'This file could not be played here.')}
 				/>
 			) : null}
 

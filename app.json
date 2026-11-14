@@ -119,7 +119,6 @@
         }
       ],
       "./plugins/withReleaseSigning",
-      "./plugins/withLibVlcKeep",
       "./plugins/withVlcKit",
       "./plugins/withPictureInPicture",
       "./plugins/withCleartextTraffic",

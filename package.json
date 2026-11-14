@@ -67,7 +67,8 @@
       "android": {
         "exclude": [
           "expo-notifications",
-          "expo-application"
+          "expo-application",
+          "@lunarr/vlc-player"
         ]
       }
     }
