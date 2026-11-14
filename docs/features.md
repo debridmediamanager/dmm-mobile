@@ -53,18 +53,20 @@ logins are sent to it.
 
 Before saving, the app sends the server an empty sync request and takes it only
 when it answers the way DMM does, so a typo never receives your logins. It needs
-DMM from 2026-11-09 (`516fcf8d`) or later, the first to let the app sync; an
-older one is refused with a note to update. Once saved, the app pushes its logins
+DMM from 2026-11-09 (`516fcf8d`) or later, the first to let the app sync and
+link TVs; an older one is refused with a note to update. Media details on a
+copy need DMM from 2026-11-13. The server needs `DMMCAST_SALT` set, or it turns
+down every login. Once saved, the app pushes its logins
 and settings to the new server, and a TV shows a fresh code from it.
 
 Some things stay on debridmediamanager.com: hash list links (the page reads the
 list from the link itself, so anyone can open it), the privacy policy and help
-pages, and poster images. Trakt goes through the server's own Trakt app, so it
-needs one set up there.
+pages, and poster images. Trakt goes through the server's own Trakt app
+(`TRAKT_CLIENT_ID` and `TRAKT_CLIENT_SECRET`), so it needs one set up there.
 
-Plain `http://` works on iPhone, iPad and Apple TV for addresses on your own
-network (an IP address or a `.local` name). Android refuses plain HTTP in
-release builds, so use `https://` there.
+Plain `http://` works on Android, and on iPhone, iPad and Apple TV for addresses
+on your own network (an IP address or a `.local` name); a public address there
+needs `https://`.
 
 ## Home
 

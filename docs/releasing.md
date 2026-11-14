@@ -50,6 +50,11 @@ the next store release; a fix for 1.1.0 goes out from a branch off `v1.1.0`.
 `expo-notifications` on Android. iPhone, iPad and Apple TV stay on 1.2.0, so `main` (runtime 1.2.1) no longer
 reaches them over the air; an iOS fix for 1.2.0 goes out from a branch off `v1.2.0`.
 
+The same holds for 1.2.1 since 2026-11-14: Android allows plain HTTP for a
+self-hosted DMM (`plugins/withCleartextTraffic.js`, `android:usesCleartextTraffic`
+in the manifest). It reaches users with the next store release; a fix for 1.2.1
+goes out from a branch off `v1.2.1`.
+
 A binary runs its own code until an update newer than the build itself is
 published: updates are ordered by date, so one published before the build is
 ignored. Builds of older versions keep the last update published for their version. To
