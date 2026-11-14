@@ -1,7 +1,7 @@
 # Store listings and form answers
 
 One app on both stores: bundle id / package `com.debridmediamanager.library`
-(fixed forever once published). Google Play has 1.2.0 (versionCode 4) on the closed
+(fixed forever once published). Google Play has 1.2.1 (versionCode 5, Android only) on the closed
 test; the App Store has 1.2.0 (build 4), sent for review on 2026-11-14 (1.0.0 never
 released). Apple ships iPhone, iPad
 and Apple TV in one App Store record (add the tvOS platform to it); Google Play
@@ -100,6 +100,12 @@ app's first App Store version.
   Picture in picture: keep watching in a small window while you use other apps.
   Switch to another version, change the speed or set a sleep timer right in the player.
   A slimmer menu on TVs, so your posters get more room.
+  ```
+- 1.2.1 (Android only; the same text is `fastlane/metadata/android/en-US/changelogs/5.txt`):
+
+  ```text
+  New-episode alerts no longer include Google's push library: the app needs no Google services.
+  An alert that is due is no longer dropped when the app is opened just before Android shows it.
   ```
 
 ## Screenshots and previews

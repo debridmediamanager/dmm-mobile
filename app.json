@@ -2,7 +2,7 @@
   "expo": {
     "name": "DMM Mobile",
     "slug": "dmm-library",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "orientation": "default",
     "userInterfaceStyle": "automatic",
     "scheme": [
@@ -73,7 +73,7 @@
           ]
         }
       ],
-      "versionCode": 4,
+      "versionCode": 5,
       "blockedPermissions": [
         "android.permission.SYSTEM_ALERT_WINDOW",
         "android.permission.WRITE_EXTERNAL_STORAGE",
