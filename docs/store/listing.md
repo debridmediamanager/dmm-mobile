@@ -125,7 +125,7 @@ density 320), a Fire TV Cube, and iPhone 17 Pro Max, iPad Pro 13-inch and Apple 
 | App Store iPad 13" | 2752 × 2064 | `marketing/ipad/` (6) |
 | App Store Apple TV | 1920 × 1080 | `marketing/appletv/` (6) |
 | Play phone | 1080 × 1920 | `marketing/android-phone/` (6) |
-| Play 7" and 10" tablet, Amazon Fire tablet | 1920 × 1200 | `marketing/android-tablet/` (6) |
+| Play 7" and 10" tablet, Amazon Fire tablet | 1920 × 1080 | `marketing/android-tablet/` (6) |
 | Play Android TV, Amazon Fire TV | 1920 × 1080 | `marketing/android-tv/` (6) |
 | Play feature graphic, Amazon promotional image | 1024 × 500 | `marketing/play-feature-graphic.jpg` |
 | Amazon Fire TV background (no text or logo, as Amazon asks) | 1920 × 1080 | `marketing/amazon-firetv-background.jpg` |

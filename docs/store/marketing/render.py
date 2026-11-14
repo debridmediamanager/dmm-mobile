@@ -62,7 +62,7 @@ SETS = {
     "appletv": dict(size=(1920, 1080), layout="tv", device="tv", screens="appletv", tv="appletv", store="App Store Apple TV"),
     "android-phone": dict(size=(1080, 1920), layout="portrait", device="phone", screens="android-phone", tv="android-tv",
                           store="Google Play phone"),
-    "android-tablet": dict(size=(1920, 1200), layout="landscape", device="tablet", screens="android-tablet", tv="android-tv",
+    "android-tablet": dict(size=(1920, 1080), layout="landscape", device="tablet", screens="android-tablet", tv="android-tv",
                            store="Google Play 7- and 10-inch tablet, Amazon Fire tablet"),
     "android-tv": dict(size=(1920, 1080), layout="tv", device="tv", screens="android-tv", tv="android-tv",
                        store="Google Play Android TV, Amazon Fire TV"),
