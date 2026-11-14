@@ -98,6 +98,10 @@ EXPO_TV=1 npx expo prebuild -p android   # one APK for phones, tablets and TVs
 Building, the player's VLCKit and the fixture preview: [docs/development.md](docs/development.md).
 Releases and over-the-air updates: [docs/releasing.md](docs/releasing.md) and [docs/store/release.md](docs/store/release.md).
 
+## How it's built
+
+DMM Mobile is developed by Ben Adrian Sarmiento with AI coding agents (Claude). Ben decides what gets built and tests every release on real devices (Pixel, Fire TV, iPhone, Apple TV); the code, tests and docs are written with AI assistance.
+
 ## Licence
 
 AGPL-3.0-only, see [LICENSE](LICENSE). [NOTICE.md](NOTICE.md) covers what the app is
