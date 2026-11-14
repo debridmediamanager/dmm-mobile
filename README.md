@@ -40,7 +40,7 @@ cd android && ./gradlew :app:assembleRelease -PreactNativeArchitectures=arm64-v8
 
 Apple builds one project per platform: `npx expo prebuild -p ios` for iPhone
 and iPad, `EXPO_TV=1 npx expo prebuild -p ios` for Apple TV. Run `vlckit/fetch.sh`
-once first (it needs `gh` signed in with access to this repository): the player's
+once first (plain `curl` from this repository's public release): the player's
 VLCKit frameworks are our own build, kept in a GitHub release (Built-in player,
 below). `package.json` overrides `react-native` for every package: the fork's own
 list component asks for stock React Native, and two copies in one bundle leave the
