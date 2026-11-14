@@ -23,6 +23,7 @@ import { Icon, Pressable, TvScale, useLayout, type IconName } from './ui';
 import type { LibrarySession } from './session';
 import { PROVIDERS } from './model';
 import { parseIncomingLink } from './share';
+import { fetchFixesOnStart } from './updates';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tabs = createBottomTabNavigator<MainTabParamList>();
@@ -144,5 +145,6 @@ export function AppNavigation() {
 }
 
 export default function App(props: { session?: LibrarySession; [key: string]: unknown } = {}) {
+	useEffect(() => void fetchFixesOnStart(), []);
 	return <SafeAreaProvider><AppProvider session={props.session}><AppNavigation /></AppProvider></SafeAreaProvider>;
 }

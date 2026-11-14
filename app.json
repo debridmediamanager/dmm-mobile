@@ -126,7 +126,7 @@
     ],
     "updates": {
       "url": "https://ota.debridmediamanager.com/manifest",
-      "checkAutomatically": "ON_LOAD",
+      "checkAutomatically": "NEVER",
       "fallbackToCacheTimeout": 0,
       "codeSigningCertificate": "./certs/certificate.pem",
       "codeSigningMetadata": {

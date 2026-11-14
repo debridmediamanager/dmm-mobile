@@ -7,6 +7,7 @@ import { PROVIDERS, PROVIDER_META, type ProviderId } from '../model';
 import { playersForPlatform } from '../player';
 import { loadSettings, onSettingsChange, saveSetting, type AppSettings, type SettingName } from '../settings';
 import { useAppTheme } from '../theme';
+import { autoFixesOn, setAutoFixes } from '../updates';
 import { ActionSheet, DropdownChip, FilterButton, Pressable, QrCode, Screen, styles, type SheetAction, useLayout } from '../ui';
 import { OFFICIAL_DMM_ORIGIN } from '../tvLink';
 import { pollSimklLink, startSimklLink, type TrackerLink } from '../simkl';
@@ -175,6 +176,10 @@ export function SettingsScreen() {
 	};
 	const updates = Updates.useUpdates();
 	const [checking, setChecking] = useState(false);
+	// Get fixes automatically: null until read.
+	const [autoFixes, setAutoFixesState] = useState<boolean | null>(null);
+	useEffect(() => void (Updates.isEnabled && autoFixesOn().then(setAutoFixesState)), []);
+	const switchAutoFixes = (on: boolean) => void setAutoFixes(on).then(() => setAutoFixesState(on), (caught) => Alert.alert('Could not save the setting', caught instanceof Error ? caught.message : String(caught)));
 	const save = (name: SettingName, value: string) => void saveSetting(name, value).catch((caught) => Alert.alert('Could not save the setting', caught instanceof Error ? caught.message : String(caught)));
 
 	const players = playersForPlatform();
@@ -188,7 +193,7 @@ export function SettingsScreen() {
 		addProvider: connected.map((id) => ({ label: PROVIDER_META[id].label, checked: id === addProvider, onPress: () => save('addProvider', id) })),
 	};
 
-	// The app also checks on every start and applies a downloaded update on the next one; this is for a TV left running.
+	// With fixes on, the app also checks on every start and applies a downloaded update on the next one; this is for a TV left running.
 	const updateApp = async () => {
 		if (updates.isUpdatePending) return void Updates.reloadAsync();
 		setChecking(true);
@@ -266,6 +271,13 @@ export function SettingsScreen() {
 						)
 					: null}
 				{row('Remembered across devices', 'Always on in the app. Sign in to any one provider here or on DMM web with "Remember my logins and settings across devices", and your other logins and these settings come back. Anyone who can sign in to one of those accounts gets all of them, so do not use a shared debrid account.', <Text style={{ color: theme.accent, fontWeight: '700' }}>On</Text>)}
+				{autoFixes !== null
+					? row(
+							'Get fixes automatically',
+							'Downloads small updates to the app from debridmediamanager.com and uses them from the next start. They come straight from us, without the checks of the store or repository you installed DMM Mobile from.',
+							<Switch accessibilityLabel="Get fixes automatically" value={autoFixes} onValueChange={switchAutoFixes} trackColor={{ true: theme.accent, false: theme.border }} thumbColor={Platform.OS === 'android' ? theme.surface : undefined} />
+						)
+					: null}
 				{row(`Version ${Updates.runtimeVersion ?? ''}`.trim(), updates.isUpdatePending ? `${versionDetail} An update is ready.` : versionDetail, Updates.isEnabled ? <FilterButton label={updates.isUpdatePending ? 'Restart' : checking ? 'Checking…' : 'Check'} active={updates.isUpdatePending} onPress={() => void (checking ? undefined : updateApp())} /> : null)}
 				{/* A TV has no browser, so it shows where the pages are. */}
 				{[['Privacy policy', '/privacy'], ['Help and support', '/support']].map(([title, path]) => <Fragment key={path}>{row(title, Platform.isTV ? `${OFFICIAL_DMM_ORIGIN.replace('https://', '')}${path}` : 'Opens on debridmediamanager.com.', Platform.isTV ? null : (

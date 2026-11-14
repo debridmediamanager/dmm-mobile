@@ -9,7 +9,7 @@ already installed. Each one is recorded as a GitHub release.
 |---|---|---|
 | Carries | the whole app: native code, permissions, icons, app config | `src/` and pure-JavaScript packages, images, fonts |
 | Needed for | a new or updated native module, an Expo SDK or React Native upgrade, any change to `app.json` or `plugins/`, icons, permissions | everything else |
-| Reaches | users after store review, once they install the new version | every installed build **of the same version**: downloaded when the app starts, used from the next start |
+| Reaches | users after store review, once they install the new version | every installed build **of the same version** where Settings → Get fixes automatically is on (below): downloaded when the app starts, used from the next start |
 | GitHub release | `v1.2.0`, marked Latest, with the APK attached | `ota-1.2.0-<run>`, a pre-release holding the signed manifests and files |
 | Started by | a person: build, upload, tag | Actions → **Publish OTA update** → Run workflow |
 
@@ -55,6 +55,15 @@ self-hosted DMM (`plugins/withCleartextTraffic.js`, `android:usesCleartextTraffi
 in the manifest). It reaches users with the next store release; a fix for 1.2.1
 goes out from a branch off `v1.2.1`.
 
+1.2.2 (2026-11-14, Android only) asks before it downloads updates: expo-updates no longer
+checks at launch by itself (`checkAutomatically: NEVER` in `app.json`), and `src/updates.ts`
+checks at start instead when Settings → **Get fixes automatically** is on. It starts on in an
+install from Google Play, the Amazon Appstore or the App Store, and off in any other (the
+GitHub APKs, Obtainium, IzzyOnDroid, whose inclusion policy wants code from outside its
+checks to be opt-in) until the user switches it on. **Check** under Version works either
+way. The `app.json` change is native, so `main` (runtime 1.2.2) no longer reaches 1.2.1
+over the air, and iPhone, iPad and Apple TV get the switch with their next store release.
+
 A binary runs its own code until an update newer than the build itself is
 published: updates are ordered by date, so one published before the build is
 ignored. Builds of older versions keep the last update published for their version. To
@@ -76,9 +85,9 @@ apply the fix there and run the OTA workflow on that branch.
      `certs/certificate.pem`, the certificate built into the apps;
    - creates a draft pre-release `ota-<version>-<run>` with every file, uploads
      the files to the update server, then the manifests, and publishes the release.
-3. Phones and TVs fetch the update at their next start and run it from the start
-   after that. The update server can answer with the previous update for up to a
-   minute after publishing. Settings → Version shows "Updated <date>" once an update is running,
+3. Phones and TVs with Get fixes automatically on fetch the update at their next start
+   and run it from the start after that. The update server can answer with the previous
+   update for up to a minute after publishing. Settings → Version shows "Updated <date>" once an update is running,
    and its button checks now, then offers **Restart** when one has downloaded. A
    TV that is never closed only updates through that button.
 

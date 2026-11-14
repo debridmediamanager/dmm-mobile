@@ -424,6 +424,15 @@ Settings (video player, the provider adds start on) use DMM web's
 Not in the app, because they need DMM's servers: casting from DMM web, sending
 to Real-Debrid through DMM's uploader and the media info panel.
 
+## Fixes over the air
+
+Settings → Get fixes automatically: at start the app downloads small updates (its
+JavaScript, images and fonts, signed with our key) from debridmediamanager.com and uses
+them from the next start. They skip the checks of the store or repository the app came
+from, so the switch starts on only in an install from Google Play, the Amazon Appstore or
+the App Store, and off in any other (the GitHub APKs, Obtainium, IzzyOnDroid). Settings →
+Version → Check looks for one at any time. Publishing them: [releasing.md](releasing.md).
+
 ## Tablets and TVs
 
 On a tablet or TV the tabs become a rail on the left and sheets float in the
