@@ -158,11 +158,26 @@ in the link itself.
 
 ## Built-in player
 
-libVLC 3 (through `@lunarr/vlc-player`), so the files debrid services hold play as
-they are: MKV and MP4, H.264 and HEVC (10-bit too; HDR plays but shows as SDR),
-AC3, E-AC3 (Atmos too), DTS (DTS-HD MA and DTS:X too), TrueHD (Atmos too), FLAC,
-Opus and PCM audio, and SRT, ASS and PGS subtitles. Full screen and landscape
-(the rotate button turns a phone to portrait and back).
+The files debrid services hold play as they are: MKV and MP4, H.264 and HEVC
+(10-bit too), AC3, E-AC3 (Atmos too), DTS (DTS-HD MA and DTS:X too), TrueHD (Atmos
+too), FLAC, Opus and PCM audio, and SRT, ASS and PGS subtitles. Full screen and
+landscape (the rotate button turns a phone to portrait and back).
+
+- **Android** (phones, tablets, Android TV and Fire TV): Media3, Android's own player,
+  with FFmpeg's audio decoders and libass, in the app's module `modules/dmm-player`.
+  HDR10 shows as HDR on a screen that has it, and Dolby Vision as
+  Dolby Vision where the device decodes it (profile 8 on a Fire TV Cube); elsewhere
+  profile 8, and always profile 7 (Blu-ray remuxes), play as their HDR10 picture.
+  ASS subtitles are drawn by libass with the file's own fonts, PGS and VobSub as
+  pictures, and old MKVs with zlib-compressed subtitles read as text. Sound the
+  device decodes itself (E-AC3, AC3 and Opus on most) is decoded there, TrueHD and
+  DTS-HD in the app, to up to 7.1 channels. A file whose picture the device
+  has no decoder for (10-bit H.264 anime on most phones, VC-1, Dolby Vision profile 5
+  without a Dolby Vision screen) says so, with Open in another app. A seek reads
+  from where it lands: a jump from 55 to 100 minutes in a 59 GB 4K remux played
+  again after 0.6 s and 13 MB on a Pixel 6.
+- **iPhone, iPad and Apple TV**: libVLC 3 (through `@lunarr/vlc-player`); HDR plays
+  but shows as SDR.
 
 - **Controls**: play/pause and 10-second skips in the middle, the seek bar, and
   above it the title's logo (metahub; its name when there is none), the episode
@@ -203,14 +218,15 @@ Opus and PCM audio, and SRT, ASS and PGS subtitles. Full screen and landscape
   10-second countdown, from the same release or provider when it can.
 - A file that does not play, a stream that stops for 30 seconds, or a video whose
   sound the player cannot decode offers Try again (from where it stopped) and Open
-  in another app.
-- On a Fire TV the first video after installing takes about half a minute to
-  start while libVLC indexes the system fonts; later ones start in 2 to 5 seconds.
+  in another app. On Android it says why (the stream stopped arriving, the
+  provider stopped serving the file, or which picture format this device has no
+  decoder for).
 
 DMM web knows only its own players, so choosing the built-in player is kept on
 the device and not sent to DMM; a player app chosen here is.
 
-On iPhone, iPad and Apple TV the player is our own VLCKit build with FFmpeg's
+On Android, an MKV without an index (rare) still seeks, by its size, and shows no
+chapters. On iPhone, iPad and Apple TV the player is our own VLCKit build with FFmpeg's
 TrueHD decoder switched back on, since VideoLAN's builds play TrueHD-only files
 silent there. How it is built and checked is in
 [development.md](development.md#the-players-vlckit-on-iphone-ipad-and-apple-tv).

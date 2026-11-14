@@ -112,6 +112,14 @@ app's first App Store version.
   ```text
   New in Settings: Get fixes automatically. Switch it off and the app changes only when Google Play updates it.
   ```
+- 1.3.0 (Android only; the same text is `fastlane/metadata/android/en-US/changelogs/7.txt`):
+
+  ```text
+  A new player on Android: HDR and Dolby Vision films now play in HDR.
+  Anime subtitles keep their own fonts and signs, and old files' subtitles no longer show as gibberish.
+  Jumping far into a film plays again in about a second.
+  A file your device cannot decode says why, with Open in another app.
+  ```
 
 ## Screenshots and previews
 

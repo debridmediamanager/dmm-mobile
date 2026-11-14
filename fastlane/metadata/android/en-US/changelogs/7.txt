@@ -1,0 +1,4 @@
+A new player on Android: HDR and Dolby Vision films now play in HDR.
+Anime subtitles keep their own fonts and signs, and old files' subtitles no longer show as gibberish.
+Jumping far into a film plays again in about a second.
+A file your device cannot decode says why, with Open in another app.

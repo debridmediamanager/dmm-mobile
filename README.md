@@ -39,7 +39,7 @@ library of open movies.
 ## Features
 
 - **Your library as posters.** Every film and show you have, each one once, with seasons and episodes.
-- **A player that just plays.** 4K, HDR and Dolby Vision files, TrueHD Atmos and DTS-HD sound, chapters, subtitles, speed and a sleep timer.
+- **A player that just plays.** 4K, HDR and Dolby Vision files (shown in HDR on Android), TrueHD Atmos and DTS-HD sound, chapters, subtitles with their own styling, speed and a sleep timer.
 - **Your choice of player.** Picture in picture on Android phones and tablets, or hand videos to the player app you like.
 - **Continue Watching and Next Up.** Pick up where you stopped, and the next episode is ready.
 - **Trakt and Simkl.** What you play is scrobbled; watched marks and resume points follow you to every device.
@@ -95,7 +95,7 @@ npx expo prebuild -p ios                 # EXPO_TV=1 for Apple TV
 EXPO_TV=1 npx expo prebuild -p android   # one APK for phones, tablets and TVs
 ```
 
-Building, the player's VLCKit and the fixture preview: [docs/development.md](docs/development.md).
+Building, the players (Media3 on Android, VLCKit on Apple's) and the fixture preview: [docs/development.md](docs/development.md).
 Releases and over-the-air updates: [docs/releasing.md](docs/releasing.md) and [docs/store/release.md](docs/store/release.md).
 
 ## How it's built
@@ -105,6 +105,7 @@ DMM Mobile is developed by Ben Adrian Sarmiento with AI coding agents (Claude). 
 ## Licence
 
 AGPL-3.0-only, see [LICENSE](LICENSE). [NOTICE.md](NOTICE.md) covers what the app is
-built from, including the VLCKit build with the TrueHD decoder switched back on.
+built from: Media3, FFmpeg and libass on Android, and the VLCKit build with the TrueHD decoder
+switched back on for Apple's.
 
 **More from DMM:** [Debrid Media Manager](https://debridmediamanager.com/) · [zurg](https://zurg.debridmediamanager.com/) · [rex](https://rex.debridmediamanager.com/) · [Docs](https://notes.debridmediamanager.com/) · [Sponsor](https://gatekeeper.debridmediamanager.com/) · [Discord](https://discord.com/invite/7u4YjMThXP) · [Reddit](https://www.reddit.com/r/debridmediamanager/)

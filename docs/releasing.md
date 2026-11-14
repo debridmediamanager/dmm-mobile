@@ -66,6 +66,11 @@ checks to be opt-in) until the user switches it on. **Check** under Version work
 way. The `app.json` change is native, so `main` (runtime 1.2.2) no longer reaches 1.2.1
 over the air, and iPhone, iPad and Apple TV get the switch with their next store release.
 
+1.3.0 (2026-11-15, Android only) plays videos with Media3 instead of libVLC on Android: the app's
+module `modules/dmm-player` is native code, and `@lunarr/vlc-player` left Android builds. `main`
+(runtime 1.3.0) no longer reaches 1.2.2 over the air; a fix for 1.2.2 goes out from a branch off
+`v1.2.2`. iPhone, iPad and Apple TV keep libVLC and stay on 1.2.0.
+
 A binary runs its own code until an update newer than the build itself is
 published: updates are ordered by date, so one published before the build is
 ignored. Builds of older versions keep the last update published for their version. To

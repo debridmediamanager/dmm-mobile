@@ -6,18 +6,23 @@ standalone app keeps the same license and does not import the web application's
 Next.js, DOM, IndexedDB, or server-only modules. Its complete source is
 https://github.com/debridmediamanager/dmm-mobile.
 
-The built-in player is libVLC 3 (VideoLAN, https://code.videolan.org/videolan) through
-@lunarr/vlc-player (MIT). Its licence differs per platform, and both are compatible with
-the app's AGPL-3.0-only.
+The built-in player is Media3 on Android and libVLC 3 on iPhone, iPad and Apple TV. Every part's licence
+is compatible with the app's AGPL-3.0-only.
 
-**Android: GPL.** The app uses `org.videolan.android:libvlc-all` 3.7.5 from Maven Central
-unchanged. Its POM names libVLC's own licence, LGPL-2.1, but VideoLAN builds it with their
-GPL set of libraries (the default `--license g` of vlc-android's `buildsystem/compile.sh`):
-libdvdread, libdvdnav and FFmpeg's libpostproc are GPL-2.0-or-later, and live555 is
-LGPL-3.0-or-later. So the library as distributed is under the GPL: its GPL parts are
-GPL-2.0-or-later (IzzyOnDroid's scanner lists it so), and with live555 in the same binary
-the whole is passed on under version 3, which is what the build script calls this set
-("GPLv3"). The GPL version 3 may be combined with the AGPL version 3 (section 13 of each).
+**Android: Media3 with FFmpeg and libass** (`modules/dmm-player`), from Maven Central, unchanged:
+
+- AndroidX Media3 1.11.1 (`androidx.media3:media3-exoplayer`, `-ui`, `-effect`), Apache-2.0
+  (https://github.com/androidx/media).
+- Media3's FFmpeg audio decoder as Jellyfin builds it (`org.jellyfin.media3:media3-ffmpeg-decoder` 1.9.0+1,
+  https://github.com/jellyfin/jellyfin-androidx-media), GPL-3.0; its FFmpeg is LGPL-2.1-or-later. The GPL version 3
+  may be combined with the AGPL version 3 (section 13 of each).
+- libass (ISC, https://github.com/libass/libass) in peerless2012's Android build (`io.github.peerless2012:ass-media`
+  and `ass-kt` 0.5.1, MIT, https://github.com/peerless2012/libass-android), which links FreeType (FreeType Licence),
+  FriBidi (LGPL-2.1-or-later), HarfBuzz (MIT), Fontconfig (MIT) and Expat (MIT) into `libass.so`.
+- Code adapted from Plezy (https://github.com/edde746/plezy, GPL-3.0): seeking in MKV files without an index or with
+  their tracks after the video (`CuelessSeekExtractorWrapper`), Dolby Vision profile 7 played as its HDR10 base layer,
+  zlib-compressed MKV tracks (`ZlibMatroskaExtractor`), and the audio and subtitle delays. Each place says what it
+  took (`modules/dmm-player/android/.../MkvFixes.kt`, `Delays.kt`).
 
 **iPhone, iPad and Apple TV: LGPL-2.1-or-later.** MobileVLCKit and TVVLCKit are our build of
 VLCKit 3.7.5 (https://code.videolan.org/videolan/VLCKit, tag 3.7.5) with one more patch,
