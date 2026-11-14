@@ -147,22 +147,29 @@ xcodebuild -workspace ios/DMMMobile.xcworkspace -scheme DMMMobile -configuration
 ```
 
 Export each archive with `docs/store/ExportOptions.plist` and upload the `.ipa`
-with `altool`, using the app-specific password in Bitwarden ("Apple notarytool
-app-specific password", Apple ID benadriansarmiento@icloud.com, which owns the team):
+with `altool` and the App Store Connect API key (below; its key ID and issuer ID are
+in the Bitwarden entry's notes), written to a temporary folder that is deleted afterwards:
 
 ```sh
 xcodebuild -exportArchive -archivePath build/DMMMobile-ios.xcarchive -exportPath build/ios \
   -exportOptionsPlist docs/store/ExportOptions.plist -allowProvisioningUpdates
-ASC_PW=$(rbw get 'Apple notarytool app-specific password' benadriansarmiento@icloud.com) \
-  xcrun altool --upload-app --type ios --file build/ios/DMMMobile.ipa \
-  --username benadriansarmiento@icloud.com --password @env:ASC_PW   # --type appletvos for the TV build
+K=$(mktemp -d) && rbw get 'App Store Connect API key (dmm-mobile release)' | base64 -d > "$K/AuthKey_$KEY_ID.p8"
+API_PRIVATE_KEYS_DIR=$K xcrun altool --upload-app --type ios --file build/ios/DMMMobile.ipa \
+  --apiKey "$KEY_ID" --apiIssuer "$ISSUER_ID"   # --type appletvos for the TV build
+rm -rf "$K"
 ```
+
+Before uploading the Apple TV build, start it in the tvOS simulator: build the same project
+with `-sdk appletvsimulator ARCHS=arm64` (the VLCKit frameworks have no x86_64 simulator
+slice) and `simctl install` / `launch` it.
 
 The App Store record is "Debrid Media Manager" (Apple ID 6832736483): "DMM Mobile"
 was taken on the App Store, and the name under the icon stays DMM Mobile. The
 App Store Connect API key in Bitwarden ("App Store Connect API key (dmm-mobile
 release)", role App Manager) does everything after the upload without a browser
-or a two-factor code: store text, screenshots, attaching builds, submitting. Both platforms appear under the same app; attach the
+or a two-factor code: store text, screenshots, previews, attaching builds, cancelling and
+submitting. App Privacy is the exception: only the web page edits it, which needs a sign-in
+with a two-factor code. Both platforms appear under the same app; attach the
 iOS build to the iOS version and the tvOS build to the Apple TV version, then
 submit both for review. TestFlight first is cheap: the same builds, testers by
 email, review of the first build only.

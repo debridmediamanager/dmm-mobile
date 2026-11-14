@@ -20,48 +20,35 @@ browser handoff (`src/demo.ts`, tested in `src/demo.test.ts`).
 - **Sign-in required:** Yes
 - **User name:** `demo`
 - **Password:** `dmmdemo`
-- **Notes** (paste as is; under 4,000 characters):
+- **Notes** (paste as is, one line per paragraph; under 4,000 characters; sent with 1.2.0):
 
 ```text
-DMM Mobile manages the user's own cloud storage at a "debrid" service (Real-Debrid,
-AllDebrid, TorBox, Premiumize, Offcloud or Debrid-Link): paid cloud download
-services the user already subscribes to. The app lists the files in that account,
-plays them in the user's chosen player app, adds new downloads to the account and
-deletes old ones. It hosts no content and does not download anything over
-BitTorrent or any peer-to-peer network itself; links the user adds are handed to
-their own service, which stores the result in their account. Nothing is sold in
-the app.
+DMM Mobile manages the user's own cloud storage at a "debrid" service (Real-Debrid, AllDebrid, TorBox, Premiumize, Offcloud or Debrid-Link): paid cloud download services the user already subscribes to. The app lists the files in that account, plays them in its built-in player or a player app the user picks, adds new downloads to the account and deletes old ones. Nothing is sold in the app.
+
+What the app does not do:
+- It plays only files that are already in the user's own cloud storage. It hosts no content and has no catalogue of its own.
+- It has no search for content to download. The Search tab looks up film and show titles and opens their page on debridmediamanager.com in Safari; the app itself lists no releases, torrents or links from anyone else.
+- It downloads nothing over BitTorrent or any other peer-to-peer network. A link the user adds is handed to their own service, which stores the result in their account.
 
 DEMO SIGN-IN (no debrid account needed)
-There is no user name. Use "dmmdemo" as the API key of any provider; it opens a
-sample library of Blender Foundation open movies (CC BY 3.0) streamed from the
-Internet Archive. Changes to it last until the app is closed.
+There is no user name. Use "dmmdemo" as the API key of any provider; it opens a sample library of Blender Foundation open movies (CC BY 3.0) streamed from the Internet Archive. Changes to it last until the app is closed.
 
 iPhone and iPad
-1. Open the app. On "Sign in", scroll to TorBox, type dmmdemo in its API token
-   field, then tap "Save key".
-2. Home shows the four open movies under Recently Added. Tap "Tears of Steel" for
-   its page and tap Open: it plays in the app's own player. Its subtitle button lists
-   the film's English, German and Spanish subtitle files. Leave it after half a
-   minute or more: back on Home it waits under Continue Watching.
-3. Under Releases, tap the release to see its files; tap a subtitle file to open
-   it in the browser.
-4. Back in the Library, tap Torrents for the list of releases: the menu (three
-   dots) on a row has its actions; long-press rows to select several.
+1. Open the app. On "Sign in", scroll to TorBox, type dmmdemo in its API token field, then tap "Save key".
+2. Home shows the four open movies under Recently Added. Tap "Tears of Steel" for its page and tap Open: it plays in the app's own player. Its subtitle button lists the film's English, German and Spanish subtitle files. Leave it after half a minute or more: back on Home it waits under Continue Watching.
+3. Under Releases, tap the release to see its files; tap a subtitle file to open it in the browser.
+4. Back in the Library, tap Torrents for the list of releases: the menu (three dots) on a row has its actions; long-press rows to select several.
 5. Tap + to add a magnet link, for example:
-   magnet:?xt=urn:btih:dd8255ecdc7ca55fb0bbf81323d87062db1f6d1c&dn=Big+Buck+Bunny
-   It appears as "queued (demo)".
-6. Search tab: type a title. Tapping a result opens that title's page on
-   debridmediamanager.com in Safari.
-7. Settings: choose the video player; links to the privacy policy and support.
+magnet:?xt=urn:btih:dd8255ecdc7ca55fb0bbf81323d87062db1f6d1c&dn=Big+Buck+Bunny
+It appears as "queued (demo)".
+6. Search tab: type a title. Tapping a result opens that title's page on debridmediamanager.com in Safari.
+7. Settings: choose the video player; links to the privacy policy and support. Trakt and Simkl are optional: they sync what the user watches with their own Trakt or Simkl account, and only after the user connects it.
 
 Apple TV
 1. Open the app. On "Sign in", choose "Enter an API key instead".
 2. Under TorBox, select the API token field, type dmmdemo, then "Save key".
-3. Browse Home and the Library with the remote; Select opens an item, and its video plays
-   in the app's own player (play/pause on the remote; Select shows the controls).
-The QR code on that screen signs a TV in from a phone that is signed in to
-debridmediamanager.com; it needs a real debrid account, so please use the key.
+3. Browse Home and the Library with the remote; Select opens an item, and its video plays in the app's own player (play/pause on the remote; Select shows the controls).
+The QR code on that screen signs a TV in from a phone that is signed in to debridmediamanager.com; it needs a real debrid account, so please use the key.
 
 Contact: support@debridmediamanager.com
 ```

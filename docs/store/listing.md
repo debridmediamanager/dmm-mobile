@@ -2,7 +2,8 @@
 
 One app on both stores: bundle id / package `com.debridmediamanager.library`
 (fixed forever once published). Google Play has 1.2.0 (versionCode 4) on the closed
-test; the App Store has 1.0.0 (build 2). Apple ships iPhone, iPad
+test; the App Store has 1.2.0 (build 4), sent for review on 2026-11-14 (1.0.0 never
+released). Apple ships iPhone, iPad
 and Apple TV in one App Store record (add the tvOS platform to it); Google Play
 ships phones, tablets and Android TV from one app bundle.
 
@@ -73,6 +74,11 @@ Trakt's API use policy asks for its sentence in the store description and in the
 data shows, and its terms (9.6) forbid using its name in a way that confuses who owns
 it: the app has the same line with a link to simkl.com (Settings → Simkl) and "View on
 Simkl" on a title's page while Simkl is connected.
+
+The App Store description leaves out "; on Android phones and tablets it keeps playing in a
+small window (picture in picture)": picture in picture is Android only, and Apple refuses
+metadata that names other platforms (guideline 2.3.10). Apple has no What's new for an
+app's first App Store version.
 
 **What's new** (Google Play, 500 max):
 
@@ -147,8 +153,15 @@ access": No (links open in the system browser, not inside the app). Result: 4+.
 | Data type | Collected | Linked to the user | Tracking | Purpose |
 |---|---|---|---|---|
 | Other Data (debrid logins and app settings, the "remembered across devices" copy) | Yes | Yes | No | App Functionality |
+| Other User Content (release names in the library, sent to DMM to find which film or show each is, and since 1.2.0 their hashes, to read what each file holds; DMM keeps the answers by hash, not by user) | Yes | No | No | App Functionality |
+| Product Interaction (watch history and resume points, sent to Trakt or Simkl only when the user connects them) | Yes | Yes | No | App Functionality |
 | Search History | No: queries are looked up and not kept | | | |
 | Everything else | No | | | |
+
+The Other User Content and Product Interaction rows match Play's Files and docs and App activity rows (below).
+App Privacy is edited only on the App Store Connect web page (the API key cannot reach it), so these two rows
+wait for a web sign-in with Ben's two-factor code; until then the label lists Other Data only. App Privacy
+belongs to the app, not to a version, and can be published while a version is in review.
 
 **Export compliance:** the app uses only the system's HTTPS
 (`ITSAppUsesNonExemptEncryption` is false in the build), so no documentation.
