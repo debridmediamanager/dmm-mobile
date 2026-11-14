@@ -1,0 +1,2 @@
+New-episode alerts no longer include Google's push library: the app needs no Google services.
+An alert that is due is no longer dropped when the app is opened just before Android shows it.

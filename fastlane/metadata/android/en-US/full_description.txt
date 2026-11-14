@@ -1,0 +1,27 @@
+DMM Mobile puts the cloud library of your debrid service on your phone, tablet and TV.
+
+Sign in to Real-Debrid, AllDebrid, TorBox, Premiumize, Offcloud or Debrid-Link and every file you keep there shows in one fast list, even with thousands of items.
+
+- Browse your library by title, with posters, seasons and episodes
+- Play in the built-in player, which remembers where you stopped and plays the next episode, or in the player you choose
+- The player shows chapters, changes speed and picture size, switches to another copy of the same film and has a sleep timer; on Android phones and tablets it keeps playing in a small window (picture in picture)
+- See what each copy holds: resolution, HDR or Dolby Vision, audio and subtitle tracks
+- Continue watching and next up on Home
+- Connect Trakt or Simkl: what you play is scrobbled, and watched marks and resume points follow you
+- See your Trakt and Simkl watchlists and lists, and play what your library holds
+- A calendar of your shows' new episodes, with an optional alert when one airs
+- Search your library by name, filter by service, type or state, and sort it
+- Add downloads to your service and follow their progress
+- Select, delete, reinsert and tidy up duplicates in bulk
+- Back up your library and restore it, also from Debrid Media Manager on the web
+- Sign in once: your other services and settings come back on every device
+- Search titles and open them on debridmediamanager.com, already signed in
+- On TV, sign in by scanning a code with your phone and browse with the remote
+
+DMM Mobile needs an account with at least one of these services, which you buy from the service itself. The app stores no files and sells nothing. Your logins stay in your device's secure storage.
+
+To look around first, enter dmmdemo as the API key of any service: it opens a sample library of open movies.
+
+DMM Mobile uses Trakt but is not endorsed or certified by Trakt.
+
+DMM Mobile syncs watch history with Simkl (simkl.com) and is not affiliated with Simkl.
