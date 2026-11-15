@@ -47,6 +47,7 @@ for abi in arm64-v8a armeabi-v7a; do
 done
 ```
 
+1.3.0's are 17.7 MB (arm64-v8a) and 16.7 MB (armeabi-v7a); 1.2.2's, with libVLC, were 36.9 and 34.6 MB.
 `expo.useLegacyPackaging` only goes on these APKs: Google Play's bundle keeps its libraries
 uncompressed, which Play compresses for the download and a phone then uses in place.
 

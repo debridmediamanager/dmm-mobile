@@ -2,7 +2,7 @@
 
 One app on both stores: bundle id / package `com.debridmediamanager.library`
 (fixed forever once published). Google Play has 1.2.2 (versionCode 6, Android only) on the closed
-test; the App Store has 1.2.0 (build 4), sent for review on 2026-11-14 (1.0.0 never
+test and 1.3.0 (versionCode 7, Android only) in review there since 2026-11-15; the App Store has 1.2.0 (build 4), sent for review on 2026-11-14 (1.0.0 never
 released). Apple ships iPhone, iPad
 and Apple TV in one App Store record (add the tvOS platform to it); Google Play
 ships phones, tablets and Android TV from one app bundle.
