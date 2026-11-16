@@ -31,6 +31,28 @@ const jsonResponse = (body: unknown, status = 200, headers: Record<string, strin
 afterEach(() => vi.unstubAllGlobals());
 
 describe('provider API envelopes and pagination', () => {
+	// A 1,000-row TorBox page of season packs ran a Galaxy S26 Ultra out of Java heap while
+	// expo/fetch turned the body into a string (Play vitals, 1.3.0, 2026-11-15).
+	it('lists TorBox in pages of at most 200 rows', async () => {
+		const limits: number[] = [];
+		const fetchMock = vi.fn((url: string) => {
+			const params = new URL(url).searchParams;
+			const offset = Number(params.get('offset'));
+			const limit = Number(params.get('limit'));
+			if (url.includes('/torrents/mylist')) limits.push(limit);
+			const total = url.includes('/torrents/mylist') ? 450 : 0;
+			const data = Array.from({ length: Math.max(0, Math.min(limit, total - offset)) }, (_, i) => ({
+				id: offset + i, name: `t${offset + i}`, download_finished: true, download_present: true, size: 1, files: [],
+			}));
+			return Promise.resolve(jsonResponse({ success: true, data }));
+		});
+		vi.stubGlobal('fetch', fetchMock);
+		const items = await listLibrary('tb', 'secret-token');
+		expect(items).toHaveLength(450);
+		expect(new Set(items.map((item) => item.id)).size).toBe(450);
+		expect(Math.max(...limits)).toBeLessThanOrEqual(200);
+	});
+
 	it('walks every Real-Debrid page advertised by x-total-count', async () => {
 		const fetchMock = vi.fn((url: string) => {
 			const page = new URL(url).searchParams.get('page');

@@ -15,6 +15,11 @@ const DL_BASE = 'https://debrid-link.fr/api/v2';
 
 const PAGE_SIZE = 1000;
 /**
+ * TorBox lists every file of every item: a 1,000-row page of season packs ran a Galaxy S26 Ultra out of
+ * Java heap while expo/fetch made the body a string (2026-11-15). Our 576 torrents are 0.64 MB per 200.
+ */
+const TB_PAGE_SIZE = 200;
+/**
  * RD lists 5,000 rows a page (DMM web's size), but above 100 a page returns `links: []` for rows
  * that were cached when added: 6,383 of 6,439 on one account (2026-11-09). So the list never says
  * "uncached"; that takes the 100-row pages of findRealDebridUncached, run only when asked.
@@ -764,17 +769,17 @@ async function listTorBoxEndpoint(
 ): Promise<Record<string, unknown>[]> {
 	const rows: Record<string, unknown>[] = [];
 	for (let page = 0; page < MAX_PAGES; page++) {
-		const offset = page * PAGE_SIZE;
+		const offset = page * TB_PAGE_SIZE;
 		const result = await request<unknown>(
 			'tb',
-			`${TB_BASE}/${path}?offset=${offset}&limit=${PAGE_SIZE}&bypass_cache=true&_fresh=${Date.now()}`,
+			`${TB_BASE}/${path}?offset=${offset}&limit=${TB_PAGE_SIZE}&bypass_cache=true&_fresh=${Date.now()}`,
 			{ headers: authHeaders(token) },
 			signal
 		);
 		const body = assertTorBox(result.body);
 		const pageRows = asArray<Record<string, unknown>>(body.data);
 		rows.push(...pageRows);
-		if (pageRows.length < PAGE_SIZE) return rows;
+		if (pageRows.length < TB_PAGE_SIZE) return rows;
 	}
 	throw new PaginationLimitError('tb');
 }
