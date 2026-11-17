@@ -9,7 +9,7 @@ already installed. Each one is recorded as a GitHub release.
 |---|---|---|
 | Carries | the whole app: native code, permissions, icons, app config | `src/` and pure-JavaScript packages, images, fonts |
 | Needed for | a new or updated native module, an Expo SDK or React Native upgrade, any change to `app.json` or `plugins/`, icons, permissions | everything else |
-| Reaches | users after store review, once they install the new version | every installed build **of the same version** where Settings → Get fixes automatically is on (below): downloaded when the app starts, used from the next start |
+| Reaches | users after store review, once they install the new version | every installed Android build **of the same version** where Settings → Get fixes automatically is on (below): downloaded when the app starts, used from the next start. Never iPhone, iPad or Apple TV (below) |
 | GitHub release | `v1.2.2`, marked Latest, with one APK per ABI attached | `ota-1.2.2-<run>`, a pre-release holding the signed manifests and files |
 | Started by | a person: build, upload, tag | Actions → **Publish OTA update** → Run workflow |
 
@@ -70,6 +70,13 @@ over the air, and iPhone, iPad and Apple TV get the switch with their next store
 module `modules/dmm-player` is native code, and `@lunarr/vlc-player` left Android builds. `main`
 (runtime 1.3.0) no longer reaches 1.2.2 over the air; a fix for 1.2.2 goes out from a branch off
 `v1.2.2`. iPhone, iPad and Apple TV keep libVLC and stay on 1.2.0.
+
+1.3.0 for iPhone, iPad and Apple TV (build 5, 2026-11-17) takes no updates over the air at all:
+App Review rejected 1.2.0 under guideline 5.6 ("features that appear to have been intentionally
+hidden during the review process"), and the Get fixes automatically switch, which said updates skip
+the store's checks, was the likeliest reason. `src/updates.ts` only asks the update server on Android;
+expo-updates stays in the Apple builds, unused, so Android's native fingerprint is unchanged. The workflow
+still exports iOS manifests, which no Apple build requests. Ship every iOS and tvOS change as a build.
 
 A binary runs its own code until an update newer than the build itself is
 published: updates are ordered by date, so one published before the build is

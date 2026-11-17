@@ -67,7 +67,7 @@ does not use a WebView or paid EAS builds.
 For a populated preview without provider credentials, use the [fixture QA entry](../qa/README.md)
 in a separate checkout.
 
-Installed builds take JavaScript fixes over the air from our own update server,
+Installed Android builds take JavaScript fixes over the air from our own update server,
 signed with our own key; native changes ship as store releases. Both are in
 [releasing.md](releasing.md).
 

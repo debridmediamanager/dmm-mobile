@@ -442,12 +442,15 @@ to Real-Debrid through DMM's uploader and the media info panel.
 
 ## Fixes over the air
 
-Settings → Get fixes automatically: at start the app downloads small updates (its
+Android only. Settings → Get fixes automatically: at start the app downloads small updates (its
 JavaScript, images and fonts, signed with our key) from debridmediamanager.com and uses
 them from the next start. They skip the checks of the store or repository the app came
-from, so the switch starts on only in an install from Google Play, the Amazon Appstore or
-the App Store, and off in any other (the GitHub APKs, Obtainium, IzzyOnDroid). Settings →
+from, so the switch starts on only in an install from Google Play or the Amazon Appstore,
+and off in any other (the GitHub APKs, Obtainium, IzzyOnDroid). Settings →
 Version → Check looks for one at any time. Publishing them: [releasing.md](releasing.md).
+
+iPhone, iPad and Apple TV have neither the switch nor Check: from build 5 (1.3.0) they never
+ask the update server, and every change reaches them as a new build through App Review.
 
 ## Tablets and TVs
 

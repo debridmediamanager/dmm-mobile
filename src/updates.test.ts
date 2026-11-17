@@ -11,7 +11,7 @@ vi.mock('expo-secure-store', () => ({
 vi.mock('expo-updates', () => updates);
 vi.mock('expo', () => ({ requireNativeModule: () => ({ get installer() { return device.installer; } }) }));
 
-import { autoFixesOn, fetchFixesOnStart, fixesOnByDefault, setAutoFixes } from './updates';
+import { autoFixesOn, fetchFixesOnStart, fixesAvailable, fixesOnByDefault, setAutoFixes } from './updates';
 
 beforeEach(() => {
 	store.clear();
@@ -26,7 +26,7 @@ describe('fixes over the air', () => {
 	it('are on by default only where a store installed the app', () => {
 		expect(fixesOnByDefault('android', 'com.android.vending')).toBe(true);
 		expect(fixesOnByDefault('android', 'com.amazon.venezia')).toBe(true);
-		expect(fixesOnByDefault('ios', null)).toBe(true);
+		expect(fixesOnByDefault('ios', null)).toBe(false);
 		for (const other of [null, 'dev.imranr.obtainium', 'org.fdroid.fdroid', 'com.google.android.packageinstaller']) expect(fixesOnByDefault('android', other)).toBe(false);
 	});
 
@@ -57,9 +57,18 @@ describe('fixes over the air', () => {
 	});
 
 	it('leave a failed check for the next start', async () => {
-		device.os = 'ios';
+		device.installer = 'com.android.vending';
 		updates.checkForUpdateAsync.mockRejectedValue(new Error('Network request failed'));
 		await expect(fetchFixesOnStart()).resolves.toBeUndefined();
+	});
+
+	// App Review rejected iOS/tvOS 1.2.0 under guideline 5.6 (2026-11-16): there, every change is a reviewed build.
+	it('never reach iPhone, iPad or Apple TV, even switched on', async () => {
+		device.os = 'ios';
+		await setAutoFixes(true);
+		await fetchFixesOnStart();
+		expect(updates.checkForUpdateAsync).not.toHaveBeenCalled();
+		expect(fixesAvailable()).toBe(false);
 	});
 
 	it('do nothing in a build without updates', async () => {

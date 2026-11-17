@@ -7,7 +7,7 @@ import { PROVIDERS, PROVIDER_META, type ProviderId } from '../model';
 import { playersForPlatform } from '../player';
 import { loadSettings, onSettingsChange, saveSetting, type AppSettings, type SettingName } from '../settings';
 import { useAppTheme } from '../theme';
-import { autoFixesOn, setAutoFixes } from '../updates';
+import { autoFixesOn, fixesAvailable, setAutoFixes } from '../updates';
 import { ActionSheet, DropdownChip, FilterButton, Pressable, QrCode, Screen, styles, type SheetAction, useLayout } from '../ui';
 import { OFFICIAL_DMM_ORIGIN } from '../tvLink';
 import { pollSimklLink, startSimklLink, type TrackerLink } from '../simkl';
@@ -178,7 +178,7 @@ export function SettingsScreen() {
 	const [checking, setChecking] = useState(false);
 	// Get fixes automatically: null until read.
 	const [autoFixes, setAutoFixesState] = useState<boolean | null>(null);
-	useEffect(() => void (Updates.isEnabled && autoFixesOn().then(setAutoFixesState)), []);
+	useEffect(() => void (fixesAvailable() && autoFixesOn().then(setAutoFixesState)), []);
 	const switchAutoFixes = (on: boolean) => void setAutoFixes(on).then(() => setAutoFixesState(on), (caught) => Alert.alert('Could not save the setting', caught instanceof Error ? caught.message : String(caught)));
 	const save = (name: SettingName, value: string) => void saveSetting(name, value).catch((caught) => Alert.alert('Could not save the setting', caught instanceof Error ? caught.message : String(caught)));
 
@@ -207,7 +207,7 @@ export function SettingsScreen() {
 		}
 	};
 	const running = updates.currentlyRunning;
-	const versionDetail = !Updates.isEnabled ? 'Updates are off in this build.' : running.isEmbeddedLaunch || !running.createdAt ? 'As installed.' : `Updated ${running.createdAt.toLocaleString()}.`;
+	const versionDetail = Platform.OS !== 'android' ? 'Updates come from the App Store.' : !Updates.isEnabled ? 'Updates are off in this build.' : running.isEmbeddedLaunch || !running.createdAt ? 'As installed.' : `Updated ${running.createdAt.toLocaleString()}.`;
 
 	const row = (title: string, detail: string, control: React.ReactNode) => (
 		<View style={[styles.accountCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
@@ -278,7 +278,7 @@ export function SettingsScreen() {
 							<Switch accessibilityLabel="Get fixes automatically" value={autoFixes} onValueChange={switchAutoFixes} trackColor={{ true: theme.accent, false: theme.border }} thumbColor={Platform.OS === 'android' ? theme.surface : undefined} />
 						)
 					: null}
-				{row(`Version ${Updates.runtimeVersion ?? ''}`.trim(), updates.isUpdatePending ? `${versionDetail} An update is ready.` : versionDetail, Updates.isEnabled ? <FilterButton label={updates.isUpdatePending ? 'Restart' : checking ? 'Checking…' : 'Check'} active={updates.isUpdatePending} onPress={() => void (checking ? undefined : updateApp())} /> : null)}
+				{row(`Version ${Updates.runtimeVersion ?? ''}`.trim(), updates.isUpdatePending ? `${versionDetail} An update is ready.` : versionDetail, fixesAvailable() ? <FilterButton label={updates.isUpdatePending ? 'Restart' : checking ? 'Checking…' : 'Check'} active={updates.isUpdatePending} onPress={() => void (checking ? undefined : updateApp())} /> : null)}
 				{/* A TV has no browser, so it shows where the pages are. */}
 				{[['Privacy policy', '/privacy'], ['Help and support', '/support']].map(([title, path]) => <Fragment key={path}>{row(title, Platform.isTV ? `${OFFICIAL_DMM_ORIGIN.replace('https://', '')}${path}` : 'Opens on debridmediamanager.com.', Platform.isTV ? null : (
 					<Pressable accessibilityRole="link" accessibilityLabel={title} onPress={() => void Linking.openURL(`${OFFICIAL_DMM_ORIGIN}${path}`)} style={[styles.outlineButton, { borderColor: theme.accent }]}>
