@@ -36,6 +36,18 @@ lacks the native code it expects. The workflow enforces that rule (below).
 
    The OTA workflow compares the native code of every later update with this
    tag, so tag before publishing any update for 1.2.0.
+4. iPhone and iPad builds are also installed with AltStore and SideStore, from the source
+   in `altstore.json` at the repository root (linked from debridmediamanager.com/mobile).
+   Upload the iOS build to the release as `dmm-mobile-<version>-<build>-ios.ipa`, then put
+   a new entry **first** in `versions`: version, `buildVersion`, date, link, size in bytes
+   and `minOSVersion` (`MinimumOSVersion` in the app's Info.plist). AltStore compares
+   `appPermissions` with the file and refuses a mismatch, so when a build adds an
+   entitlement (`codesign -d --entitlements :- Payload/*.app`) or a `…UsageDescription`
+   key, list it there too. Push `main`; the source is read from it directly.
+
+   ```sh
+   gh release upload v1.3.0 dmm-mobile-1.3.0-5-ios.ipa
+   ```
 
 The built-in player (libVLC, on `main` since 2026-11-12) is native code that the
 1.0.0 builds lack, so from then on `main` cannot be published to 1.0.0 over the
